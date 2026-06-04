@@ -1,0 +1,44 @@
+{
+  "title": "Икар — мотивация vs дисциплина",
+  "brand_image": "assets/prometey/prometheus_canon.png",
+  "characters": {
+    "mortal": "assets/prometey/mortal_canon.png",
+    "prometheus": "assets/prometey/prometheus_canon.png"
+  },
+  "style": "Flat minimalist vector mascot style, same character design, proportions, dark teal background and warm palette as the reference image(s). Vertical 9:16, full body, centered, no text, clean bold shapes.",
+  "scenes": [
+    {
+      "image": "the young mortal youth excitedly strapping on big feathered wax wings, huge confident grin, full of energy, his little flame creature burning big and bright with sparks",
+      "refs": ["mortal"],
+      "motion": "wings rustle, the little flame flickers and grows brighter, warm sparks rise",
+      "vo": "День первый. Мотивация на максимуме.",
+      "caption": "День 1: мотивация на максимуме"
+    },
+    {
+      "image": "the young mortal with feathered wax wings flying high up in the sky toward a huge blazing bright sun, euphoric and overconfident, soaring too high",
+      "refs": ["mortal"],
+      "motion": "soaring upward, wings flapping slowly, clouds drift, the big sun glows",
+      "vo": "Ты делаешь всё сразу. Летишь выше и выше.",
+      "caption": "Делаешь ВСЁ сразу"
+    },
+    {
+      "image": "dramatic, too close to the blazing sun, the mortal's wax wings are melting, feathers scattering in the air, the youth falling down, his little flame creature shrunk small and dim",
+      "refs": ["mortal"],
+      "motion": "wax melts, feathers fall, the character drifts downward, the flame shrinks",
+      "vo": "Но мотивация — это воск. Она тает. И ты падаешь.",
+      "caption": "Мотивация = воск. Она тает"
+    },
+    {
+      "image": "Prometheus the bearded titan in a toga steadies the fallen young mortal and hands him a small but steady bright flame creature; the youth stands calm and determined, taking a small confident step",
+      "refs": ["mortal", "prometheus"],
+      "motion": "calm steady motion, the small flame glows warm and bright, gentle reassuring",
+      "vo": "Дисциплина — это камень. Начни мало, но каждый день.",
+      "caption": "Дисциплина = камень"
+    }
+  ],
+  "endcard": {
+    "title": "PROMETEY",
+    "sub": "Зажги свой огонь · ссылка ниже",
+    "vo": "Прометей. Зажги свой огонь."
+  }
+}

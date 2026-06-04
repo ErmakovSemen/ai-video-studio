@@ -31,3 +31,14 @@
 ## Статус
 v1 скелет: UI + mock + озвучка + склейка + автопост в TG работают.
 FAL-генерация подключается ключом (требует аккаунт+кредиты FAL, регион проверить).
+
+## Content factory (модульно, переиспользуемо)
+Story-мультик из сценария-данных:
+    python -m studio.cli render scenarios/icarus.json --out outputs/icarus.mp4
+Один кадр:
+    python -m studio.cli image "prompt" --out out.png --ref assets/prometey/prometheus_canon.png
+
+Модули: studio/imagegen (OpenRouter Gemini), studio/video (OpenRouter Kling/Wan/Seedance via
+OR_VIDEO_MODEL), studio/compose (озвучка edge-tts + субтитры + синк под VO + энд-кард + склейка),
+studio/story (scenario JSON -> mp4). Сценарии = данные в scenarios/. Бренд-ассеты в assets/<brand>/.
+Провайдеры переключаются env; работает на существующих OpenRouter-кредитах.
