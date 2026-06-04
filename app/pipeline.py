@@ -19,16 +19,22 @@ OPENROUTER_KEY = os.getenv("OPENROUTER_API_KEY")
 FLUX_MODEL = os.getenv("FAL_FLUX_MODEL", "fal-ai/flux/schnell")
 KLING_MODEL = os.getenv("FAL_KLING_MODEL", "fal-ai/kling-video/v1.6/standard/image-to-video")
 VOICE = os.getenv("TTS_VOICE", "ru-RU-DmitryNeural")
-# Free image-to-video via a public Hugging Face Space (no key, no payment, no region).
+# OpenRouter video (Kling/Wan/Hailuo/Seedance) — uses existing OpenRouter credits,
+# image-to-video, ~$0.63/clip for Kling std, region-ok for non-OpenAI/Google models.
+OR_VIDEO_MODEL = os.getenv("OR_VIDEO_MODEL", "kwaivgi/kling-v3.0-std")
+OR_VIDEO_ENABLED = os.getenv("OR_VIDEO_ENABLED", "1") != "0"
+# Free image-to-video via a public Hugging Face Space (no key/payment/region; tiny anon quota).
 HF_VIDEO_SPACE = os.getenv("HF_VIDEO_SPACE", "Daankular/Sulphur")
 HF_ENABLED = os.getenv("HF_ENABLED", "1") != "0"
 W, H = 1080, 1920
 
 
 def mode() -> str:
-    """fal (paid, best) > hf (free Spaces) > mock (no network gen)."""
+    """fal (opt-in) > openrouter (best, uses OR credits) > hf (free) > mock."""
     if FAL_KEY:
         return "fal"
+    if OR_VIDEO_ENABLED and OPENROUTER_KEY:
+        return "openrouter"
     if HF_ENABLED:
         try:
             import gradio_client  # noqa: F401
@@ -36,6 +42,52 @@ def mode() -> str:
         except Exception:
             return "mock"
     return "mock"
+
+
+# ---------------- OpenRouter video adapter (image-to-video) ----------------
+def _public_image_url(path: str) -> str:
+    """Upload a local image to a free host to get a downloadable URL (OR needs a URL)."""
+    import urllib.request, uuid
+    b = "----c" + uuid.uuid4().hex
+    with open(path, "rb") as f:
+        data = f.read()
+    body = (f'--{b}\r\nContent-Disposition: form-data; name="reqtype"\r\n\r\nfileupload\r\n').encode()
+    body += (f'--{b}\r\nContent-Disposition: form-data; name="fileToUpload"; filename="i.png"\r\n'
+             f'Content-Type: image/png\r\n\r\n').encode() + data + b"\r\n"
+    body += (f'--{b}--\r\n').encode()
+    req = urllib.request.Request("https://catbox.moe/user/api.php", data=body,
+                                 headers={"Content-Type": f"multipart/form-data; boundary={b}"})
+    return urllib.request.urlopen(req, timeout=120).read().decode().strip()
+
+
+def openrouter_image_to_video(image_path: str, prompt: str, out_path: str) -> dict:
+    import urllib.request, time, json as _json
+    h = {"Authorization": f"Bearer {OPENROUTER_KEY}"}
+    img_url = _public_image_url(image_path)
+    payload = {
+        "model": OR_VIDEO_MODEL, "prompt": prompt, "aspect_ratio": "9:16",
+        "frame_images": [{"type": "image_url", "image_url": {"url": img_url}, "frame_type": "first_frame"}],
+    }
+    req = urllib.request.Request("https://openrouter.ai/api/v1/videos",
+                                 data=_json.dumps(payload).encode(),
+                                 headers={**h, "Content-Type": "application/json"})
+    job = _json.load(urllib.request.urlopen(req, timeout=120))
+    jid = job.get("id")
+    poll = job.get("polling_url") or f"https://openrouter.ai/api/v1/videos/{jid}"
+    for _ in range(60):
+        time.sleep(6)
+        s = _json.load(urllib.request.urlopen(urllib.request.Request(poll, headers=h), timeout=60))
+        sd = s.get("data", s)
+        if sd.get("status") in ("completed", "succeeded", "success"):
+            content = f"https://openrouter.ai/api/v1/videos/{jid}/content?index=0"
+            urls = sd.get("unsigned_urls") or [content]
+            r = urllib.request.urlopen(urllib.request.Request(urls[0], headers=h), timeout=300)
+            with open(out_path, "wb") as f:
+                f.write(r.read())
+            return {"image_url": img_url, "model": OR_VIDEO_MODEL}
+        if sd.get("status") in ("failed", "error", "canceled"):
+            raise RuntimeError(f"OR video {sd.get('status')}: {str(sd)[:200]}")
+    raise RuntimeError("OR video timeout")
 
 
 # ---------------- OpenRouter (prompt refine) ----------------
@@ -168,7 +220,9 @@ def mock_clip(image_path: str | None, prompt: str, out: str, seconds: float):
 
 # ---------------- stitch ----------------
 def mux(video: str, audio: str, out: str):
+    # Explicitly use the clip's video + our narration audio (clip may carry its own audio).
     subprocess.run([FF, "-y", "-i", video, "-i", audio,
+                    "-map", "0:v:0", "-map", "1:a:0",
                     "-c:v", "copy", "-c:a", "aac", "-shortest", out],
                    capture_output=True)
 
@@ -186,7 +240,17 @@ async def generate(description: str, image_path: str | None, narration: str | No
     seconds = max(4.0, min(audio_dur(voice_mp3) + 0.6, 20))
 
     m = mode()
-    if m == "fal":
+    if m == "openrouter":
+        src_img = image_path
+        if not src_img:
+            src_img = os.path.join(workdir, "still.png")
+            _gradient_image(description, src_img)
+        try:
+            info.update(openrouter_image_to_video(src_img, prompt, clip))
+        except Exception as e:
+            info["or_error"] = str(e)[:200]
+            mock_clip(image_path, description, clip, seconds)  # graceful fallback
+    elif m == "fal":
         if image_path:
             img_url = fal_upload(image_path)
         else:

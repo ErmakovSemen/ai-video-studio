@@ -4,6 +4,13 @@
 Поток: описание (+опц. картинка) → [OpenRouter промпт] → [FAL Flux кадр / твоя картинка]
 → [FAL Kling image-to-video] → [edge-tts озвучка] → [ffmpeg склейка] → mp4 → скачать / автопост в TG.
 
+## Провайдеры (приоритет)
+- **OpenRouter video (по умолчанию, рекоменд.)** — Kling/Wan/Hailuo/Seedance через твои OR-кредиты,
+  image-to-video, ~$0.63/клип (Kling std), регион-ок (не OpenAI/Google). Нужен OPENROUTER_API_KEY.
+- **Hugging Face (бесплатно)** — публичные Spaces, без оплаты, но крошечная анон-квота (нужен free HF_TOKEN).
+- **FAL** — опц. платный (FAL_KEY).
+- **MOCK** — без сети (Ken-Burns + голос), для проверки потока.
+
 ## Pluggable
 - FAL — адаптер (app/pipeline.py). Нет FAL_KEY → MOCK-режим (Ken-Burns по картинке/градиенту + голос),
   чтобы UI и поток работали без ключа. Меняется на другого провайдера без правки UI.

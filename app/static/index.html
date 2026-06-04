@@ -57,9 +57,10 @@
 <script>
 let jobId=null;
 async function health(){const r=await fetch('/api/health');const d=await r.json();
+  const labels={openrouter:'OpenRouter (Kling, реальная генерация)',fal:'FAL (реальная генерация)',
+    hf:'Hugging Face (бесплатно, лимит квоты)',mock:'MOCK (превью без генерации)'};
   document.getElementById('mode').textContent =
-    (d.fal?'Режим: FAL (реальная генерация)':'Режим: MOCK (без FAL-ключа — превью-режим)')+
-    (d.tg_ready?` · постинг в ${d.channel}`:' · TG не настроен');}
+    'Режим: '+(labels[d.mode]||d.mode)+(d.tg_ready?` · постинг в ${d.channel}`:' · TG не настроен');}
 health();
 const $=id=>document.getElementById(id);
 $('go').onclick=async()=>{
