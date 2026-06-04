@@ -1,34 +1,38 @@
-"""AI Video Studio — FastAPI backend.
-UI: upload image + description -> generate video -> download / autopost.
+"""AI Video Studio — content-factory UI backend.
+Pick/edit a scenario -> render (free draft or final) -> preview -> download / post to TG.
 """
-import os, uuid, asyncio, threading, json, urllib.request, mimetypes
+import os, uuid, json, time, threading, urllib.request
 from pathlib import Path
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi import FastAPI, Form, HTTPException
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from app import pipeline
+from studio import story, imagegen, video, compose
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "outputs"; OUT.mkdir(exist_ok=True)
 WORK = ROOT / "work"; WORK.mkdir(exist_ok=True)
+SCEN = ROOT / "scenarios"; SCEN.mkdir(exist_ok=True)
+ASSETS = ROOT / "assets"
 TG_TOKEN = os.getenv("AGT_TG_BOT_TOKEN", "")
 TG_CHANNEL = os.getenv("TG_CHANNEL", "@PrometeyApp")
+OR_KEY = os.getenv("OPENROUTER_API_KEY", "")
 
 app = FastAPI(title="AI Video Studio")
 app.mount("/outputs", StaticFiles(directory=str(OUT)), name="outputs")
-
 JOBS: dict[str, dict] = {}
 
 
-def _run_job(jid: str, description: str, image_path: str | None, narration: str | None):
-    out_path = str(OUT / f"{jid}.mp4")
-    wd = str(WORK / jid); os.makedirs(wd, exist_ok=True)
+def _credits():
+    if not OR_KEY:
+        return None
     try:
-        info = asyncio.run(pipeline.generate(description, image_path, narration, out_path, wd))
-        JOBS[jid].update(status="done", info=info, video=f"/outputs/{jid}.mp4")
-    except Exception as e:
-        import traceback; traceback.print_exc()
-        JOBS[jid].update(status="error", error=str(e))
+        r = urllib.request.urlopen(urllib.request.Request(
+            "https://openrouter.ai/api/v1/credits",
+            headers={"Authorization": f"Bearer {OR_KEY}"}), timeout=20)
+        d = json.load(r).get("data", {})
+        return round(float(d.get("total_credits", 0)) - float(d.get("total_usage", 0)), 2)
+    except Exception:
+        return None
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -38,26 +42,63 @@ def index():
 
 @app.get("/api/health")
 def health():
-    return {"mode": pipeline.mode(), "fal": bool(pipeline.FAL_KEY),
-            "tg_ready": bool(TG_TOKEN), "channel": TG_CHANNEL}
+    return {"video_model": video.VIDEO_MODEL, "image_model": imagegen.IMAGE_MODEL,
+            "tg_ready": bool(TG_TOKEN), "channel": TG_CHANNEL, "credits": _credits()}
 
 
-@app.post("/api/generate")
-async def generate(description: str = Form(...), narration: str = Form(""),
-                   image: UploadFile | None = File(None)):
-    if not description.strip():
-        raise HTTPException(400, "description required")
+@app.get("/api/scenarios")
+def scenarios():
+    out = []
+    for p in sorted(SCEN.glob("*.json")):
+        try:
+            out.append({"name": p.stem, "title": json.loads(p.read_text(encoding="utf-8")).get("title", p.stem)})
+        except Exception:
+            out.append({"name": p.stem, "title": p.stem})
+    return out
+
+
+@app.get("/api/scenarios/{name}")
+def get_scenario(name: str):
+    p = SCEN / f"{name}.json"
+    if not p.exists():
+        raise HTTPException(404, "not found")
+    return json.loads(p.read_text(encoding="utf-8"))
+
+
+@app.post("/api/scenarios/{name}")
+def save_scenario(name: str, body: str = Form(...)):
+    try:
+        data = json.loads(body)
+    except Exception as e:
+        raise HTTPException(400, f"invalid json: {e}")
+    safe = "".join(c for c in name if c.isalnum() or c in "-_")[:40] or "scenario"
+    (SCEN / f"{safe}.json").write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    return {"saved": safe}
+
+
+def _run(jid: str, scenario: dict, draft: bool):
+    out = str(OUT / f"{jid}.mp4")
+    wd = str(WORK / jid)
+    try:
+        log = story.build(scenario, out, wd, base_dir=str(ROOT), draft=draft)
+        JOBS[jid].update(status="done", info=log, video=f"/outputs/{jid}.mp4")
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        JOBS[jid].update(status="error", error=str(e)[:300])
+
+
+@app.post("/api/render")
+def render(body: str = Form(...), draft: bool = Form(True)):
+    try:
+        scenario = json.loads(body)
+    except Exception as e:
+        raise HTTPException(400, f"invalid scenario json: {e}")
+    if not scenario.get("scenes"):
+        raise HTTPException(400, "scenario has no scenes")
     jid = uuid.uuid4().hex[:12]
-    image_path = None
-    if image is not None:
-        ext = os.path.splitext(image.filename or "")[1] or ".png"
-        image_path = str(WORK / f"{jid}_in{ext}")
-        with open(image_path, "wb") as f:
-            f.write(await image.read())
-    JOBS[jid] = {"status": "running", "info": {}}
-    threading.Thread(target=_run_job, args=(jid, description, image_path, narration or None),
-                     daemon=True).start()
-    return {"job_id": jid, "mode": pipeline.mode()}
+    JOBS[jid] = {"status": "running"}
+    threading.Thread(target=_run, args=(jid, scenario, draft), daemon=True).start()
+    return {"job_id": jid, "draft": draft, "scenes": len(scenario["scenes"])}
 
 
 @app.get("/api/jobs/{jid}")
@@ -67,32 +108,45 @@ def job(jid: str):
     return JOBS[jid]
 
 
+@app.post("/api/image")
+def gen_image(prompt: str = Form(...), ref: str = Form("")):
+    jid = uuid.uuid4().hex[:10]
+    out = str(OUT / f"img_{jid}.png")
+    refs = [str(ASSETS / ref)] if ref else []
+    try:
+        imagegen.generate_image(prompt, out, refs)
+        return {"image": f"/outputs/img_{jid}.png"}
+    except Exception as e:
+        raise HTTPException(500, str(e)[:200])
+
+
+@app.get("/api/assets")
+def assets():
+    if not ASSETS.exists():
+        return []
+    return [str(p.relative_to(ASSETS)) for p in ASSETS.rglob("*.png")]
+
+
 @app.post("/api/post-tg")
 def post_tg(job_id: str = Form(...), caption: str = Form("")):
     if not TG_TOKEN:
-        raise HTTPException(400, "TG token not configured")
+        raise HTTPException(400, "TG token not set")
     j = JOBS.get(job_id)
     if not j or j.get("status") != "done":
         raise HTTPException(400, "job not ready")
     path = str(OUT / f"{job_id}.mp4")
-    boundary = "----b" + uuid.uuid4().hex
-    body = b""
-    def part(name, val):
-        return (f'--{boundary}\r\nContent-Disposition: form-data; name="{name}"\r\n\r\n{val}\r\n').encode()
-    body += part("chat_id", TG_CHANNEL)
-    body += part("caption", caption)
-    body += part("supports_streaming", "true")
-    with open(path, "rb") as f:
-        data = f.read()
-    body += (f'--{boundary}\r\nContent-Disposition: form-data; name="video"; filename="v.mp4"\r\n'
-             f'Content-Type: video/mp4\r\n\r\n').encode() + data + b"\r\n"
-    body += (f'--{boundary}--\r\n').encode()
-    req = urllib.request.Request(
-        f"https://api.telegram.org/bot{TG_TOKEN}/sendVideo", data=body,
-        headers={"Content-Type": f"multipart/form-data; boundary={boundary}"})
+    b = "----b" + uuid.uuid4().hex
+    def part(n, v):
+        return (f'--{b}\r\nContent-Disposition: form-data; name="{n}"\r\n\r\n{v}\r\n').encode()
+    body = part("chat_id", TG_CHANNEL) + part("caption", caption) + part("supports_streaming", "true")
+    body += (f'--{b}\r\nContent-Disposition: form-data; name="video"; filename="v.mp4"\r\n'
+             f'Content-Type: video/mp4\r\n\r\n').encode() + open(path, "rb").read() + b"\r\n"
+    body += (f'--{b}--\r\n').encode()
     try:
-        r = urllib.request.urlopen(req, timeout=180)
+        r = urllib.request.urlopen(urllib.request.Request(
+            f"https://api.telegram.org/bot{TG_TOKEN}/sendVideo", data=body,
+            headers={"Content-Type": f"multipart/form-data; boundary={b}"}), timeout=180)
         d = json.load(r)
         return {"ok": d.get("ok"), "message_id": d.get("result", {}).get("message_id")}
     except Exception as e:
-        raise HTTPException(500, f"tg error: {e}")
+        raise HTTPException(500, f"tg: {e}")

@@ -31,6 +31,35 @@ def silence(out: str, sec: float):
                     "anullsrc=r=24000:cl=mono", out], capture_output=True)
 
 
+def text_card(text: str, out_png: str):
+    """A simple branded still for free drafts when there is no image."""
+    from PIL import Image, ImageDraw, ImageFont
+    import numpy as np, textwrap
+    y = np.linspace(0, 1, H)[:, None]
+    arr = (np.array([26, 19, 33]) * (1 - y) + np.array([9, 9, 13]) * y).astype("uint8")
+    img = Image.fromarray(np.repeat(arr[:, None, :], W, axis=1), "RGB")
+    d = ImageDraw.Draw(img)
+    d.multiline_text((W//2, H//2), textwrap.fill(text, 22),
+                     font=ImageFont.truetype(FONT, 52), fill=(240, 240, 245),
+                     anchor="mm", align="center", spacing=14)
+    img.save(out_png)
+
+
+def mock_clip(image_path: str | None, fallback_text: str, seconds: float, out: str):
+    """Free draft clip: slow Ken-Burns zoom on an image (or a text card)."""
+    src = image_path
+    tmp = None
+    if not src or not os.path.exists(src):
+        tmp = out + ".bg.png"; text_card(fallback_text, tmp); src = tmp
+    frames = max(2, int(seconds * 30))
+    subprocess.run([FF, "-y", "-loop", "1", "-i", src, "-t", f"{seconds:.2f}",
+                    "-vf", (f"scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},"
+                            f"zoompan=z='min(zoom+0.0009,1.16)':d={frames}:s={W}x{H}:fps=30,format=yuv420p"),
+                    "-c:v", "libx264", "-preset", "veryfast", "-an", out], capture_output=True)
+    if tmp and os.path.exists(tmp):
+        os.remove(tmp)
+
+
 def scene_clip(raw_clip: str, caption: str, seconds: float, out: str):
     """Trim a raw clip to `seconds`, burn a bottom caption, drop its audio."""
     capf = out + ".txt"; open(capf, "w", encoding="utf-8").write(caption)

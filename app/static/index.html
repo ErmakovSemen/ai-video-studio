@@ -1,93 +1,120 @@
 <!doctype html>
-<html lang="ru">
-<head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<html lang="ru"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>AI Video Studio — Prometey</title>
 <style>
-  :root{--bg:#0e0e12;--card:#17171f;--mut:#9a9aa5;--acc:#ff6a2b;--txt:#f5f5f7}
-  *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--txt);font-family:-apple-system,Segoe UI,Roboto,sans-serif}
-  .wrap{max-width:560px;margin:0 auto;padding:28px 18px 60px}
-  h1{font-size:22px;margin:0 0 4px}
-  .mode{font-size:13px;color:var(--mut);margin-bottom:22px}
-  .card{background:var(--card);border-radius:18px;padding:20px;margin-bottom:18px}
-  label{display:block;font-size:13px;color:var(--mut);margin:12px 0 6px}
-  textarea,input[type=text]{width:100%;background:#0e0e14;border:1px solid #2a2a33;border-radius:12px;
-    color:var(--txt);padding:12px;font-size:15px;font-family:inherit;resize:vertical}
-  textarea{min-height:74px}
-  input[type=file]{font-size:13px;color:var(--mut)}
-  button{background:var(--acc);color:#111;border:0;border-radius:12px;padding:13px 18px;font-size:15px;
-    font-weight:700;cursor:pointer;width:100%;margin-top:16px}
-  button.sec{background:#262630;color:var(--txt)}
+  :root{--bg:#0e0e12;--card:#17171f;--mut:#9a9aa5;--acc:#ff6a2b;--txt:#f5f5f7;--ln:#2a2a33}
+  *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);
+    font-family:-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.45}
+  .wrap{max-width:880px;margin:0 auto;padding:24px 16px 80px}
+  h1{font-size:22px;margin:0 0 2px}.sub{color:var(--mut);font-size:13px;margin-bottom:20px}
+  .card{background:var(--card);border-radius:16px;padding:18px;margin-bottom:16px}
+  .card h2{font-size:15px;margin:0 0 12px}
+  label{display:block;font-size:12px;color:var(--mut);margin:10px 0 5px}
+  select,input,textarea{width:100%;background:#0e0e14;border:1px solid var(--ln);border-radius:10px;
+    color:var(--txt);padding:10px;font-size:14px;font-family:inherit}
+  textarea{min-height:220px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px;resize:vertical}
+  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+  button{background:var(--acc);color:#111;border:0;border-radius:10px;padding:11px 16px;font-size:14px;
+    font-weight:700;cursor:pointer}button.sec{background:#262630;color:var(--txt)}
   button:disabled{opacity:.5;cursor:default}
-  .row{display:flex;gap:10px}.row>*{flex:1}
-  video{width:100%;border-radius:14px;margin-top:6px;background:#000}
-  .status{font-size:14px;color:var(--mut);margin-top:14px;min-height:20px}
-  a.dl{display:inline-block;margin-top:10px;color:var(--acc);text-decoration:none;font-size:14px}
+  .pill{font-size:12px;color:var(--mut);background:#1f1f29;padding:4px 10px;border-radius:20px}
+  video{width:100%;max-width:300px;border-radius:12px;background:#000;display:block;margin-top:8px}
+  img.prev{max-width:240px;border-radius:12px;margin-top:8px}
+  .status{font-size:13px;color:var(--mut);margin-top:10px;min-height:18px}
+  a.dl{color:var(--acc);text-decoration:none;font-size:13px}
   .hide{display:none}
-</style>
-</head>
-<body>
-<div class="wrap">
+</style></head><body><div class="wrap">
   <h1>🔥 AI Video Studio</h1>
-  <div class="mode" id="mode">…</div>
+  <div class="sub" id="meta">…</div>
 
   <div class="card">
-    <label>Описание ролика / сцена</label>
-    <textarea id="desc" placeholder="напр.: огненный персонаж сурово смотрит в камеру, тёмный фон, кинематографично"></textarea>
-    <label>Озвучка (что произносит голос) — необязательно</label>
-    <textarea id="narr" placeholder="напр.: Понедельник — это отмазка с датой. Шаг — сегодня."></textarea>
-    <label>Картинка-референс (необязательно — иначе сгенерится)</label>
-    <input type="file" id="img" accept="image/*"/>
-    <button id="go">Сгенерировать видео</button>
-  </div>
-
-  <div class="card hide" id="result">
-    <video id="vid" controls playsinline></video>
-    <a class="dl" id="dl" download>⬇ Скачать</a>
+    <h2>1 · Сценарий</h2>
     <div class="row">
-      <button class="sec" id="post">Постить в Telegram</button>
+      <select id="scList" style="flex:1;min-width:200px"></select>
+      <button class="sec" id="load">Загрузить в редактор</button>
     </div>
-    <div class="status" id="pstat"></div>
+    <label>JSON сценария (редактируй свободно)</label>
+    <textarea id="json" spellcheck="false"></textarea>
+    <div class="row">
+      <input id="saveName" placeholder="имя для сохранения (напр. sisyphus)" style="flex:1;min-width:160px"/>
+      <button class="sec" id="save">💾 Сохранить</button>
+    </div>
   </div>
 
-  <div class="status" id="status"></div>
+  <div class="card">
+    <h2>2 · Рендер</h2>
+    <div class="row">
+      <button id="draft">▶ Черновик (бесплатно)</button>
+      <button id="final" class="sec">★ Финал (Kling · ~$2–3)</button>
+      <span class="pill" id="cost"></span>
+    </div>
+    <div class="status" id="rstat"></div>
+    <div id="result" class="hide">
+      <video id="vid" controls playsinline></video>
+      <div class="row">
+        <a class="dl" id="dl" download>⬇ Скачать</a>
+        <button class="sec" id="post">Постить в Telegram</button>
+        <span class="status" id="pstat"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>3 · Быстрая картинка (Gemini)</h2>
+    <label>Промпт</label>
+    <input id="iprompt" placeholder="напр.: Афина в том же стиле, полный рост"/>
+    <label>Референс (для консистентности)</label>
+    <select id="iref"><option value="">— без референса —</option></select>
+    <div class="row"><button id="genimg" class="sec">🖼 Сгенерировать</button>
+      <span class="status" id="istat"></span></div>
+    <img id="iout" class="prev hide"/>
+  </div>
 </div>
 <script>
-let jobId=null;
-async function health(){const r=await fetch('/api/health');const d=await r.json();
-  const labels={openrouter:'OpenRouter (Kling, реальная генерация)',fal:'FAL (реальная генерация)',
-    hf:'Hugging Face (бесплатно, лимит квоты)',mock:'MOCK (превью без генерации)'};
-  document.getElementById('mode').textContent =
-    'Режим: '+(labels[d.mode]||d.mode)+(d.tg_ready?` · постинг в ${d.channel}`:' · TG не настроен');}
-health();
-const $=id=>document.getElementById(id);
-$('go').onclick=async()=>{
-  const desc=$('desc').value.trim(); if(!desc){alert('Опиши ролик');return;}
-  $('go').disabled=true; $('status').textContent='Генерация… (может занять до пары минут)';
-  $('result').classList.add('hide');
-  const fd=new FormData(); fd.append('description',desc); fd.append('narration',$('narr').value);
-  if($('img').files[0]) fd.append('image',$('img').files[0]);
-  const r=await fetch('/api/generate',{method:'POST',body:fd}); const d=await r.json();
-  jobId=d.job_id; poll();
-};
-async function poll(){
-  const r=await fetch('/api/jobs/'+jobId); const d=await r.json();
-  if(d.status==='running'){$('status').textContent='Генерация…'; setTimeout(poll,2500); return;}
-  $('go').disabled=false;
-  if(d.status==='error'){$('status').textContent='Ошибка: '+d.error; return;}
-  $('status').textContent='Готово ✅ ('+(d.info&&d.info.mode)+')';
-  $('vid').src=d.video; $('dl').href=d.video; $('result').classList.remove('hide');
+const $=id=>document.getElementById(id); let job=null;
+async function init(){
+  const h=await (await fetch('/api/health')).json();
+  $('meta').textContent=`видео: ${h.video_model} · картинки: ${h.image_model}`+
+    (h.credits!=null?` · баланс ~$${h.credits}`:'')+(h.tg_ready?` · постинг ${h.channel}`:'');
+  const sc=await (await fetch('/api/scenarios')).json();
+  $('scList').innerHTML=sc.map(s=>`<option value="${s.name}">${s.title}</option>`).join('');
+  const as=await (await fetch('/api/assets')).json();
+  $('iref').innerHTML='<option value="">— без референса —</option>'+as.map(a=>`<option>${a}</option>`).join('');
 }
-$('post').onclick=async()=>{
-  const cap=prompt('Подпись к посту:',''); if(cap===null)return;
-  $('pstat').textContent='Публикую…';
-  const fd=new FormData(); fd.append('job_id',jobId); fd.append('caption',cap);
-  const r=await fetch('/api/post-tg',{method:'POST',body:fd});
-  const d=await r.json().catch(()=>({}));
-  $('pstat').textContent = d.ok ? 'Опубликовано в канал ✅' : 'Ошибка публикации';
-};
-</script>
-</body>
-</html>
+init();
+$('load').onclick=async()=>{const n=$('scList').value;if(!n)return;
+  const d=await (await fetch('/api/scenarios/'+n)).json();
+  $('json').value=JSON.stringify(d,null,2);$('saveName').value=n;};
+$('save').onclick=async()=>{const n=$('saveName').value.trim()||'scenario';
+  const fd=new FormData();fd.append('body',$('json').value);
+  const r=await fetch('/api/scenarios/'+n,{method:'POST',body:fd});
+  $('rstat').textContent=r.ok?'Сохранено ✅':'Ошибка сохранения';init();};
+async function render(draft){
+  if(!$('json').value.trim()){alert('Вставь/выбери сценарий');return;}
+  $('draft').disabled=$('final').disabled=true;$('result').classList.add('hide');
+  $('rstat').textContent=draft?'Черновик рендерится (бесплатно)…':'Финал рендерится (Kling, пара минут)…';
+  const fd=new FormData();fd.append('body',$('json').value);fd.append('draft',draft);
+  const r=await fetch('/api/render',{method:'POST',body:fd});const d=await r.json();
+  if(!r.ok){$('rstat').textContent='Ошибка: '+(d.detail||'');$('draft').disabled=$('final').disabled=false;return;}
+  job=d.job_id;poll();
+}
+$('draft').onclick=()=>render(true);$('final').onclick=()=>{if(confirm('Финал спишет ~$2–3 с OpenRouter. Продолжить?'))render(false);};
+async function poll(){const d=await (await fetch('/api/jobs/'+job)).json();
+  if(d.status==='running'){setTimeout(poll,3000);return;}
+  $('draft').disabled=$('final').disabled=false;
+  if(d.status==='error'){$('rstat').textContent='Ошибка: '+d.error;return;}
+  $('rstat').textContent='Готово ✅ '+(d.info&&d.info.draft?'(черновик)':'(финал)');
+  $('vid').src=d.video;$('dl').href=d.video;$('result').classList.remove('hide');}
+$('post').onclick=async()=>{const c=prompt('Подпись к посту:','');if(c===null)return;
+  $('pstat').textContent='Публикую…';const fd=new FormData();fd.append('job_id',job);fd.append('caption',c);
+  const d=await (await fetch('/api/post-tg',{method:'POST',body:fd})).json().catch(()=>({}));
+  $('pstat').textContent=d.ok?'Опубликовано ✅':'Ошибка';};
+$('genimg').onclick=async()=>{const p=$('iprompt').value.trim();if(!p)return;
+  $('istat').textContent='Генерю…';$('genimg').disabled=true;
+  const fd=new FormData();fd.append('prompt',p);if($('iref').value)fd.append('ref',$('iref').value);
+  const r=await fetch('/api/image',{method:'POST',body:fd});const d=await r.json().catch(()=>({}));
+  $('genimg').disabled=false;
+  if(d.image){$('iout').src=d.image;$('iout').classList.remove('hide');$('istat').textContent='Готово ✅';}
+  else $('istat').textContent='Ошибка: '+(d.detail||'');};
+</script></body></html>

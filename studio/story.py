@@ -23,22 +23,29 @@ from studio import imagegen, video, compose
 PAD = 0.35  # seconds of trailing silence per scene so cuts breathe
 
 
-def build(scenario: dict, out_path: str, workdir: str, base_dir: str = ".") -> dict:
+def build(scenario: dict, out_path: str, workdir: str, base_dir: str = ".",
+          draft: bool = False) -> dict:
+    """Render a scenario into a cartoon. draft=True is FREE (no Gemini/Kling):
+    Ken-Burns on the reference art + narration + captions — for previewing flow/timing."""
     os.makedirs(workdir, exist_ok=True)
     chars = {k: os.path.join(base_dir, v) for k, v in scenario.get("characters", {}).items()}
     style = scenario.get("style", "")
     scene_videos, voice_segs = [], []
-    log = {"title": scenario.get("title"), "scenes": []}
+    log = {"title": scenario.get("title"), "draft": draft, "scenes": []}
 
     for i, sc in enumerate(scenario["scenes"]):
         refs = [chars[name] for name in sc.get("refs", []) if name in chars]
-        img = os.path.join(workdir, f"img{i}.png")
-        imagegen.generate_image(f"{style} SCENE: {sc['image']}", img, refs)
         raw = os.path.join(workdir, f"raw{i}.mp4")
-        video.animate(img, sc["motion"], raw)
         vo = os.path.join(workdir, f"vo{i}.mp3")
         compose.tts(sc["vo"], vo)
         seconds = compose.dur(vo) + PAD
+        img = None
+        if draft:
+            compose.mock_clip(refs[0] if refs else None, sc.get("caption", sc["vo"]), seconds, raw)
+        else:
+            img = os.path.join(workdir, f"img{i}.png")
+            imagegen.generate_image(f"{style} SCENE: {sc['image']}", img, refs)
+            video.animate(img, sc["motion"], raw)
         sv = os.path.join(workdir, f"sc{i}.mp4")
         compose.scene_clip(raw, sc.get("caption", ""), seconds, sv)
         # narration + trailing silence so the audio length == the clip length (stays in sync)
