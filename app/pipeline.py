@@ -96,7 +96,9 @@ def hf_image_to_video(image_path: str, prompt: str, out_path: str):
     """
     from gradio_client import Client, handle_file
     import shutil
-    c = Client(HF_VIDEO_SPACE)
+    # A FREE HF token (no card) raises ZeroGPU quota far above anonymous limits.
+    hf_token = os.getenv("HF_TOKEN") or None
+    c = Client(HF_VIDEO_SPACE, hf_token=hf_token)
     res = c.predict(
         image=handle_file(image_path),
         prompt=prompt,
