@@ -8,3 +8,4 @@ imageio-ffmpeg>=0.4
 pillow>=10
 numpy>=1.26
 fal-client>=0.4
+gradio_client>=1.3

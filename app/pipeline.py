@@ -19,11 +19,23 @@ OPENROUTER_KEY = os.getenv("OPENROUTER_API_KEY")
 FLUX_MODEL = os.getenv("FAL_FLUX_MODEL", "fal-ai/flux/schnell")
 KLING_MODEL = os.getenv("FAL_KLING_MODEL", "fal-ai/kling-video/v1.6/standard/image-to-video")
 VOICE = os.getenv("TTS_VOICE", "ru-RU-DmitryNeural")
+# Free image-to-video via a public Hugging Face Space (no key, no payment, no region).
+HF_VIDEO_SPACE = os.getenv("HF_VIDEO_SPACE", "Daankular/Sulphur")
+HF_ENABLED = os.getenv("HF_ENABLED", "1") != "0"
 W, H = 1080, 1920
 
 
 def mode() -> str:
-    return "fal" if FAL_KEY else "mock"
+    """fal (paid, best) > hf (free Spaces) > mock (no network gen)."""
+    if FAL_KEY:
+        return "fal"
+    if HF_ENABLED:
+        try:
+            import gradio_client  # noqa: F401
+            return "hf"
+        except Exception:
+            return "mock"
+    return "mock"
 
 
 # ---------------- OpenRouter (prompt refine) ----------------
@@ -75,6 +87,26 @@ def fal_image_to_video(image_url: str, prompt: str, duration: int = 5) -> str:
 def fal_upload(path: str) -> str:
     fc = _fal_client()
     return fc.upload_file(path)
+
+
+# ---------------- Free HF Space adapter (image-to-video) ----------------
+def hf_image_to_video(image_path: str, prompt: str, out_path: str):
+    """Animate a still image into a short vertical clip via a free public HF Space.
+    Proven anonymous (no token). Free ZeroGPU => may queue / be slow / rate-limit.
+    """
+    from gradio_client import Client, handle_file
+    import shutil
+    c = Client(HF_VIDEO_SPACE)
+    res = c.predict(
+        image=handle_file(image_path),
+        prompt=prompt,
+        model_choice="Sulphur 2 Base",
+        resolution="576x1024",
+        steps=6, guidance_scale=4.0, frames=49, seed=-1,
+        api_name="/generate_video",
+    )
+    src = res[0] if isinstance(res, (list, tuple)) else res
+    shutil.copy(src, out_path)
 
 
 def _download(url: str, path: str):
@@ -151,7 +183,8 @@ async def generate(description: str, image_path: str | None, narration: str | No
     await tts(voice_text, voice_mp3)
     seconds = max(4.0, min(audio_dur(voice_mp3) + 0.6, 20))
 
-    if mode() == "fal":
+    m = mode()
+    if m == "fal":
         if image_path:
             img_url = fal_upload(image_path)
         else:
@@ -160,6 +193,17 @@ async def generate(description: str, image_path: str | None, narration: str | No
         vid_url = fal_image_to_video(img_url, prompt, duration=5)
         info["video_url"] = vid_url
         _download(vid_url, clip)
+    elif m == "hf":
+        # image-to-video needs a still; use the user's image or a rendered one.
+        src_img = image_path
+        if not src_img:
+            src_img = os.path.join(workdir, "still.png")
+            _gradient_image(description, src_img)
+        try:
+            hf_image_to_video(src_img, prompt, clip)
+        except Exception as e:
+            info["hf_error"] = str(e)[:200]
+            mock_clip(image_path, description, clip, seconds)  # graceful fallback
     else:
         mock_clip(image_path, description, clip, seconds)
 
