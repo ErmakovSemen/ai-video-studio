@@ -1,0 +1,45 @@
+{
+  "title": "Троянский конь — маленькие отмазки",
+  "brand_image": "assets/prometey/prometheus_canon.png",
+  "characters": {
+    "mortal": "assets/prometey/mortal_canon.png",
+    "prometheus": "assets/prometey/prometheus_canon.png",
+    "dionysus": "assets/prometey/god_dionysus.png"
+  },
+  "style": "Flat minimalist vector mascot style, same character design, proportions, dark teal background and warm palette as the reference image(s). Vertical 9:16, full body, centered, no text, clean bold shapes.",
+  "scenes": [
+    {
+      "image": "the mortal youth standing proudly on the wall of his small sturdy fortress of discipline, his little flame creature burning strong and bright above the gate",
+      "refs": ["mortal"],
+      "motion": "banners wave gently on the fortress, the flame burns steady and strong",
+      "vo": "У тебя крепкая дисциплина. Огонь горит.",
+      "caption": "Твоя крепость дисциплины"
+    },
+    {
+      "image": "Dionysus the relaxed god rolls a big wooden trojan horse gift up to the fortress gate, smiling slyly, the horse labeled as a harmless little day off",
+      "refs": ["mortal", "dionysus"],
+      "motion": "Dionysus pushes the wooden horse toward the gate, smiling, the mortal hesitates at the gate",
+      "vo": "Дионис катит «подарок»: «Всего один выходной, ничего страшного».",
+      "caption": "«Всего один выходной…»"
+    },
+    {
+      "image": "at night little gremlin-like excuse creatures climb out of the wooden horse inside the fortress, wrecking the walls, the mortal's little flame creature shrinking and almost going out",
+      "refs": ["mortal"],
+      "motion": "small excuse creatures pour out of the horse and tear at the walls, the flame nearly goes out",
+      "vo": "Ночью из коня лезут отмазки: «ещё разок», «я устал» — и крепость падает.",
+      "caption": "Отмазки рушат всё изнутри"
+    },
+    {
+      "image": "Prometheus the bearded titan helps the mortal rebuild the fortress wall, pointing a warning finger; the youth nods seriously, his little flame creature glowing steady again",
+      "refs": ["mortal", "prometheus"],
+      "motion": "they lift a wall block back into place, Prometheus raises a warning finger, the flame steadies",
+      "vo": "Маленькая отмазка — это троянский конь. Не впускай первую.",
+      "caption": "Не впускай первую отмазку"
+    }
+  ],
+  "endcard": {
+    "title": "PROMETEY",
+    "sub": "Зажги свой огонь · ссылка ниже",
+    "vo": "Прометей. Зажги свой огонь."
+  }
+}

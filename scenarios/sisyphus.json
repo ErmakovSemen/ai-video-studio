@@ -1,0 +1,45 @@
+{
+  "title": "Сизиф и камень — постоянство",
+  "brand_image": "assets/prometey/prometheus_canon.png",
+  "characters": {
+    "mortal": "assets/prometey/mortal_canon.png",
+    "prometheus": "assets/prometey/prometheus_canon.png",
+    "dionysus": "assets/prometey/god_dionysus.png"
+  },
+  "style": "Flat minimalist vector mascot style, same character design, proportions, dark teal background and warm palette as the reference image(s). Vertical 9:16, full body, centered, no text, clean bold shapes.",
+  "scenes": [
+    {
+      "image": "the mortal youth determinedly pushing a big round boulder up a steep hill, sweating but focused, his little flame creature burning steady and bright beside him",
+      "refs": ["mortal"],
+      "motion": "the character pushes the boulder slowly uphill, the little flame flickers steadily, dust rises",
+      "vo": "Каждый день ты катишь свой камень в гору.",
+      "caption": "Каждый день — твой камень в гору"
+    },
+    {
+      "image": "Dionysus the relaxed god lounging with a golden wine cup, lazily gesturing for the mortal to stop and join him, tempting and carefree",
+      "refs": ["mortal", "dionysus"],
+      "motion": "Dionysus swirls the wine cup lazily, beckoning, the mortal hesitates",
+      "vo": "Дионис шепчет: «Брось, он всё равно скатится. Выпей со мной».",
+      "caption": "«Брось, всё равно скатится…»"
+    },
+    {
+      "image": "the mortal lets go of the boulder which rolls back down the hill, he looks defeated, his little flame creature shrunk small and dim, almost going out",
+      "refs": ["mortal"],
+      "motion": "the boulder rolls downhill, the character slumps, the flame shrinks and dims",
+      "vo": "Стоит отпустить один раз — и всё катится вниз. Огонёк гаснет.",
+      "caption": "Отпустил один раз — всё вниз"
+    },
+    {
+      "image": "Prometheus the bearded titan in a toga puts a firm hand on the mortal's shoulder, encouraging him to push again; the youth grips the boulder with renewed resolve, his flame creature glowing steady",
+      "refs": ["mortal", "prometheus"],
+      "motion": "calm steady motion, the mortal leans into the boulder again, the flame glows warm and even",
+      "vo": "Дисциплина — не докатить однажды. Это катить каждый день.",
+      "caption": "Дисциплина = катить КАЖДЫЙ день"
+    }
+  ],
+  "endcard": {
+    "title": "PROMETEY",
+    "sub": "Зажги свой огонь · ссылка ниже",
+    "vo": "Прометей. Зажги свой огонь."
+  }
+}

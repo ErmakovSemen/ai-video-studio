@@ -1,0 +1,44 @@
+{
+  "title": "Прометей и огонь — ориджин бренда",
+  "brand_image": "assets/prometey/prometheus_canon.png",
+  "characters": {
+    "mortal": "assets/prometey/mortal_canon.png",
+    "prometheus": "assets/prometey/prometheus_canon.png"
+  },
+  "style": "Flat minimalist vector mascot style, same character design, proportions, dark teal background and warm palette as the reference image(s). Vertical 9:16, full body, centered, no text, clean bold shapes.",
+  "scenes": [
+    {
+      "image": "majestic gods on a glowing Olympus mountain guarding a great sacred flame for themselves, far above; below in shadow a weak mortal youth sits slumped and discouraged with no flame",
+      "refs": ["mortal"],
+      "motion": "the great flame glows on high, the mortal sits slumped in shadow below",
+      "vo": "Боги держали огонь дисциплины для себя. Люди сдавались.",
+      "caption": "Огонь держали для богов"
+    },
+    {
+      "image": "Prometheus the bearded titan in a toga secretly steals a small bright spark from the great sacred flame, cupping it in his hands, bold and caring expression",
+      "refs": ["prometheus"],
+      "motion": "Prometheus cups a stolen spark in his hands, it glows brighter, he glances back boldly",
+      "vo": "Но Прометей украл искру.",
+      "caption": "Прометей украл искру"
+    },
+    {
+      "image": "Prometheus gently places a tiny living flame creature with cute eyes into the open palm of the mortal youth, who looks up in wonder, the little flame blinking to life",
+      "refs": ["mortal", "prometheus"],
+      "motion": "the little flame creature blinks to life in the mortal's palm, warm glow spreads, the youth smiles",
+      "vo": "И вложил живой огонёк в ладонь смертного.",
+      "caption": "Огонь — теперь твой"
+    },
+    {
+      "image": "the mortal youth stands tall and determined holding his little flame creature now burning big and bright, glowing with confidence, ready to act",
+      "refs": ["mortal"],
+      "motion": "the mortal stands tall, the flame flares up big and bright with rising sparks",
+      "vo": "Огонь дисциплины теперь твой. Не дай ему погаснуть.",
+      "caption": "Не дай ему погаснуть"
+    }
+  ],
+  "endcard": {
+    "title": "PROMETEY",
+    "sub": "Зажги свой огонь · ссылка ниже",
+    "vo": "Прометей. Зажги свой огонь."
+  }
+}

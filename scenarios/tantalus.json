@@ -1,0 +1,44 @@
+{
+  "title": "Танталовы муки — про «завтра»",
+  "brand_image": "assets/prometey/prometheus_canon.png",
+  "characters": {
+    "mortal": "assets/prometey/mortal_canon.png",
+    "ares": "assets/prometey/god_ares.png"
+  },
+  "style": "Flat minimalist vector mascot style, same character design, proportions, dark teal background and warm palette as the reference image(s). Vertical 9:16, full body, centered, no text, clean bold shapes.",
+  "scenes": [
+    {
+      "image": "the mortal youth standing in water reaching up toward a glowing golden fruit hanging on a branch just above him, his little flame creature burning beside him",
+      "refs": ["mortal"],
+      "motion": "the mortal stretches upward, the fruit sways slightly, the flame flickers",
+      "vo": "Твоя цель — на расстоянии вытянутой руки.",
+      "caption": "Цель — на расстоянии руки"
+    },
+    {
+      "image": "the mortal reaching for the fruit but it pulls away out of reach, he shrugs saying maybe tomorrow, looking tired, his little flame creature getting smaller and dimmer",
+      "refs": ["mortal"],
+      "motion": "the fruit drifts away each time he reaches, the mortal shrugs, the flame dims",
+      "vo": "Но ты говоришь «завтра». И плод ускользает. Снова и снова.",
+      "caption": "«Завтра» — и плод ускользает"
+    },
+    {
+      "image": "Ares the stern muscular war god in armor points commandingly at the fruit, fierce expression, ordering the mortal to take it now",
+      "refs": ["mortal", "ares"],
+      "motion": "Ares jabs his finger toward the fruit decisively, the mortal straightens up",
+      "vo": "Арес рычит: «Завтра — это никогда. Возьми. Сегодня».",
+      "caption": "«Завтра — это никогда»"
+    },
+    {
+      "image": "the mortal firmly grabs the golden fruit with both hands now, triumphant determined expression, his little flame creature flaring up big and bright",
+      "refs": ["mortal"],
+      "motion": "the mortal seizes the fruit, the flame flares up bright with sparks",
+      "vo": "Схватил сейчас — и плод в руке. Бери сегодня.",
+      "caption": "Бери СЕГОДНЯ"
+    }
+  ],
+  "endcard": {
+    "title": "PROMETEY",
+    "sub": "Зажги свой огонь · ссылка ниже",
+    "vo": "Прометей. Зажги свой огонь."
+  }
+}

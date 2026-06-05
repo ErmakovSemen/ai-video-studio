@@ -1,0 +1,44 @@
+{
+  "title": "Одиссей и сирены — системы против отвлечений",
+  "brand_image": "assets/prometey/prometheus_canon.png",
+  "characters": {
+    "mortal": "assets/prometey/mortal_canon.png",
+    "athena": "assets/prometey/god_athena.png"
+  },
+  "style": "Flat minimalist vector mascot style, same character design, proportions, dark teal background and warm palette as the reference image(s). Vertical 9:16, full body, centered, no text, clean bold shapes.",
+  "scenes": [
+    {
+      "image": "the mortal youth steering a small wooden boat across the sea toward a glowing goal on the horizon, his little flame creature burning bright on the mast",
+      "refs": ["mortal"],
+      "motion": "the boat rocks gently on the waves, the little flame flickers, the goal glows ahead",
+      "vo": "Ты плывёшь к своей цели.",
+      "caption": "Ты плывёшь к цели"
+    },
+    {
+      "image": "cartoon sirens shaped like glowing smartphones and video feeds with tempting faces, rising from the waves singing and luring the mortal off course, he turns his head toward them",
+      "refs": ["mortal"],
+      "motion": "the siren-phones sway and glow seductively, the mortal turns toward them tempted",
+      "vo": "Сирены поют: «Один ролик… одна лента… всего минутку».",
+      "caption": "«Один ролик… одна лента…»"
+    },
+    {
+      "image": "Athena the wise goddess in a helmet points firmly at the boat's mast, instructing the mortal to tie himself to it; ropes ready, calm strategic expression",
+      "refs": ["mortal", "athena"],
+      "motion": "Athena points decisively, the mortal nods, ropes lift toward the mast",
+      "vo": "Афина: «Силой воли не выстоишь. Привяжи себя к мачте».",
+      "caption": "Поставь систему, а не волю"
+    },
+    {
+      "image": "the mortal tied to the mast with rope, calmly sailing straight past the defeated sirens toward the glowing goal, his little flame creature now burning big and bright",
+      "refs": ["mortal"],
+      "motion": "the boat sails steadily past the sirens, the flame grows brighter, the goal nears",
+      "vo": "Связал себя — заблокировал отвлечения — и проплыл мимо. Системы сильнее силы воли.",
+      "caption": "Системы сильнее силы воли"
+    }
+  ],
+  "endcard": {
+    "title": "PROMETEY",
+    "sub": "Зажги свой огонь · ссылка ниже",
+    "vo": "Прометей. Зажги свой огонь."
+  }
+}
