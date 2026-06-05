@@ -11,3 +11,5 @@ token.json
 *.mp4
 *.mp3
 .DS_Store
+yt_token.json
+client_secret_*.json
