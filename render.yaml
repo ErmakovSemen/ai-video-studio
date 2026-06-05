@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: ai-video-studio
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: AGT_TG_BOT_TOKEN
+        sync: false
+      - key: STUDIO_PASS
+        sync: false        # Basic-Auth password (set in dashboard) — protects the public UI
+      - key: STUDIO_USER
+        value: admin
+      - key: TG_CHANNEL
+        value: "@PrometeyApp"
+      - key: OR_VIDEO_MODEL
+        value: kwaivgi/kling-v3.0-std
+      - key: OR_IMAGE_MODEL
+        value: google/gemini-2.5-flash-image

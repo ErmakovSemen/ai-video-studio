@@ -18,6 +18,31 @@ TG_CHANNEL = os.getenv("TG_CHANNEL", "@PrometeyApp")
 OR_KEY = os.getenv("OPENROUTER_API_KEY", "")
 
 app = FastAPI(title="AI Video Studio")
+
+# --- access protection (the UI spends OpenRouter credits + posts to TG) ---
+import base64, secrets
+from fastapi.responses import Response
+STUDIO_USER = os.getenv("STUDIO_USER", "admin")
+STUDIO_PASS = os.getenv("STUDIO_PASS", "")  # if unset -> open (local dev)
+
+
+@app.middleware("http")
+async def _auth(request, call_next):
+    if STUDIO_PASS:
+        hdr = request.headers.get("authorization", "")
+        ok = False
+        if hdr.startswith("Basic "):
+            try:
+                u, p = base64.b64decode(hdr[6:]).decode().split(":", 1)
+                ok = secrets.compare_digest(u, STUDIO_USER) and secrets.compare_digest(p, STUDIO_PASS)
+            except Exception:
+                ok = False
+        if not ok:
+            return Response("Auth required", status_code=401,
+                            headers={"WWW-Authenticate": 'Basic realm="studio"'})
+    return await call_next(request)
+
+
 app.mount("/outputs", StaticFiles(directory=str(OUT)), name="outputs")
 JOBS: dict[str, dict] = {}
 

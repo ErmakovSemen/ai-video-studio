@@ -10,7 +10,24 @@ import os, re, subprocess, asyncio
 import imageio_ffmpeg
 
 FF = imageio_ffmpeg.get_ffmpeg_exe()
-FONT = os.getenv("STUDIO_FONT", "/Library/Fonts/Arial Unicode.ttf")
+
+
+def _resolve_font() -> str:
+    env = os.getenv("STUDIO_FONT")
+    if env and os.path.exists(env):
+        return env
+    bundled = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..",
+                           "assets", "fonts", "DejaVuSans.ttf")
+    if os.path.exists(bundled):
+        return os.path.abspath(bundled)
+    for p in ("/Library/Fonts/Arial Unicode.ttf",
+              "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"):
+        if os.path.exists(p):
+            return p
+    return "DejaVuSans.ttf"
+
+
+FONT = _resolve_font()
 VOICE = os.getenv("TTS_VOICE", "ru-RU-DmitryNeural")
 W, H = 720, 1280
 
