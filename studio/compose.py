@@ -90,7 +90,16 @@ def scene_clip(raw_clip: str, caption: str, seconds: float, out: str):
 
 def endcard(brand_img: str, title: str, sub: str, seconds: float, out: str):
     from PIL import Image, ImageDraw, ImageFont
-    img = Image.open(brand_img).convert("RGB").resize((W, H))
+    src = Image.open(brand_img).convert("RGB")
+    # Cover-crop the artwork to fill the 9:16 frame (same as scene clips): keeps the
+    # character proportional, fills edge-to-edge with the real background (no stretch,
+    # no seam). Bias the crop slightly upward so feet sit above the bottom banner.
+    scale = max(W / src.width, H / src.height)
+    nw, nh = round(src.width * scale), round(src.height * scale)
+    big = src.resize((nw, nh), Image.LANCZOS)
+    left = (nw - W) // 2
+    top = min(nh - H, int((nh - H) * 0.30))   # upward bias
+    img = big.crop((left, top, left + W, top + H))
     d = ImageDraw.Draw(img)
     d.rectangle([0, H-220, W, H], fill=(10, 12, 16))
     d.text((W//2, H-150), title, font=ImageFont.truetype(FONT, 64),
