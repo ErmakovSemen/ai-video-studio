@@ -91,7 +91,7 @@ def karaoke_ass(words: list, out_ass: str, group: int = 3,
 ScriptType: v4.00+
 PlayResX: {W}
 PlayResY: {H}
-WrapStyle: 2
+WrapStyle: 0
 ScaledBorderAndShadow: yes
 
 [V4+ Styles]
