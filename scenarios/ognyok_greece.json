@@ -1,0 +1,49 @@
+{
+  "title": "Огонь живёт не от рывка — Греция",
+  "world": "Древняя Греция",
+  "hero": "ognyok",
+  "brand_image": "assets/prometey/ognyok_canon.png",
+  "style": "Flat minimalist vector cartoon, warm palette, dark teal background, vertical 9:16, the flame mascot identical to reference (round design).",
+  "scenes": [
+    {
+      "still": "outputs/ognyok_pilot/s1_hook.png",
+      "vo": "Твоя дисциплина сейчас выглядит так?",
+      "caption": "Твоя дисциплина — так?"
+    },
+    {
+      "still": "outputs/ognyok_pilot/s2_blaze.png",
+      "vo": "А неделю назад ты пылал. Понедельник — новая жизнь!",
+      "caption": "Неделю назад ты ПЫЛАЛ"
+    },
+    {
+      "still": "outputs/ognyok_pilot/s3_dionysus.png",
+      "vo": "«Красава, ты заслужил отдых. Завтра продолжишь», — тянет Дионис.",
+      "caption": "«Завтра продолжишь…» — Дионис"
+    },
+    {
+      "still": "outputs/ognyok_pilot/s4_dim.png",
+      "vo": "И ты откладывал. Завтра. Завтра. Завтра.",
+      "caption": "Завтра. Завтра. Завтра."
+    },
+    {
+      "still": "assets/prometey/ognyok_ember.png",
+      "vo": "Пока огонь почти не потух.",
+      "caption": "Пока он почти не потух"
+    },
+    {
+      "still": "outputs/ognyok_pilot/s6_prometheus.png",
+      "vo": "«Огонь живёт не от вспышки, — говорит Прометей. — Подкидывай по полену. Каждый день.»",
+      "caption": "«Подкидывай по полену. Каждый день»"
+    },
+    {
+      "still": "outputs/ognyok_pilot/s7_steady.png",
+      "vo": "Одно полено в день. И он горит ровно — годами.",
+      "caption": "Одно полено в день — и он горит"
+    }
+  ],
+  "endcard": {
+    "title": "PROMETEY",
+    "sub": "Не дай огню погаснуть",
+    "vo": "Прометей не даст ему погаснуть."
+  }
+}
