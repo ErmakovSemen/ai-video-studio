@@ -102,11 +102,12 @@ def save_scenario(name: str, body: str = Form(...)):
     return {"saved": safe}
 
 
-def _run(jid: str, scenario: dict, draft: bool):
+def _run(jid: str, scenario: dict, draft: bool, polish: bool = True, music: str = None):
     out = str(OUT / f"{jid}.mp4")
     wd = str(WORK / jid)
     try:
-        log = story.build(scenario, out, wd, base_dir=str(ROOT), draft=draft)
+        log = story.build(scenario, out, wd, base_dir=str(ROOT), draft=draft,
+                          polish=polish, music=music)
         JOBS[jid].update(status="done", info=log, video=f"/outputs/{jid}.mp4")
     except Exception as e:
         import traceback; traceback.print_exc()
@@ -114,17 +115,28 @@ def _run(jid: str, scenario: dict, draft: bool):
 
 
 @app.post("/api/render")
-def render(body: str = Form(...), draft: bool = Form(True)):
+def render(body: str = Form(...), draft: bool = Form(True),
+           polish: bool = Form(True), music: str = Form("")):
     try:
         scenario = json.loads(body)
     except Exception as e:
         raise HTTPException(400, f"invalid scenario json: {e}")
     if not scenario.get("scenes"):
         raise HTTPException(400, "scenario has no scenes")
+    music_path = str(ASSETS / "music" / music) if music else None
     jid = uuid.uuid4().hex[:12]
     JOBS[jid] = {"status": "running"}
-    threading.Thread(target=_run, args=(jid, scenario, draft), daemon=True).start()
-    return {"job_id": jid, "draft": draft, "scenes": len(scenario["scenes"])}
+    threading.Thread(target=_run, args=(jid, scenario, draft, polish, music_path),
+                     daemon=True).start()
+    return {"job_id": jid, "draft": draft, "polish": polish, "scenes": len(scenario["scenes"])}
+
+
+@app.get("/api/music")
+def music_list():
+    md = ASSETS / "music"
+    if not md.exists():
+        return []
+    return [p.name for p in sorted(md.glob("*.mp3")) + sorted(md.glob("*.m4a"))]
 
 
 @app.get("/api/jobs/{jid}")

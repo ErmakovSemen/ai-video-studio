@@ -49,6 +49,12 @@
       <button id="final" class="sec">★ Финал (Kling · ~$2–3)</button>
       <span class="pill" id="cost"></span>
     </div>
+    <div class="row">
+      <label style="margin:0;display:flex;align-items:center;gap:6px;color:var(--txt)">
+        <input type="checkbox" id="polish" checked style="width:auto"/> 🎬 Монтаж (караоке-субтитры)
+      </label>
+      <select id="music" style="flex:1;min-width:140px"><option value="">— без музыки —</option></select>
+    </div>
     <div class="status" id="rstat"></div>
     <div id="result" class="hide">
       <video id="vid" controls playsinline></video>
@@ -100,6 +106,8 @@ async function init(){
   $('scList').innerHTML=sc.map(s=>`<option value="${s.name}">${s.title}</option>`).join('');
   const as=await (await fetch('/api/assets')).json();
   $('iref').innerHTML='<option value="">— без референса —</option>'+as.map(a=>`<option>${a}</option>`).join('');
+  const mu=await (await fetch('/api/music')).json();
+  $('music').innerHTML='<option value="">— без музыки —</option>'+mu.map(m=>`<option>${m}</option>`).join('');
 }
 init();
 $('load').onclick=async()=>{const n=$('scList').value;if(!n)return;
@@ -114,6 +122,7 @@ async function render(draft){
   $('draft').disabled=$('final').disabled=true;$('result').classList.add('hide');
   $('rstat').textContent=draft?'Черновик рендерится (бесплатно)…':'Финал рендерится (Kling, пара минут)…';
   const fd=new FormData();fd.append('body',$('json').value);fd.append('draft',draft);
+  fd.append('polish',$('polish').checked);fd.append('music',$('music').value);
   const r=await fetch('/api/render',{method:'POST',body:fd});const d=await r.json();
   if(!r.ok){$('rstat').textContent='Ошибка: '+(d.detail||'');$('draft').disabled=$('final').disabled=false;return;}
   job=d.job_id;poll();
