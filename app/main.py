@@ -7,6 +7,7 @@ from fastapi import FastAPI, Form, HTTPException
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from studio import story, imagegen, video, compose
+from publish import registry as publishers, VideoMeta
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "outputs"; OUT.mkdir(exist_ok=True)
@@ -150,6 +151,36 @@ def assets():
     if not ASSETS.exists():
         return []
     return [str(p.relative_to(ASSETS)) for p in ASSETS.rglob("*.png")]
+
+
+@app.get("/api/publishers")
+def list_publishers():
+    return publishers.status()
+
+
+@app.post("/api/publish")
+def publish_video(job_id: str = Form(...), platform: str = Form(...),
+                  title: str = Form(...), description: str = Form(""),
+                  tags: str = Form(""), privacy: str = Form("public")):
+    j = JOBS.get(job_id)
+    if not j or j.get("status") != "done":
+        raise HTTPException(400, "job not ready")
+    path = str(OUT / f"{job_id}.mp4")
+    if not os.path.exists(path):
+        raise HTTPException(404, "video file missing")
+    try:
+        pub = publishers.get(platform)
+    except KeyError:
+        raise HTTPException(400, f"unknown platform: {platform}")
+    if not pub.configured():
+        raise HTTPException(400, f"{platform} not configured (missing: {', '.join(pub.needs)})")
+    meta = VideoMeta(title=title, description=description,
+                     tags=[t.strip() for t in tags.split(",") if t.strip()],
+                     privacy=privacy)
+    try:
+        return pub.publish(path, meta)
+    except Exception as e:
+        raise HTTPException(500, f"{platform}: {str(e)[:300]}")
 
 
 @app.post("/api/post-tg")

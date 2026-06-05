@@ -12,6 +12,12 @@ services:
         sync: false
       - key: AGT_TG_BOT_TOKEN
         sync: false
+      - key: YT_CLIENT_ID
+        sync: false        # YouTube OAuth — set after running publish.youtube_auth
+      - key: YT_CLIENT_SECRET
+        sync: false
+      - key: YT_REFRESH_TOKEN
+        sync: false
       - key: STUDIO_PASS
         sync: false        # Basic-Auth password (set in dashboard) — protects the public UI
       - key: STUDIO_USER

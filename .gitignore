@@ -5,6 +5,9 @@ outputs/
 work/
 .env
 .secrets.env
+client_secret.json
+token.json
+*.token
 *.mp4
 *.mp3
 .DS_Store

@@ -70,6 +70,25 @@
       <span class="status" id="istat"></span></div>
     <img id="iout" class="prev hide"/>
   </div>
+
+  <div class="card">
+    <h2>4 · Публикация (последнее видео)</h2>
+    <div id="pubStatus" class="status">…</div>
+    <label>Заголовок</label>
+    <input id="pubTitle" placeholder="Прометей — зажги свой огонь 🔥 #Shorts"/>
+    <label>Описание</label>
+    <textarea id="pubDesc" style="min-height:80px" placeholder="Короткое описание…"></textarea>
+    <label>Теги (через запятую)</label>
+    <input id="pubTags" placeholder="дисциплина, мотивация, саморазвитие, shorts"/>
+    <label>Приватность</label>
+    <select id="pubPriv">
+      <option value="public">public</option>
+      <option value="unlisted">unlisted</option>
+      <option value="private">private</option>
+    </select>
+    <div class="row" id="pubBtns"></div>
+    <div class="status" id="pubResult"></div>
+  </div>
 </div>
 <script>
 const $=id=>document.getElementById(id); let job=null;
@@ -117,4 +136,24 @@ $('genimg').onclick=async()=>{const p=$('iprompt').value.trim();if(!p)return;
   $('genimg').disabled=false;
   if(d.image){$('iout').src=d.image;$('iout').classList.remove('hide');$('istat').textContent='Готово ✅';}
   else $('istat').textContent='Ошибка: '+(d.detail||'');};
+async function loadPublishers(){
+  const ps=await (await fetch('/api/publishers')).json();
+  $('pubStatus').innerHTML=ps.map(p=>`${p.label}: `+(p.configured?'✅ готово':'⚙️ не настроено ('+p.needs.join(', ')+')')).join(' · ');
+  const wrap=$('pubBtns');wrap.innerHTML='';
+  ps.forEach(p=>{const b=document.createElement('button');
+    b.textContent='▲ В '+p.label;b.className=p.configured?'':'sec';b.disabled=!p.configured;
+    b.onclick=()=>publish(p.name);wrap.appendChild(b);});
+}
+async function publish(platform){
+  if(!job){alert('Сначала отрендери видео (раздел 2)');return;}
+  if(!$('pubTitle').value.trim()){alert('Впиши заголовок');return;}
+  $('pubResult').textContent='Публикую в '+platform+'…';
+  const fd=new FormData();fd.append('job_id',job);fd.append('platform',platform);
+  fd.append('title',$('pubTitle').value);fd.append('description',$('pubDesc').value);
+  fd.append('tags',$('pubTags').value);fd.append('privacy',$('pubPriv').value);
+  const r=await fetch('/api/publish',{method:'POST',body:fd});const d=await r.json().catch(()=>({}));
+  if(r.ok&&d.url)$('pubResult').innerHTML='Опубликовано ✅ <a class="dl" href="'+d.url+'" target="_blank">'+d.url+'</a>'+(d.privacy&&d.privacy!=='public'?' · приватность: '+d.privacy:'');
+  else $('pubResult').textContent='Ошибка: '+(d.detail||'неизвестно');
+}
+loadPublishers();
 </script></body></html>
