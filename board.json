@@ -1,0 +1,47 @@
+{
+  "title": "Prometey — доска проекта",
+  "updated": "2026-06-06",
+  "columns": [
+    {
+      "id": "backlog",
+      "name": "Бэклог / идеи",
+      "cards": [
+        {"id": "tiktok", "title": "TikTok автопостинг", "desc": "App создан (id 7648130998714107924), ключи есть. Блок: нужен публичный сайт ToS/Privacy + верификация домена + аудит TikTok. Вернуться после публичного лендинга.", "tags": ["posting", "blocked"]},
+        {"id": "cabinet", "title": "Личный кабинет", "desc": "Веб-кабинет продукта: проекты, доступы соцсетей, аналитика. Позже.", "tags": ["product"]},
+        {"id": "cloud-sched", "title": "Durable облачный планировщик", "desc": "Чтобы автопостинг шёл без открытого app. /schedule пока падает.", "tags": ["infra"]},
+        {"id": "render-perf", "title": "Рендер не на free-Render", "desc": "Free OOM на видеоэнкоде. Рендер локально или платный инстанс/воркер.", "tags": ["infra"]}
+      ]
+    },
+    {
+      "id": "todo",
+      "name": "To Do",
+      "cards": [
+        {"id": "kanban", "title": "Канбан-доска в приложении", "desc": "Эта доска: /board, общий трекинг задач и стратегии.", "tags": ["product"]},
+        {"id": "instagram", "title": "Instagram Reels автопостинг", "desc": "Код публикатора готов (Graph API + catbox). Нужны: IG Business + FB-приложение + long-lived token + ig_user_id. Завести и подключить в Настройках.", "tags": ["posting"]},
+        {"id": "landing", "title": "Публичный лендинг продукта (ToS/Privacy)", "desc": "Публичная страница (не за паролем) — нужна для ревью соцсетей (TikTok/IG) и как лицо продукта.", "tags": ["product"]},
+        {"id": "content-batch", "title": "Контент-батч: Огонёк в разных мирах", "desc": "Серия эпизодов (Север/Япония/космос…) одним консистентным героем → очередь автопостинга.", "tags": ["content"]},
+        {"id": "daily-autopost", "title": "Ежедневный автопостинг из очереди", "desc": "Механизм готов (publish/autopost.py + publishAt). Включить расписание, когда есть батч.", "tags": ["posting"]}
+      ]
+    },
+    {
+      "id": "doing",
+      "name": "In Progress",
+      "cards": [
+        {"id": "quality", "title": "Качество контента", "desc": "Огонёк-герой консистентен, хук сильнее. Семён хочет ещё выше. Итерируем монтаж/сценарии.", "tags": ["content"]}
+      ]
+    },
+    {
+      "id": "done",
+      "name": "Done",
+      "cards": [
+        {"id": "factory", "title": "Завод контента + UI (deployed)", "desc": "ai-video-studio: сценарий→генерация→монтаж→постинг. LIVE на Render.", "tags": ["product"]},
+        {"id": "slate", "title": "Слейт сценариев + Огонёк-герой", "desc": "6 мифов + новый формат: Огонёк = главный герой, антология по мирам. Дизайн залочен.", "tags": ["content"]},
+        {"id": "montage", "title": "Монтажный слой", "desc": "Караоке-субтитры (реальный тайминг), переходы, музыка, чистый эндкард.", "tags": ["content"]},
+        {"id": "youtube", "title": "YouTube автопостинг (рабочий)", "desc": "OAuth подключён, публичный пост сделан автономно: youtu.be/LOdZp3jkZsI. Канал PrometeyApp.", "tags": ["posting"]},
+        {"id": "telegram", "title": "Telegram публикатор", "desc": "Работает по токену бота, @PrometeyApp.", "tags": ["posting"]},
+        {"id": "multipost", "title": "Мультиплатформенный publish-слой + Настройки", "desc": "Реестр публикаторов, credential-store, страница «Подключение соцсетей», publishAt-расписание.", "tags": ["product"]},
+        {"id": "branding", "title": "Брендинг YouTube-канала", "desc": "Канал PrometeyApp: аватар (Огонёк), баннер, описание.", "tags": ["product"]}
+      ]
+    }
+  ]
+}

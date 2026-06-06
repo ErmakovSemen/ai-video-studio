@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ru"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Prometey — доска</title>
+<style>
+  :root{--bg:#0e0e12;--card:#17171f;--mut:#9a9aa5;--acc:#ff6a2b;--txt:#f5f5f7;--ln:#2a2a33}
+  *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);
+    font-family:-apple-system,Segoe UI,Roboto,sans-serif}
+  header{padding:16px 20px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--ln)}
+  header h1{font-size:18px;margin:0}.muted{color:var(--mut);font-size:13px}
+  a.home{color:var(--acc);text-decoration:none;font-size:13px;margin-left:auto}
+  .board{display:flex;gap:14px;padding:18px;overflow-x:auto;align-items:flex-start}
+  .col{background:#121219;border:1px solid var(--ln);border-radius:14px;min-width:300px;max-width:320px;flex:0 0 auto;padding:10px}
+  .col h2{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--mut);margin:6px 6px 12px;display:flex;justify-content:space-between}
+  .card{background:var(--card);border:1px solid var(--ln);border-radius:10px;padding:10px 11px;margin-bottom:9px;cursor:grab}
+  .card:active{cursor:grabbing}.card.drag{opacity:.4}
+  .card h3{font-size:14px;margin:0 0 4px;font-weight:650}
+  .card p{font-size:12px;color:var(--mut);margin:0;line-height:1.4}
+  .tags{margin-top:7px;display:flex;gap:5px;flex-wrap:wrap}
+  .tag{font-size:10.5px;padding:2px 7px;border-radius:20px;background:#22222c;color:#bdbdc7}
+  .tag.posting{background:#1e2a3a;color:#7db4ff}.tag.content{background:#2a1e2e;color:#ff9bd0}
+  .tag.product{background:#1e2a23;color:#7fe0a8}.tag.infra{background:#2a261e;color:#e0c07f}
+  .tag.blocked{background:#3a1e1e;color:#ff8d8d}
+  .col.over{border-color:var(--acc)}
+  .add{font-size:12px;color:var(--mut);background:none;border:1px dashed var(--ln);border-radius:8px;
+    width:100%;padding:7px;cursor:pointer}
+  .save{position:fixed;right:18px;bottom:18px;background:var(--acc);color:#111;border:0;border-radius:24px;
+    padding:11px 18px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px #0008}
+  .save.dirty{animation:pulse 1.4s infinite}@keyframes pulse{50%{opacity:.6}}
+</style></head><body>
+<header>
+  <h1>🔥 Prometey — доска</h1><span class="muted" id="upd"></span>
+  <a class="home" href="/">← студия</a>
+</header>
+<div class="board" id="board"></div>
+<button class="save" id="save">💾 Сохранить</button>
+<script>
+const $=s=>document.querySelector(s);let data={columns:[]};let dirty=false;
+function tagClass(t){return ['posting','content','product','infra','blocked'].includes(t)?t:'';}
+function render(){
+  const b=$('#board');b.innerHTML='';
+  data.columns.forEach(col=>{
+    const c=document.createElement('div');c.className='col';c.dataset.col=col.id;
+    c.innerHTML=`<h2>${col.name}<span>${col.cards.length}</span></h2>`;
+    col.cards.forEach(card=>{
+      const d=document.createElement('div');d.className='card';d.draggable=true;d.dataset.id=card.id;
+      d.innerHTML=`<h3>${card.title}</h3>${card.desc?`<p>${card.desc}</p>`:''}`+
+        `<div class="tags">${(card.tags||[]).map(t=>`<span class="tag ${tagClass(t)}">${t}</span>`).join('')}</div>`;
+      d.addEventListener('dragstart',e=>{e.dataTransfer.setData('id',card.id);e.dataTransfer.setData('from',col.id);d.classList.add('drag');});
+      d.addEventListener('dragend',()=>d.classList.remove('drag'));
+      c.appendChild(d);
+    });
+    const add=document.createElement('button');add.className='add';add.textContent='+ карточка';
+    add.onclick=()=>{const t=prompt('Заголовок задачи:');if(!t)return;
+      col.cards.push({id:'c'+Date.now(),title:t,desc:'',tags:[]});markDirty();render();};
+    c.appendChild(add);
+    c.addEventListener('dragover',e=>{e.preventDefault();c.classList.add('over');});
+    c.addEventListener('dragleave',()=>c.classList.remove('over'));
+    c.addEventListener('drop',e=>{e.preventDefault();c.classList.remove('over');
+      const id=e.dataTransfer.getData('id'),from=e.dataTransfer.getData('from');
+      if(from===col.id)return;move(id,from,col.id);});
+    b.appendChild(c);
+  });
+}
+function move(id,from,to){
+  const fc=data.columns.find(c=>c.id===from),tc=data.columns.find(c=>c.id===to);
+  const i=fc.cards.findIndex(c=>c.id===id);if(i<0)return;
+  tc.cards.unshift(fc.cards.splice(i,1)[0]);markDirty();render();
+}
+function markDirty(){dirty=true;$('#save').classList.add('dirty');}
+$('#save').onclick=async()=>{
+  const fd=new FormData();fd.append('body',JSON.stringify(data));
+  const r=await fetch('/api/board',{method:'POST',body:fd});
+  if(r.ok){dirty=false;$('#save').classList.remove('dirty');$('#save').textContent='Сохранено ✅';
+    setTimeout(()=>$('#save').textContent='💾 Сохранить',1500);}
+};
+(async()=>{data=await (await fetch('/api/board')).json();
+  $('#upd').textContent='обновлено '+(data.updated||'');render();})();
+</script></body></html>

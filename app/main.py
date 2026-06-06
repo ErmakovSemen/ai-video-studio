@@ -67,6 +67,31 @@ def index():
     return (Path(__file__).parent / "static" / "index.html").read_text(encoding="utf-8")
 
 
+@app.get("/board", response_class=HTMLResponse)
+def board_page():
+    return (Path(__file__).parent / "static" / "board.html").read_text(encoding="utf-8")
+
+
+@app.get("/api/board")
+def get_board():
+    p = ROOT / "board.json"
+    if not p.exists():
+        return {"title": "Доска", "columns": []}
+    return json.loads(p.read_text(encoding="utf-8"))
+
+
+@app.post("/api/board")
+def save_board(body: str = Form(...)):
+    try:
+        data = json.loads(body)
+    except Exception as e:
+        raise HTTPException(400, f"invalid json: {e}")
+    import datetime
+    data["updated"] = datetime.date.today().isoformat()
+    (ROOT / "board.json").write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    return {"saved": True, "updated": data["updated"]}
+
+
 @app.get("/api/health")
 def health():
     return {"video_model": video.VIDEO_MODEL, "image_model": imagegen.IMAGE_MODEL,
