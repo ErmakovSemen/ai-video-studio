@@ -14,6 +14,7 @@ request an audit. See SETUP-YOUTUBE.md.
 """
 import os
 from .base import Publisher, VideoMeta
+from . import config
 
 TOKEN_URI = "https://oauth2.googleapis.com/token"
 SCOPES = ["https://www.googleapis.com/auth/youtube.upload"]
@@ -22,12 +23,19 @@ SCOPES = ["https://www.googleapis.com/auth/youtube.upload"]
 class YouTubePublisher(Publisher):
     name = "youtube"
     label = "YouTube Shorts"
-    needs = ("YT_CLIENT_ID", "YT_CLIENT_SECRET", "YT_REFRESH_TOKEN")
+    needs = ("client_id", "client_secret", "refresh_token")
+    setup_hint = ("Google Cloud → YouTube Data API → OAuth Desktop client, "
+                  "then `python -m publish.youtube_auth` for the refresh token. See SETUP-YOUTUBE.md")
+    fields = [
+        {"key": "client_id", "label": "Client ID", "secret": False},
+        {"key": "client_secret", "label": "Client secret", "secret": True},
+        {"key": "refresh_token", "label": "Refresh token", "secret": True},
+    ]
 
     def __init__(self):
-        self.client_id = os.getenv("YT_CLIENT_ID", "")
-        self.client_secret = os.getenv("YT_CLIENT_SECRET", "")
-        self.refresh_token = os.getenv("YT_REFRESH_TOKEN", "")
+        self.client_id = config.get("youtube", "client_id", env="YT_CLIENT_ID", default="")
+        self.client_secret = config.get("youtube", "client_secret", env="YT_CLIENT_SECRET", default="")
+        self.refresh_token = config.get("youtube", "refresh_token", env="YT_REFRESH_TOKEN", default="")
 
     def configured(self) -> bool:
         return bool(self.client_id and self.client_secret and self.refresh_token)

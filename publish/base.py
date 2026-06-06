@@ -23,6 +23,10 @@ class Publisher:
     label = "Base"
     # what the operator must set up before this platform works
     needs = ()
+    # settings-UI form spec: list of {key, label, secret, hint}
+    fields: list = []
+    # short note shown in the Settings UI (e.g. how to get the credentials)
+    setup_hint = ""
 
     def configured(self) -> bool:
         """True when all required credentials are present."""

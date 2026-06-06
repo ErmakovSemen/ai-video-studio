@@ -95,6 +95,12 @@
     <div class="row" id="pubBtns"></div>
     <div class="status" id="pubResult"></div>
   </div>
+
+  <div class="card">
+    <h2>5 · Подключение соцсетей</h2>
+    <div class="sub" style="margin-bottom:10px">Введи доступы каждой платформы — они сохраняются на сервере. Постинг идёт во все подключённые.</div>
+    <div id="settings"></div>
+  </div>
 </div>
 <script>
 const $=id=>document.getElementById(id); let job=null;
@@ -165,4 +171,37 @@ async function publish(platform){
   else $('pubResult').textContent='Ошибка: '+(d.detail||'неизвестно');
 }
 loadPublishers();
+async function loadSettings(){
+  const ps=await (await fetch('/api/settings')).json();
+  const wrap=$('settings');wrap.innerHTML='';
+  ps.forEach(p=>{
+    const box=document.createElement('div');
+    box.style.cssText='border:1px solid var(--ln);border-radius:12px;padding:12px;margin-bottom:10px';
+    const dot=p.configured?'✅':'⚙️';
+    let html=`<div style="display:flex;justify-content:space-between;align-items:center">
+      <b>${dot} ${p.label}</b><span class="pill">${p.configured?'подключено':'не подключено'}</span></div>`;
+    if(p.setup_hint)html+=`<div class="sub" style="margin:6px 0">${p.setup_hint}</div>`;
+    p.fields.forEach(f=>{
+      const ph=f.set?(f.preview||'сохранено'):'';
+      html+=`<label>${f.label}</label><input data-pf="${p.name}.${f.key}" type="${f.secret?'password':'text'}" placeholder="${ph}"/>`;
+    });
+    html+=`<div class="row"><button class="sec" data-save="${p.name}">💾 Сохранить ${p.label}</button>
+      <span class="status" data-stat="${p.name}"></span></div>`;
+    box.innerHTML=html;wrap.appendChild(box);
+  });
+  wrap.querySelectorAll('[data-save]').forEach(btn=>btn.onclick=()=>saveSettings(btn.getAttribute('data-save')));
+}
+async function saveSettings(platform){
+  const vals={};
+  document.querySelectorAll(`[data-pf^="${platform}."]`).forEach(inp=>{
+    const k=inp.getAttribute('data-pf').split('.')[1];
+    if(inp.value.trim())vals[k]=inp.value.trim();
+  });
+  const st=document.querySelector(`[data-stat="${platform}"]`);st.textContent='Сохраняю…';
+  const fd=new FormData();fd.append('body',JSON.stringify(vals));
+  const r=await fetch('/api/settings/'+platform,{method:'POST',body:fd});const d=await r.json().catch(()=>({}));
+  st.textContent=r.ok?(d.configured?'Подключено ✅':'Сохранено (не хватает полей)'):'Ошибка';
+  loadSettings();loadPublishers();
+}
+loadSettings();
 </script></body></html>

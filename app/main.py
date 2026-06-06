@@ -8,6 +8,7 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from studio import story, imagegen, video, compose
 from publish import registry as publishers, VideoMeta
+from publish import config as pub_config
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT = ROOT / "outputs"; OUT.mkdir(exist_ok=True)
@@ -168,6 +169,37 @@ def assets():
 @app.get("/api/publishers")
 def list_publishers():
     return publishers.status()
+
+
+@app.get("/api/settings")
+def get_settings():
+    """Per-platform connection state for the Settings UI (values masked)."""
+    out = []
+    for p in publishers.publishers():
+        stored = pub_config.get_platform(p.name)
+        fields = []
+        for f in p.fields:
+            val = stored.get(f["key"], "")
+            fields.append({**f, "set": bool(val),
+                           "preview": ("•••• " + val[-4:]) if (val and f.get("secret")) else val})
+        out.append({"name": p.name, "label": p.label, "configured": p.configured(),
+                    "setup_hint": p.setup_hint, "fields": fields})
+    return out
+
+
+@app.post("/api/settings/{platform}")
+def save_settings(platform: str, body: str = Form(...)):
+    try:
+        values = json.loads(body)
+    except Exception as e:
+        raise HTTPException(400, f"invalid json: {e}")
+    try:
+        publishers.get(platform)
+    except KeyError:
+        raise HTTPException(400, f"unknown platform: {platform}")
+    pub_config.save(platform, {k: v for k, v in values.items() if isinstance(v, str)})
+    p = publishers.get(platform)
+    return {"saved": platform, "configured": p.configured()}
 
 
 @app.post("/api/publish")
