@@ -67,29 +67,51 @@ def index():
     return (Path(__file__).parent / "static" / "index.html").read_text(encoding="utf-8")
 
 
-@app.get("/board", response_class=HTMLResponse)
-def board_page():
+KANBANS = {"board", "content"}   # whitelist of board files
+
+
+def _board_html():
     return (Path(__file__).parent / "static" / "board.html").read_text(encoding="utf-8")
 
 
-@app.get("/api/board")
-def get_board():
-    p = ROOT / "board.json"
+@app.get("/board", response_class=HTMLResponse)
+def board_page():
+    return _board_html()
+
+
+@app.get("/content", response_class=HTMLResponse)
+def content_page():
+    return _board_html()
+
+
+@app.get("/api/kanban/{name}")
+def get_kanban(name: str):
+    if name not in KANBANS:
+        raise HTTPException(404, "no such board")
+    p = ROOT / f"{name}.json"
     if not p.exists():
-        return {"title": "Доска", "columns": []}
+        return {"title": name, "columns": []}
     return json.loads(p.read_text(encoding="utf-8"))
 
 
-@app.post("/api/board")
-def save_board(body: str = Form(...)):
+@app.post("/api/kanban/{name}")
+def save_kanban(name: str, body: str = Form(...)):
+    if name not in KANBANS:
+        raise HTTPException(404, "no such board")
     try:
         data = json.loads(body)
     except Exception as e:
         raise HTTPException(400, f"invalid json: {e}")
     import datetime
     data["updated"] = datetime.date.today().isoformat()
-    (ROOT / "board.json").write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    (ROOT / f"{name}.json").write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
     return {"saved": True, "updated": data["updated"]}
+
+
+# back-compat aliases
+@app.get("/api/board")
+def get_board():
+    return get_kanban("board")
 
 
 @app.get("/api/health")

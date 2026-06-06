@@ -29,13 +29,18 @@
   .save.dirty{animation:pulse 1.4s infinite}@keyframes pulse{50%{opacity:.6}}
 </style></head><body>
 <header>
-  <h1>🔥 Prometey — доска</h1><span class="muted" id="upd"></span>
-  <a class="home" href="/">← студия</a>
+  <h1 id="title">🔥 Prometey</h1><span class="muted" id="upd"></span>
+  <nav style="margin-left:auto;display:flex;gap:14px;font-size:13px">
+    <a class="home" href="/">студия</a>
+    <a class="home" href="/board?name=board">доска проекта</a>
+    <a class="home" href="/content?name=content">контент</a>
+  </nav>
 </header>
 <div class="board" id="board"></div>
 <button class="save" id="save">💾 Сохранить</button>
 <script>
 const $=s=>document.querySelector(s);let data={columns:[]};let dirty=false;
+const NAME=new URLSearchParams(location.search).get('name')||'board';
 function tagClass(t){return ['posting','content','product','infra','blocked'].includes(t)?t:'';}
 function render(){
   const b=$('#board');b.innerHTML='';
@@ -70,10 +75,11 @@ function move(id,from,to){
 function markDirty(){dirty=true;$('#save').classList.add('dirty');}
 $('#save').onclick=async()=>{
   const fd=new FormData();fd.append('body',JSON.stringify(data));
-  const r=await fetch('/api/board',{method:'POST',body:fd});
+  const r=await fetch('/api/kanban/'+NAME,{method:'POST',body:fd});
   if(r.ok){dirty=false;$('#save').classList.remove('dirty');$('#save').textContent='Сохранено ✅';
     setTimeout(()=>$('#save').textContent='💾 Сохранить',1500);}
 };
-(async()=>{data=await (await fetch('/api/board')).json();
+(async()=>{data=await (await fetch('/api/kanban/'+NAME)).json();
+  $('#title').textContent='🔥 '+(data.title||'Prometey');
   $('#upd').textContent='обновлено '+(data.updated||'');render();})();
 </script></body></html>

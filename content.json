@@ -1,0 +1,51 @@
+{
+  "title": "Prometey — производство контента",
+  "updated": "2026-06-06",
+  "columns": [
+    {
+      "id": "ideas",
+      "name": "💡 Идеи",
+      "cards": [
+        {"id": "norse", "title": "Огонёк · мир викингов (Север)", "desc": "Дисциплина как огонь в долгую зиму. Тот же Огонёк, новый мир.", "tags": ["content"]},
+        {"id": "japan", "title": "Огонёк · Япония (путь/кайдзен)", "desc": "Маленький шаг каждый день — ровное пламя.", "tags": ["content"]},
+        {"id": "space", "title": "Огонёк · космос", "desc": "Кислород = дисциплина; гаснет без поддержки.", "tags": ["content"]}
+      ]
+    },
+    {
+      "id": "assets",
+      "name": "🎨 Готовые ассеты",
+      "cards": [
+        {"id": "ognyok-states", "title": "Огонёк: 4 состояния + аватар/баннер", "desc": "blazing/steady/dim/ember + канон. Переиспользуются во всех эпизодах.", "tags": ["asset"]}
+      ]
+    },
+    {
+      "id": "draft",
+      "name": "🎬 Драфт видео",
+      "cards": []
+    },
+    {
+      "id": "montage",
+      "name": "✂️ Монтаж",
+      "cards": []
+    },
+    {
+      "id": "await_post",
+      "name": "⏳ Ждёт постинга",
+      "cards": [
+        {"id": "brand-demo", "title": "Прометей — брендовый ролик (демо)", "desc": "outputs/prometey_brand_demo.mp4. Решить: постить/доработать.", "tags": ["content"]}
+      ]
+    },
+    {
+      "id": "posting",
+      "name": "📤 Постинг (заливка)",
+      "cards": []
+    },
+    {
+      "id": "posted",
+      "name": "✅ Залито",
+      "cards": [
+        {"id": "greece-yt", "title": "Огонь не от рывка (Греция) → YouTube", "desc": "Публичный пост: youtu.be/LOdZp3jkZsI. Канал PrometeyApp.", "tags": ["posting"]}
+      ]
+    }
+  ]
+}
