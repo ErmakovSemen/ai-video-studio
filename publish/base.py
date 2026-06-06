@@ -11,6 +11,7 @@ class VideoMeta:
     privacy: str = "public"          # public | unlisted | private
     category_id: str = "22"          # YouTube: 22 = People & Blogs
     made_for_kids: bool = False
+    publish_at: str | None = None    # ISO-8601 UTC -> native scheduled publishing
 
     def hashtags(self) -> str:
         return " ".join(f"#{t.lstrip('#')}" for t in self.tags)

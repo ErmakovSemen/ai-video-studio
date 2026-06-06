@@ -49,11 +49,17 @@ class YouTubePublisher(Publisher):
         desc = (meta.description or "").strip()
         if "#shorts" not in desc.lower():
             desc = (desc + "\n\n#Shorts " + meta.hashtags()).strip()
+        status = {"privacyStatus": meta.privacy,
+                  "selfDeclaredMadeForKids": meta.made_for_kids}
+        # Native scheduled publishing: video stays private until publish_at, then goes public.
+        publish_at = getattr(meta, "publish_at", None)
+        if publish_at:
+            status["privacyStatus"] = "private"
+            status["publishAt"] = publish_at        # ISO-8601 UTC, e.g. 2026-06-07T09:00:00Z
         body = {
             "snippet": {"title": meta.title[:100], "description": desc[:4900],
                         "tags": meta.tags, "categoryId": meta.category_id},
-            "status": {"privacyStatus": meta.privacy,
-                       "selfDeclaredMadeForKids": meta.made_for_kids},
+            "status": status,
         }
         media = MediaFileUpload(video_path, mimetype="video/mp4", resumable=True, chunksize=-1)
         req = yt.videos().insert(part="snippet,status", body=body, media_body=media)
