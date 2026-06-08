@@ -120,6 +120,7 @@ function openCard(colId,cardId){
      <input id="m_vid" placeholder="видео URL (напр. /outputs/x.mp4 или /media/x.mp4)" value="${esc(card.video)}">
      <input id="m_link" placeholder="ссылка: подпись | https://…" style="margin-top:6px">
      ${card.scenario?`<label>🤖 ИИ-монтажёр</label><div style="font-size:12px;color:var(--mut);margin-bottom:8px">Сценарий: ${esc(card.scenario)}. Запустит улучшение субтитров → перенесёт карточку в «Ревью».</div><button class="mbtn sec" id="m_ai">🤖 Запустить ИИ-монтаж</button><div style="font-size:13px;margin-top:8px" id="m_aist"></div>`:''}
+     ${col.id==='review'?`<label>👀 Решение ревью</label><div class="mrow" style="margin-top:4px"><button class="mbtn" id="m_pass">✅ На раскатку</button><button class="mbtn sec" id="m_back">↩ В монтаж</button></div>`:''}
      <div class="mrow">
        <button class="mbtn" id="m_save">💾 Сохранить</button>
        <button class="mbtn sec" id="m_close">Закрыть</button>
@@ -147,6 +148,10 @@ function openCard(colId,cardId){
       document.getElementById('m_reopen').onclick=(e)=>{e.preventDefault();closeCard();openCard(rev?rev.id:cur.col.id,card.id);};
     }catch(e){st.textContent='Ошибка: '+e.message;aibtn.disabled=false;}
   };
+  function moveTo(target){const t=data.columns.find(c=>c.id===target);if(!t)return;
+    const i=cur.col.cards.indexOf(card);if(i>=0)cur.col.cards.splice(i,1);t.cards.unshift(card);persist();render();closeCard();}
+  const pass=document.getElementById('m_pass');if(pass)pass.onclick=()=>moveTo('await_post');
+  const back=document.getElementById('m_back');if(back)back.onclick=()=>moveTo('montage');
 }
 function closeCard(){document.getElementById('ov').classList.remove('show');cur=null;}
 function saveCard(){
