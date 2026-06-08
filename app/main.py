@@ -279,6 +279,21 @@ def job(jid: str):
     return JOBS[jid]
 
 
+@app.post("/api/ai_edit")
+def ai_edit(scenario: str = Form(...)):
+    """ИИ-монтажёр: LLM улучшает субтитры сценария -> render-ready *_ai.json + правки."""
+    safe = "".join(c for c in scenario if c.isalnum() or c in "-_")[:60]
+    p = SCEN / f"{safe}.json"
+    if not p.exists():
+        raise HTTPException(404, f"сценарий не найден: {safe}")
+    try:
+        from studio import ai_editor
+        res = ai_editor.ai_edit(str(p))
+        return {"ok": True, "scenario": os.path.basename(res["scenario"]), "edits": res["edits"]}
+    except Exception as e:
+        raise HTTPException(500, f"ai_edit: {str(e)[:300]}")
+
+
 @app.post("/api/image")
 def gen_image(prompt: str = Form(...), ref: str = Form("")):
     jid = uuid.uuid4().hex[:10]

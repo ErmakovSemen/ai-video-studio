@@ -119,6 +119,7 @@ function openCard(colId,cardId){
      <label>Добавить артефакт</label>
      <input id="m_vid" placeholder="видео URL (напр. /outputs/x.mp4 или /media/x.mp4)" value="${esc(card.video)}">
      <input id="m_link" placeholder="ссылка: подпись | https://…" style="margin-top:6px">
+     ${card.scenario?`<label>🤖 ИИ-монтажёр</label><div style="font-size:12px;color:var(--mut);margin-bottom:8px">Сценарий: ${esc(card.scenario)}. Запустит улучшение субтитров → перенесёт карточку в «Ревью».</div><button class="mbtn sec" id="m_ai">🤖 Запустить ИИ-монтаж</button><div style="font-size:13px;margin-top:8px" id="m_aist"></div>`:''}
      <div class="mrow">
        <button class="mbtn" id="m_save">💾 Сохранить</button>
        <button class="mbtn sec" id="m_close">Закрыть</button>
@@ -129,6 +130,23 @@ function openCard(colId,cardId){
   document.getElementById('m_close').onclick=closeCard;
   document.getElementById('m_del').onclick=()=>{if(confirm('Удалить карточку?')){const i=col.cards.indexOf(card);col.cards.splice(i,1);persist();closeCard();render();}};
   document.getElementById('m_save').onclick=saveCard;
+  const aibtn=document.getElementById('m_ai');
+  if(aibtn)aibtn.onclick=async()=>{
+    const st=document.getElementById('m_aist');st.textContent='🤖 ИИ-монтажёр думает…';aibtn.disabled=true;
+    const fd=new FormData();fd.append('scenario',card.scenario);
+    try{
+      const r=await fetch('/api/ai_edit',{method:'POST',body:fd});const d=await r.json();
+      if(!r.ok||!d.ok)throw new Error(d.detail||'ошибка');
+      const sum=d.edits.map((e,i)=>`${i+1}. ${e.caption}${e.emphasis?' ('+e.emphasis+')':''}${e.overlay?' ['+e.overlay+']':''}`).join('\n');
+      card.notes=(card.notes?card.notes+'\n\n':'')+'🤖 ИИ-монтаж субтитров:\n'+sum;
+      card.tags=Array.from(new Set([...(card.tags||[]),'ai-edited']));
+      const rev=data.columns.find(c=>c.id==='review');
+      if(rev){const i=cur.col.cards.indexOf(card);cur.col.cards.splice(i,1);rev.cards.unshift(card);}
+      persist();render();
+      st.innerHTML='Готово ✅ субтитры улучшены, карточка → «Ревью». <a href="#" id="m_reopen">обновить</a>';
+      document.getElementById('m_reopen').onclick=(e)=>{e.preventDefault();closeCard();openCard(rev?rev.id:cur.col.id,card.id);};
+    }catch(e){st.textContent='Ошибка: '+e.message;aibtn.disabled=false;}
+  };
 }
 function closeCard(){document.getElementById('ov').classList.remove('show');cur=null;}
 function saveCard(){

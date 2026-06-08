@@ -17,7 +17,8 @@
           "images": [
             "/media/norse_turn.png"
           ],
-          "notes": "Сценарий готов: scenarios/ognyok_norse.json. Геро-превью ок. Дальше: рендер сцен → монтаж → постинг."
+          "notes": "Сценарий готов: scenarios/ognyok_norse.json. Геро-превью ок. Дальше: рендер сцен → монтаж → постинг.",
+          "scenario": "ognyok_norse"
         },
         {
           "id": "japan",
@@ -30,7 +31,8 @@
           "images": [
             "/media/japan_turn.png"
           ],
-          "notes": "Сценарий готов: scenarios/ognyok_japan.json. Геро-превью ок. Дальше: рендер."
+          "notes": "Сценарий готов: scenarios/ognyok_japan.json. Геро-превью ок. Дальше: рендер.",
+          "scenario": "ognyok_japan"
         },
         {
           "id": "space",
@@ -43,7 +45,8 @@
           "images": [
             "/media/space_turn.png"
           ],
-          "notes": "Сценарий готов: scenarios/ognyok_space.json. Геро-превью ок. Дальше: рендер."
+          "notes": "Сценарий готов: scenarios/ognyok_space.json. Геро-превью ок. Дальше: рендер.",
+          "scenario": "ognyok_space"
         }
       ]
     },
@@ -74,7 +77,20 @@
     {
       "id": "review",
       "name": "👀 Ревью",
-      "cards": []
+      "cards": [
+        {
+          "id": "greece-edit",
+          "title": "Греция — на ИИ-монтаж",
+          "desc": "Прогнать через ИИ-монтажёр (улучшить субтитры) → Ревью.",
+          "scenario": "ognyok_greece",
+          "video": "/media/greece.mp4",
+          "tags": [
+            "content",
+            "ai-edited"
+          ],
+          "notes": "🤖 ИИ-монтаж субтитров:\n1. Дисциплина сейчас (Дисциплина)\n2. Новая жизнь (жизнь) [стрелка вправо]\n3. Отдых заслужил (отдых)\n4. Откладывай завтра (завтра) [цикл]\n5. Огонь потух (огонь)\n6. Каждый день (день) [календарь]\n7. Горит годами (годами)"
+        }
+      ]
     },
     {
       "id": "await_post",
