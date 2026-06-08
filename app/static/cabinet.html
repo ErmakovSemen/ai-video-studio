@@ -3,59 +3,81 @@
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Prometey — кабинет</title>
 <style>
-  :root{--bg:#0e0e12;--card:#17171f;--mut:#9a9aa5;--acc:#ff6a2b;--txt:#f5f5f7;--ln:#2a2a33}
-  *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font-family:-apple-system,Segoe UI,Roboto,sans-serif}
-  header{padding:14px 22px;display:flex;align-items:center;gap:16px;border-bottom:1px solid var(--ln)}
-  header h1{font-size:18px;margin:0}nav{display:flex;gap:16px;font-size:13px}
-  nav a,.lo{color:var(--acc);text-decoration:none}.lo{margin-left:auto;color:var(--mut)}
-  .wrap{max-width:1100px;margin:0 auto;padding:22px 18px 60px}
-  h2{font-size:15px;margin:24px 0 12px}
-  .tiles{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px}
-  .tile{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:16px 18px;text-decoration:none;color:var(--txt);flex:1;min-width:200px}
-  .tile b{display:block;font-size:15px}.tile span{color:var(--mut);font-size:12.5px}
-  .conn{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+  :root{--bg:#0e0e12;--panel:#121219;--card:#17171f;--mut:#9a9aa5;--acc:#ff6a2b;--txt:#f5f5f7;--ln:#2a2a33}
+  *{box-sizing:border-box}html,body{height:100%;margin:0}
+  body{background:var(--bg);color:var(--txt);font-family:-apple-system,Segoe UI,Roboto,sans-serif;display:flex}
+  /* sidebar */
+  .side{width:230px;flex:0 0 230px;background:var(--panel);border-right:1px solid var(--ln);
+    height:100vh;position:sticky;top:0;display:flex;flex-direction:column;padding:16px 12px}
+  .brand{font-size:18px;font-weight:800;padding:8px 10px 16px;display:flex;align-items:center;gap:8px}
+  .nav{display:flex;flex-direction:column;gap:3px}
+  .nav a{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:10px;color:var(--txt);
+    text-decoration:none;font-size:14.5px;cursor:pointer;border:1px solid transparent}
+  .nav a:hover{background:#1b1b24}.nav a.active{background:#20141a;border-color:#3a2622;color:var(--acc)}
+  .nav .ic{width:20px;text-align:center}
+  .spacer{flex:1}
+  .side .foot a{color:var(--mut);font-size:13px}
+  /* main */
+  .main{flex:1;height:100vh;overflow:auto}
+  .topbar{padding:14px 24px;border-bottom:1px solid var(--ln);font-size:15px;font-weight:650;display:flex;align-items:center;gap:10px;position:sticky;top:0;background:var(--bg);z-index:2}
+  .pad{padding:22px 24px 60px}
+  iframe{width:100%;height:calc(100vh - 52px);border:0;background:var(--bg);display:block}
+  /* dashboard */
+  h2{font-size:14px;color:var(--mut);text-transform:uppercase;letter-spacing:.04em;margin:6px 0 12px}
+  .conn{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-bottom:26px}
   .pf{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:14px}
-  .pf .row{display:flex;justify-content:space-between;align-items:center}
-  .pf b{font-size:15px}.pill{font-size:11.5px;padding:3px 9px;border-radius:20px;background:#22222c;color:#bdbdc7}
-  .pill.ok{background:#1e2a23;color:#7fe0a8}.pf .hint{color:var(--mut);font-size:12px;margin:8px 0 12px;line-height:1.4}
+  .pf .row{display:flex;justify-content:space-between;align-items:center}.pf b{font-size:15px}
+  .pill{font-size:11.5px;padding:3px 9px;border-radius:20px;background:#22222c;color:#bdbdc7}
+  .pill.ok{background:#1e2a23;color:#7fe0a8}
+  .pf .hint{color:var(--mut);font-size:12px;margin:8px 0 12px;line-height:1.4}
   .btn{display:inline-block;background:var(--acc);color:#111;border:0;border-radius:9px;padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none}
   .btn.sec{background:#262630;color:var(--txt)}
-  iframe{width:100%;height:560px;border:1px solid var(--ln);border-radius:14px;background:#0e0e12}
+  .hide{display:none}
 </style></head><body>
-<header>
-  <h1>🔥 Prometey — кабинет</h1>
-  <nav>
-    <a href="/">студия</a>
-    <a href="/board?name=board">доска проекта</a>
-    <a href="/content?name=content">контент</a>
-  </nav>
-  <a class="lo" href="/logout">выйти</a>
-</header>
-<div class="wrap">
-  <div class="tiles">
-    <a class="tile" href="/"><b>🎬 Студия</b><span>генерация, монтаж, постинг</span></a>
-    <a class="tile" href="/content?name=content"><b>📋 Контент-доска</b><span>видео по стадиям</span></a>
-    <a class="tile" href="/board?name=board"><b>🗺 Доска проекта</b><span>развитие продукта</span></a>
-  </div>
-
-  <h2>🔌 Подключения соцсетей</h2>
-  <div class="conn" id="conn"></div>
-
-  <h2>🎬 Производство контента</h2>
-  <iframe src="/content?name=content" title="Контент-доска"></iframe>
-</div>
+  <aside class="side">
+    <div class="brand">🔥 Prometey</div>
+    <nav class="nav" id="nav">
+      <a data-view="dash" class="active"><span class="ic">🏠</span> Дашборд</a>
+      <a data-src="/" ><span class="ic">🎬</span> Студия</a>
+      <a data-src="/content?name=content"><span class="ic">📋</span> Контент</a>
+      <a data-src="/board?name=board"><span class="ic">🗺</span> Доска проекта</a>
+    </nav>
+    <div class="spacer"></div>
+    <div class="nav foot"><a href="/logout"><span class="ic">🚪</span> Выйти</a></div>
+  </aside>
+  <main class="main">
+    <div class="topbar" id="title">🏠 Дашборд</div>
+    <div class="pad" id="dash">
+      <h2>🔌 Подключения соцсетей</h2>
+      <div class="conn" id="conn"></div>
+      <h2>🎬 Производство контента</h2>
+      <a class="btn sec" data-go="/content?name=content">Открыть контент-доску →</a>
+    </div>
+    <iframe id="frame" class="hide"></iframe>
+  </main>
 <script>
-(async()=>{
+const nav=document.getElementById('nav'),frame=document.getElementById('frame'),
+  dash=document.getElementById('dash'),title=document.getElementById('title');
+function show(item){
+  nav.querySelectorAll('a').forEach(a=>a.classList.remove('active'));
+  if(item.view==='dash'){dash.classList.remove('hide');frame.classList.add('hide');
+    title.textContent='🏠 Дашборд';nav.querySelector('[data-view=dash]').classList.add('active');loadConn();}
+  else{frame.src=item.src;frame.classList.remove('hide');dash.classList.add('hide');
+    const a=nav.querySelector(`[data-src="${item.src}"]`);if(a){a.classList.add('active');title.textContent=a.textContent.trim();}}
+}
+nav.querySelectorAll('a[data-view],a[data-src]').forEach(a=>a.onclick=(e)=>{e.preventDefault();
+  show(a.dataset.view?{view:a.dataset.view}:{src:a.dataset.src});});
+document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g){e.preventDefault();show({src:g.dataset.go});}});
+async function loadConn(){
   const ps=await (await fetch('/api/settings')).json();
-  const wrap=document.getElementById('conn');
-  ps.forEach(p=>{
-    const d=document.createElement('div');d.className='pf';
+  const wrap=document.getElementById('conn');wrap.innerHTML='';
+  ps.forEach(p=>{const d=document.createElement('div');d.className='pf';
     d.innerHTML=`<div class="row"><b>${p.label}</b>
       <span class="pill ${p.configured?'ok':''}">${p.configured?'✅ подключено':'не подключено'}</span></div>
       <div class="hint">${p.setup_hint||''}</div>
       <a class="btn ${p.configured?'sec':''}" href="/connect/${p.name}">${p.configured?'Настроить':'▶ Запустить '+p.label}</a>`;
-    wrap.appendChild(d);
-  });
-})();
+    wrap.appendChild(d);});
+}
+loadConn();
 </script>
 </body></html>
