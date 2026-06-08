@@ -120,7 +120,9 @@ function openCard(colId,cardId){
      <input id="m_vid" placeholder="видео URL (напр. /outputs/x.mp4 или /media/x.mp4)" value="${esc(card.video)}">
      <input id="m_link" placeholder="ссылка: подпись | https://…" style="margin-top:6px">
      ${card.scenario?`<label>🤖 ИИ-монтажёр</label><div style="font-size:12px;color:var(--mut);margin-bottom:8px">Сценарий: ${esc(card.scenario)}. Запустит улучшение субтитров → перенесёт карточку в «Ревью».</div><button class="mbtn sec" id="m_ai">🤖 Запустить ИИ-монтаж</button><div style="font-size:13px;margin-top:8px" id="m_aist"></div>`:''}
+     ${(col.id==='draft'||col.id==='montage')&&card.scenario?`<label>🎬 Видео</label><div style="font-size:12px;color:var(--mut);margin-bottom:8px">${card.video?'Видео есть — можно перерендерить.':'Видео ещё нет — сгенерировать из сценария.'} Сценарий: ${esc(card.scenario)} · бесплатный драфт (ken-burns+караоке)</div><button class="mbtn" id="m_gen">${card.video?'♻️ Перерендерить видео':'🎬 Сгенерировать видео'}</button><div style="font-size:13px;margin-top:8px" id="m_genst"></div>`:''}
      ${col.id==='review'?`<label>👀 Решение ревью</label><div class="mrow" style="margin-top:4px"><button class="mbtn" id="m_pass">✅ На раскатку</button><button class="mbtn sec" id="m_back">↩ В монтаж</button></div>`:''}
+     ${(col.id==='await_post'||col.id==='posting')&&card.video?`<label>📤 Постинг</label><div style="font-size:12px;color:var(--mut);margin-bottom:8px">Залить видео карточки в подключённые соцсети.</div><button class="mbtn" id="m_post">📤 Запостить</button><div style="font-size:13px;margin-top:8px" id="m_postst"></div>`:''}
      <div class="mrow">
        <button class="mbtn" id="m_save">💾 Сохранить</button>
        <button class="mbtn sec" id="m_close">Закрыть</button>
@@ -152,6 +154,38 @@ function openCard(colId,cardId){
     const i=cur.col.cards.indexOf(card);if(i>=0)cur.col.cards.splice(i,1);t.cards.unshift(card);persist();render();closeCard();}
   const pass=document.getElementById('m_pass');if(pass)pass.onclick=()=>moveTo('await_post');
   const back=document.getElementById('m_back');if(back)back.onclick=()=>moveTo('montage');
+  const gen=document.getElementById('m_gen');
+  if(gen)gen.onclick=async()=>{
+    const st=document.getElementById('m_genst');st.textContent='Загружаю сценарий…';gen.disabled=true;
+    try{
+      const sc=await (await fetch('/api/scenarios/'+card.scenario)).json();
+      const fd=new FormData();fd.append('body',JSON.stringify(sc));fd.append('draft','true');fd.append('polish','true');
+      st.textContent='🎬 Рендер запущен…';
+      const r=await fetch('/api/render',{method:'POST',body:fd});const d=await r.json();
+      if(!r.ok||!d.job_id)throw new Error(d.detail||'render err');const jid=d.job_id;
+      for(let i=0;i<150;i++){await new Promise(s=>setTimeout(s,3000));
+        const j=await (await fetch('/api/jobs/'+jid)).json();st.textContent='🎬 Рендер… ('+(j.status||'?')+')';
+        if(j.status==='done'){card.video='/outputs/'+jid+'.mp4';card.tags=Array.from(new Set([...(card.tags||[]),'rendered']));
+          if(cur.col.id==='draft'){const m=data.columns.find(c=>c.id==='montage');if(m){const k=cur.col.cards.indexOf(card);cur.col.cards.splice(k,1);m.cards.unshift(card);}}
+          persist();render();st.innerHTML='Готово ✅ видео прикреплено'+(cur.col.id==='draft'?', → Монтаж':'')+'. <a href="#" id="m_re">открыть</a>';
+          const re=document.getElementById('m_re');if(re)re.onclick=(e)=>{e.preventDefault();const c=data.columns.find(x=>x.cards.includes(card));closeCard();openCard(c.id,card.id);};return;}
+        if(j.status==='error')throw new Error(j.error||'render error');}
+      throw new Error('таймаут');
+    }catch(e){st.textContent='Ошибка: '+e.message+' · на free-Render рендер падает по памяти — нужен локальный/платный инстанс';gen.disabled=false;}
+  };
+  const post=document.getElementById('m_post');
+  if(post)post.onclick=async()=>{
+    const st=document.getElementById('m_postst');st.textContent='📤 Публикую…';post.disabled=true;
+    try{
+      const fd=new FormData();fd.append('video',card.video);fd.append('title',card.title);fd.append('description',card.desc||'');
+      const r=await fetch('/api/publish_file',{method:'POST',body:fd});const d=await r.json();
+      if(!r.ok)throw new Error(d.detail||'err');
+      const ok=(d.results||[]).filter(x=>x.url).map(x=>`${x.platform}: ${x.url}`);
+      card.links=[...(card.links||[]),...(d.results||[]).filter(x=>x.url).map(x=>({label:x.platform,url:x.url}))];
+      moveTo('posted');
+      st.innerHTML='Готово ✅ '+(ok.join(' · ')||JSON.stringify(d.results));
+    }catch(e){st.textContent='Ошибка: '+e.message;post.disabled=false;}
+  };
 }
 function closeCard(){document.getElementById('ov').classList.remove('show');cur=null;}
 function saveCard(){

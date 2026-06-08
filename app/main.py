@@ -279,6 +279,30 @@ def job(jid: str):
     return JOBS[jid]
 
 
+@app.post("/api/publish_file")
+def publish_file(video: str = Form(...), title: str = Form(...), description: str = Form("")):
+    """Залить файл (из /outputs или /media) во все подключённые соцсети."""
+    if video.startswith("/outputs/"):
+        path = OUT / video[len("/outputs/"):]
+    elif video.startswith("/media/"):
+        path = MEDIA / video[len("/media/"):]
+    else:
+        raise HTTPException(400, "bad video path")
+    if not path.exists():
+        raise HTTPException(404, "video file missing")
+    meta = VideoMeta(title=title[:100], description=description, privacy="public")
+    results = []
+    for p in publishers.publishers():
+        if p.configured():
+            try:
+                results.append(p.publish(str(path), meta))
+            except Exception as e:
+                results.append({"platform": p.name, "error": str(e)[:200]})
+    if not results:
+        raise HTTPException(400, "нет подключённых платформ (Подключения)")
+    return {"results": results}
+
+
 @app.post("/api/ai_edit")
 def ai_edit(scenario: str = Form(...)):
     """ИИ-монтажёр: LLM улучшает субтитры сценария -> render-ready *_ai.json + правки."""

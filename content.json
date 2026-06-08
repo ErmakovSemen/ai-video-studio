@@ -67,7 +67,17 @@
     {
       "id": "draft",
       "name": "🎬 Драфт видео",
-      "cards": []
+      "cards": [
+        {
+          "id": "norse-draft",
+          "title": "Север — сгенерировать видео",
+          "desc": "Жми «Сгенерировать видео» → драфт-рендер → авто в Монтаж.",
+          "scenario": "ognyok_norse",
+          "tags": [
+            "content"
+          ]
+        }
+      ]
     },
     {
       "id": "montage",
