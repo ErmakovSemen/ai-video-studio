@@ -1,0 +1,25 @@
+{
+  "title": "Один разгон не довезёт — Космос",
+  "world": "Космос / дальний перелёт",
+  "hero": "ognyok",
+  "brand_image": "assets/prometey/ognyok_canon.png",
+  "characters": {
+    "ognyok": "assets/prometey/ognyok_canon.png",
+    "ognyok_blazing": "assets/prometey/ognyok_blazing.png",
+    "ognyok_steady": "assets/prometey/ognyok_steady.png",
+    "ognyok_dim": "assets/prometey/ognyok_dim.png",
+    "ognyok_ember": "assets/prometey/ognyok_ember.png",
+    "dionysus": "assets/prometey/god_dionysus.png",
+    "prometheus": "assets/prometey/prometheus_canon.png"
+  },
+  "style": "Flat minimalist vector cartoon, warm flame on deep space dark teal, vertical 9:16, the round flame mascot identical to the reference. Spaceship cockpit, stars, distant planet, control panels. No text.",
+  "scenes": [
+    {"image": "the round flame mascot as a tiny trembling ember inside a dark cold spaceship cockpit, red low-fuel warning lights, drifting in deep space, almost out", "refs": ["ognyok_ember"], "motion": "warning lights blink slowly, the ember flickers, stars drift past", "vo": "В космосе твой огонь — это топливо. И оно почти кончилось.", "caption": "Топливо почти кончилось"},
+    {"image": "flashback, launch day: the flame mascot BLAZING huge with a giant rocket burn, full tanks, proud confident grin, leaving a bright planet", "refs": ["ognyok_blazing"], "motion": "huge rocket flames, fast launch, sparks", "vo": "На старте ты дал максимальный разгон. «Топлива хватит до самой цели!»", "caption": "«Хватит до цели!» — один разгон"},
+    {"image": "Dionysus as a relaxed crewmate floating in zero-g with a drink, lazily waving, telling the slightly smaller content flame mascot to just drift and coast", "refs": ["ognyok_steady", "dionysus"], "motion": "Dionysus drifts lazily, the flame eases and dims a little", "vo": "«Дрейфуй, отдыхай. Системы подкрутишь завтра», — машет Дионис.", "caption": "«Подкрутишь завтра…»"},
+    {"image": "the flame mascot dimmer and smaller, the ship drifting off course in a vast empty void, faint ghostly excuse-words, alarms dim", "refs": ["ognyok_dim"], "motion": "the ship drifts, the flame shrinks, lights fade", "vo": "Дни дрейфа. Завтра. Завтра. А цель всё дальше.", "caption": "…а цель всё дальше"},
+    {"image": "Prometheus the bearded titan as a calm mission engineer leaning in, feeding ONE small measured burst of fuel to the tiny ember mascot, warm glow in the dark cockpit", "refs": ["ognyok_ember", "prometheus"], "motion": "a small steady fuel feed, warm glow returns gradually", "vo": "«Один большой разгон не довезёт, — говорит Прометей. — Подавай топливо понемногу. Каждый день.»", "caption": "«Понемногу. Каждый день»"},
+    {"image": "the flame mascot burning STEADY and calm, the spaceship gliding smoothly on course toward a bright welcoming planet, dawn light, hopeful", "refs": ["ognyok_steady"], "motion": "steady even thrust, the ship glides forward, planet ahead", "vo": "Понемногу — каждый день. И ты долетишь куда угодно.", "caption": "Понемногу каждый день — и долетишь"}
+  ],
+  "endcard": {"title": "PROMETEY", "sub": "Не дай огню погаснуть", "vo": "Прометей не даст ему погаснуть."}
+}
