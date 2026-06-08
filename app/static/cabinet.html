@@ -38,6 +38,7 @@
     <div class="brand">🔥 Prometey</div>
     <nav class="nav" id="nav">
       <a data-view="dash" class="active"><span class="ic">🏠</span> Дашборд</a>
+      <a data-view="conn"><span class="ic">🔌</span> Подключения</a>
       <a data-src="/studio" ><span class="ic">🎬</span> Студия</a>
       <a data-src="/content?name=content"><span class="ic">📋</span> Контент</a>
       <a data-src="/board?name=board"><span class="ic">🗺</span> Доска проекта</a>
@@ -47,30 +48,53 @@
   </aside>
   <main class="main">
     <div class="topbar" id="title">🏠 Дашборд</div>
+    <!-- Дашборд -->
     <div class="pad" id="dash">
-      <h2>🔌 Подключения соцсетей</h2>
-      <div class="conn" id="conn"></div>
-      <h2>🎬 Производство контента</h2>
-      <a class="btn sec" data-go="/content?name=content">Открыть контент-доску →</a>
+      <h2>Быстрый доступ</h2>
+      <div class="conn" style="margin-bottom:24px">
+        <a class="pf" style="text-decoration:none;color:inherit" data-go="/studio"><b>🎬 Студия</b><div class="hint">генерация, монтаж, постинг</div></a>
+        <a class="pf" style="text-decoration:none;color:inherit" data-go="/content?name=content"><b>📋 Контент-доска</b><div class="hint">видео по стадиям</div></a>
+        <a class="pf" style="text-decoration:none;color:inherit" data-go="/board?name=board"><b>🗺 Доска проекта</b><div class="hint">развитие продукта</div></a>
+        <a class="pf" style="text-decoration:none;color:inherit" data-view-go="conn"><b>🔌 Подключения</b><div class="hint">токены соцсетей</div></a>
+      </div>
+      <h2>🔌 Статус подключений</h2>
+      <div class="conn" id="connSummary"></div>
+    </div>
+    <!-- Подключения (токены) -->
+    <div class="pad hide" id="connview">
+      <h2>🔌 Подключения соцсетей — токены</h2>
+      <div class="hint" style="margin-bottom:14px">Введи доступы каждой платформы. Кнопка «Запустить X» ведёт к пошаговому гайду по получению токена. Токены хранятся на сервере.</div>
+      <div class="conn" id="connCards"></div>
     </div>
     <iframe id="frame" class="hide"></iframe>
   </main>
 <script>
 const nav=document.getElementById('nav'),frame=document.getElementById('frame'),
-  dash=document.getElementById('dash'),title=document.getElementById('title');
+  dash=document.getElementById('dash'),connview=document.getElementById('connview'),
+  title=document.getElementById('title');
+const VIEWS={dash:{el:dash,title:'🏠 Дашборд'},conn:{el:connview,title:'🔌 Подключения'}};
 function show(item){
   nav.querySelectorAll('a').forEach(a=>a.classList.remove('active'));
-  if(item.view==='dash'){dash.classList.remove('hide');frame.classList.add('hide');
-    title.textContent='🏠 Дашборд';nav.querySelector('[data-view=dash]').classList.add('active');loadConn();}
-  else{frame.src=item.src;frame.classList.remove('hide');dash.classList.add('hide');
+  Object.values(VIEWS).forEach(v=>v.el.classList.add('hide'));frame.classList.add('hide');
+  if(item.view){const v=VIEWS[item.view];v.el.classList.remove('hide');title.textContent=v.title;
+    const a=nav.querySelector(`[data-view="${item.view}"]`);if(a)a.classList.add('active');loadConn();}
+  else{frame.src=item.src;frame.classList.remove('hide');
     const a=nav.querySelector(`[data-src="${item.src}"]`);if(a){a.classList.add('active');title.textContent=a.textContent.trim();}}
 }
 nav.querySelectorAll('a[data-view],a[data-src]').forEach(a=>a.onclick=(e)=>{e.preventDefault();
   show(a.dataset.view?{view:a.dataset.view}:{src:a.dataset.src});});
-document.addEventListener('click',e=>{const g=e.target.closest('[data-go]');if(g){e.preventDefault();show({src:g.dataset.go});}});
+document.addEventListener('click',e=>{
+  const g=e.target.closest('[data-go]');if(g){e.preventDefault();show({src:g.dataset.go});return;}
+  const vg=e.target.closest('[data-view-go]');if(vg){e.preventDefault();show({view:vg.dataset.viewGo});}});
 async function loadConn(){
   const ps=await (await fetch('/api/settings')).json();
-  const wrap=document.getElementById('conn');wrap.innerHTML='';
+  // compact status on dashboard
+  const sum=document.getElementById('connSummary');sum.innerHTML='';
+  ps.forEach(p=>{const d=document.createElement('div');d.className='pf';
+    d.innerHTML=`<div class="row"><b>${p.label}</b>
+      <span class="pill ${p.configured?'ok':''}">${p.configured?'✅':'—'}</span></div>`;sum.appendChild(d);});
+  // full cards in Подключения
+  const wrap=document.getElementById('connCards');wrap.innerHTML='';
   ps.forEach(p=>{const d=document.createElement('div');d.className='pf';
     d.innerHTML=`<div class="row"><b>${p.label}</b>
       <span class="pill ${p.configured?'ok':''}">${p.configured?'✅ подключено':'не подключено'}</span></div>
