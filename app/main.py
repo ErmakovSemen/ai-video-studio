@@ -114,6 +114,8 @@ def logout():
 
 
 app.mount("/outputs", StaticFiles(directory=str(OUT)), name="outputs")
+MEDIA = ROOT / "media"; MEDIA.mkdir(exist_ok=True)
+app.mount("/media", StaticFiles(directory=str(MEDIA)), name="media")
 JOBS: dict[str, dict] = {}
 
 

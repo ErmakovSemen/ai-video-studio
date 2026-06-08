@@ -16,3 +16,5 @@ token.json
 venv/
 work/
 yt_token.json
+!media/
+!media/**

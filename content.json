@@ -13,7 +13,11 @@
           "tags": [
             "content",
             "ready"
-          ]
+          ],
+          "images": [
+            "/media/norse_turn.png"
+          ],
+          "notes": "Сценарий готов: scenarios/ognyok_norse.json. Геро-превью ок. Дальше: рендер сцен → монтаж → постинг."
         },
         {
           "id": "japan",
@@ -22,7 +26,11 @@
           "tags": [
             "content",
             "ready"
-          ]
+          ],
+          "images": [
+            "/media/japan_turn.png"
+          ],
+          "notes": "Сценарий готов: scenarios/ognyok_japan.json. Геро-превью ок. Дальше: рендер."
         },
         {
           "id": "space",
@@ -31,7 +39,11 @@
           "tags": [
             "content",
             "ready"
-          ]
+          ],
+          "images": [
+            "/media/space_turn.png"
+          ],
+          "notes": "Сценарий готов: scenarios/ognyok_space.json. Геро-превью ок. Дальше: рендер."
         }
       ]
     },
@@ -69,7 +81,9 @@
           "desc": "outputs/prometey_brand_demo.mp4. Решить: постить/доработать.",
           "tags": [
             "content"
-          ]
+          ],
+          "video": "/media/brand_demo.mp4",
+          "notes": "Демо бренда (ken-burns + караоке). Решить: постить как есть или доработать монтаж (ИИ-монтажёр)."
         }
       ]
     },
@@ -88,7 +102,15 @@
           "desc": "Публичный пост: youtu.be/LOdZp3jkZsI. Канал PrometeyApp.",
           "tags": [
             "posting"
-          ]
+          ],
+          "video": "/media/greece.mp4",
+          "links": [
+            {
+              "label": "YouTube",
+              "url": "https://youtu.be/LOdZp3jkZsI"
+            }
+          ],
+          "notes": "Опубликовано публично. Можно использовать как референс стиля/тайминга."
         }
       ]
     }
