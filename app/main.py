@@ -28,7 +28,7 @@ STUDIO_USER = os.getenv("STUDIO_USER", "admin")
 STUDIO_PASS = os.getenv("STUDIO_PASS", "")  # if unset -> open (local dev)
 _SECRET = (os.getenv("APP_SECRET") or (STUDIO_PASS or "dev") + "::prometey-session").encode()
 _MAXAGE = 60 * 60 * 24 * 30  # 30 days
-PUBLIC_PATHS = {"/login", "/api/login", "/favicon.ico"}
+PUBLIC_PATHS = {"/login", "/api/login", "/favicon.ico", "/landing", "/terms", "/privacy"}
 
 
 def _make_session() -> str:
@@ -72,9 +72,28 @@ async def _auth(request, call_next):
     return RedirectResponse("/login")
 
 
+def _static(name):
+    return (Path(__file__).parent / "static" / name).read_text(encoding="utf-8")
+
+
+@app.get("/landing", response_class=HTMLResponse)
+def landing_page():
+    return _static("landing.html")
+
+
+@app.get("/terms", response_class=HTMLResponse)
+def terms_page():
+    return _static("terms.html")
+
+
+@app.get("/privacy", response_class=HTMLResponse)
+def privacy_page():
+    return _static("privacy.html")
+
+
 @app.get("/login", response_class=HTMLResponse)
 def login_page():
-    return (Path(__file__).parent / "static" / "login.html").read_text(encoding="utf-8")
+    return _static("login.html")
 
 
 @app.post("/api/login")
