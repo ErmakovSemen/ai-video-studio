@@ -1,0 +1,25 @@
+{
+  "title": "Огонь не на одну зиму — Север",
+  "world": "Север / викинги",
+  "hero": "ognyok",
+  "brand_image": "assets/prometey/ognyok_canon.png",
+  "characters": {
+    "ognyok": "assets/prometey/ognyok_canon.png",
+    "ognyok_blazing": "assets/prometey/ognyok_blazing.png",
+    "ognyok_steady": "assets/prometey/ognyok_steady.png",
+    "ognyok_dim": "assets/prometey/ognyok_dim.png",
+    "ognyok_ember": "assets/prometey/ognyok_ember.png",
+    "dionysus": "assets/prometey/god_dionysus.png",
+    "prometheus": "assets/prometey/prometheus_canon.png"
+  },
+  "style": "Flat minimalist vector cartoon, warm palette on cold dark teal, vertical 9:16, the round flame mascot identical to the reference (same design). Snow, northern night, wooden hall. No text.",
+  "scenes": [
+    {"image": "the round flame mascot reduced to a tiny trembling ember with sad eyes, alone in a vast dark snowy void, blizzard around, almost out", "refs": ["ognyok_ember"], "motion": "snow drifts, the ember flickers weakly", "vo": "Зима. Твой огонь почти потух.", "caption": "Зима. Огонь почти потух"},
+    {"image": "flashback, autumn: the same flame mascot BLAZING huge and proud beside a giant bonfire, confident grin, a viking wooden hall behind", "refs": ["ognyok_blazing"], "motion": "big flames roar upward, sparks rise", "vo": "А осенью ты пылал. Думал — одного большого костра хватит на всю зиму.", "caption": "«Одного костра хватит на зиму»"},
+    {"image": "Dionysus the relaxed reveler lounging with a horn of mead by the fire, lazily waving, telling the content flame mascot to rest; mascot a bit smaller", "refs": ["ognyok_steady", "dionysus"], "motion": "Dionysus raises the horn, the flame relaxes and dims slightly", "vo": "«Грейся, пей мёд. Дрова подкинешь завтра», — тянет Дионис.", "caption": "«Подкинешь завтра…»"},
+    {"image": "the flame mascot noticeably dimmer and smaller in a freezing dark hall, faint ghostly excuse-words drifting, snow piling at the door", "refs": ["ognyok_dim"], "motion": "blizzard intensifies, the flame shrinks", "vo": "Дни шли. Завтра. Завтра. А очаг остывал.", "caption": "Завтра… а очаг остывал"},
+    {"image": "Prometheus the bearded titan as a wise northern elder kneeling, offering ONE small split log to the tiny ember mascot, warm caring light in the dark", "refs": ["ognyok_ember", "prometheus"], "motion": "the elder holds out a single log, warm glow returns a little", "vo": "«Один большой костёр не греет всю зиму, — говорит Прометей. — Грей очаг. По полену. Каждый день.»", "caption": "«По полену. Каждый день»"},
+    {"image": "the flame mascot burning STEADY and calm again, a neat stack of split logs beside it, warm even glow filling the hall, northern dawn through the window", "refs": ["ognyok_steady"], "motion": "steady even flame, gentle warm light, calm", "vo": "Полено в день. И ты переживёшь любую зиму.", "caption": "Полено в день — и переживёшь зиму"}
+  ],
+  "endcard": {"title": "PROMETEY", "sub": "Не дай огню погаснуть", "vo": "Прометей не даст ему погаснуть."}
+}

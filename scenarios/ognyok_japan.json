@@ -1,0 +1,25 @@
+{
+  "title": "Кайдзен — один шаг в день — Япония",
+  "world": "Япония / путь, кайдзен",
+  "hero": "ognyok",
+  "brand_image": "assets/prometey/ognyok_canon.png",
+  "characters": {
+    "ognyok": "assets/prometey/ognyok_canon.png",
+    "ognyok_blazing": "assets/prometey/ognyok_blazing.png",
+    "ognyok_steady": "assets/prometey/ognyok_steady.png",
+    "ognyok_dim": "assets/prometey/ognyok_dim.png",
+    "ognyok_ember": "assets/prometey/ognyok_ember.png",
+    "dionysus": "assets/prometey/god_dionysus.png",
+    "athena": "assets/prometey/god_athena.png"
+  },
+  "style": "Flat minimalist vector cartoon, warm palette on calm dark teal, vertical 9:16, the round flame mascot identical to the reference. Japanese garden, paper lanterns, stone path, sakura. No text.",
+  "scenes": [
+    {"image": "the round flame mascot as a tiny sad ember on a stone lantern in a quiet Japanese garden at night, almost out", "refs": ["ognyok_ember"], "motion": "a petal drifts down, the ember flickers", "vo": "Ты бросил на третий день. Снова.", "caption": "Бросил на третий день. Снова"},
+    {"image": "flashback: the flame mascot BLAZING huge and excited on day one, surrounded by a big ambitious plan, sakura petals, fired up", "refs": ["ognyok_blazing"], "motion": "big flames, petals swirl, energetic", "vo": "День первый. «Новая жизнь, всё и сразу, на максимум!»", "caption": "День 1: всё и сразу"},
+    {"image": "Dionysus the relaxed god reclining under a sakura tree with a cup, lazily praising the slightly smaller content flame mascot", "refs": ["ognyok_steady", "dionysus"], "motion": "Dionysus gestures lazily, the flame eases and dims a touch", "vo": "«Ты молодец, отдохни. Один день не считается», — улыбается Дионис.", "caption": "«Один день не считается»"},
+    {"image": "the flame mascot dimmer and smaller on the stone path, faint excuse-words like falling petals, garden growing dark", "refs": ["ognyok_dim"], "motion": "petals fall faster, the flame shrinks", "vo": "Один день. Потом ещё. И запал погас.", "caption": "…и запал погас"},
+    {"image": "Athena as a calm wise sensei in robes kneeling by the lantern, gently adding ONE tiny spark to the ember mascot, serene", "refs": ["ognyok_ember", "athena"], "motion": "the sensei adds a small spark, soft warm glow returns", "vo": "«Путь — не рывок, — говорит Афина. — Кайдзен. Один маленький шаг каждый день.»", "caption": "Кайдзен: 1 шаг в день"},
+    {"image": "the flame mascot burning STEADY and serene on the lantern, a calm even glow lighting the garden path at dawn, sakura petals", "refs": ["ognyok_steady"], "motion": "steady serene flame, gentle light, dawn", "vo": "Один процент в день. И через год тебя не узнать.", "caption": "1% в день — и тебя не узнать"}
+  ],
+  "endcard": {"title": "PROMETEY", "sub": "Не дай огню погаснуть", "vo": "Прометей не даст ему погаснуть."}
+}

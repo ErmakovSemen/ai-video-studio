@@ -1,21 +1,51 @@
 {
   "title": "Prometey — производство контента",
-  "updated": "2026-06-06",
+  "updated": "2026-06-08",
   "columns": [
     {
       "id": "ideas",
       "name": "💡 Идеи",
       "cards": [
-        {"id": "norse", "title": "Огонёк · мир викингов (Север)", "desc": "Дисциплина как огонь в долгую зиму. Тот же Огонёк, новый мир.", "tags": ["content"]},
-        {"id": "japan", "title": "Огонёк · Япония (путь/кайдзен)", "desc": "Маленький шаг каждый день — ровное пламя.", "tags": ["content"]},
-        {"id": "space", "title": "Огонёк · космос", "desc": "Кислород = дисциплина; гаснет без поддержки.", "tags": ["content"]}
+        {
+          "id": "norse",
+          "title": "Огонёк · мир викингов (Север)",
+          "desc": "Сценарий готов: scenarios/ognyok_norse.json. Дисциплина = греть очаг всю зиму, не один костёр.",
+          "tags": [
+            "content",
+            "ready"
+          ]
+        },
+        {
+          "id": "japan",
+          "title": "Огонёк · Япония (путь/кайдзен)",
+          "desc": "Сценарий готов: scenarios/ognyok_japan.json. Кайдзен: 1 маленький шаг каждый день.",
+          "tags": [
+            "content",
+            "ready"
+          ]
+        },
+        {
+          "id": "space",
+          "title": "Огонёк · космос",
+          "desc": "Кислород = дисциплина; гаснет без поддержки.",
+          "tags": [
+            "content"
+          ]
+        }
       ]
     },
     {
       "id": "assets",
       "name": "🎨 Готовые ассеты",
       "cards": [
-        {"id": "ognyok-states", "title": "Огонёк: 4 состояния + аватар/баннер", "desc": "blazing/steady/dim/ember + канон. Переиспользуются во всех эпизодах.", "tags": ["asset"]}
+        {
+          "id": "ognyok-states",
+          "title": "Огонёк: 4 состояния + аватар/баннер",
+          "desc": "blazing/steady/dim/ember + канон. Переиспользуются во всех эпизодах.",
+          "tags": [
+            "asset"
+          ]
+        }
       ]
     },
     {
@@ -32,7 +62,14 @@
       "id": "await_post",
       "name": "⏳ Ждёт постинга",
       "cards": [
-        {"id": "brand-demo", "title": "Прометей — брендовый ролик (демо)", "desc": "outputs/prometey_brand_demo.mp4. Решить: постить/доработать.", "tags": ["content"]}
+        {
+          "id": "brand-demo",
+          "title": "Прометей — брендовый ролик (демо)",
+          "desc": "outputs/prometey_brand_demo.mp4. Решить: постить/доработать.",
+          "tags": [
+            "content"
+          ]
+        }
       ]
     },
     {
@@ -44,7 +81,14 @@
       "id": "posted",
       "name": "✅ Залито",
       "cards": [
-        {"id": "greece-yt", "title": "Огонь не от рывка (Греция) → YouTube", "desc": "Публичный пост: youtu.be/LOdZp3jkZsI. Канал PrometeyApp.", "tags": ["posting"]}
+        {
+          "id": "greece-yt",
+          "title": "Огонь не от рывка (Греция) → YouTube",
+          "desc": "Публичный пост: youtu.be/LOdZp3jkZsI. Канал PrometeyApp.",
+          "tags": [
+            "posting"
+          ]
+        }
       ]
     }
   ]
