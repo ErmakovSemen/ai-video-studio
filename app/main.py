@@ -130,8 +130,13 @@ def _credits():
         return None
 
 
-@app.get("/", response_class=HTMLResponse)
-def index():
+@app.get("/")
+def root():
+    return RedirectResponse("/cabinet")
+
+
+@app.get("/studio", response_class=HTMLResponse)
+def studio():
     return (Path(__file__).parent / "static" / "index.html").read_text(encoding="utf-8")
 
 
