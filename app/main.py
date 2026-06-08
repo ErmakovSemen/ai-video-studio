@@ -21,28 +21,77 @@ OR_KEY = os.getenv("OPENROUTER_API_KEY", "")
 
 app = FastAPI(title="AI Video Studio")
 
-# --- access protection (the UI spends OpenRouter credits + posts to TG) ---
-import base64, secrets
-from fastapi.responses import Response
+# --- access protection: session-cookie login (Basic-Auth kept as fallback) ---
+import base64, secrets, hmac, hashlib, time
+from fastapi.responses import Response, RedirectResponse
 STUDIO_USER = os.getenv("STUDIO_USER", "admin")
 STUDIO_PASS = os.getenv("STUDIO_PASS", "")  # if unset -> open (local dev)
+_SECRET = (os.getenv("APP_SECRET") or (STUDIO_PASS or "dev") + "::prometey-session").encode()
+_MAXAGE = 60 * 60 * 24 * 30  # 30 days
+PUBLIC_PATHS = {"/login", "/api/login", "/favicon.ico"}
+
+
+def _make_session() -> str:
+    msg = f"v1.{int(time.time())}"
+    sig = hmac.new(_SECRET, msg.encode(), hashlib.sha256).hexdigest()[:32]
+    return f"{msg}.{sig}"
+
+
+def _valid_session(tok: str) -> bool:
+    try:
+        v, ts, sig = tok.split(".")
+        expect = hmac.new(_SECRET, f"{v}.{ts}".encode(), hashlib.sha256).hexdigest()[:32]
+        return hmac.compare_digest(sig, expect) and (time.time() - int(ts)) < _MAXAGE
+    except Exception:
+        return False
+
+
+def _basic_ok(request) -> bool:
+    hdr = request.headers.get("authorization", "")
+    if hdr.startswith("Basic "):
+        try:
+            u, p = base64.b64decode(hdr[6:]).decode().split(":", 1)
+            return secrets.compare_digest(u, STUDIO_USER) and secrets.compare_digest(p, STUDIO_PASS)
+        except Exception:
+            return False
+    return False
 
 
 @app.middleware("http")
 async def _auth(request, call_next):
-    if STUDIO_PASS:
-        hdr = request.headers.get("authorization", "")
-        ok = False
-        if hdr.startswith("Basic "):
-            try:
-                u, p = base64.b64decode(hdr[6:]).decode().split(":", 1)
-                ok = secrets.compare_digest(u, STUDIO_USER) and secrets.compare_digest(p, STUDIO_PASS)
-            except Exception:
-                ok = False
-        if not ok:
-            return Response("Auth required", status_code=401,
-                            headers={"WWW-Authenticate": 'Basic realm="studio"'})
-    return await call_next(request)
+    if not STUDIO_PASS:                       # open in local dev
+        return await call_next(request)
+    path = request.url.path
+    if path in PUBLIC_PATHS or path.startswith("/static") or path.startswith("/assets"):
+        return await call_next(request)
+    tok = request.cookies.get("sid", "")
+    if (tok and _valid_session(tok)) or _basic_ok(request):
+        return await call_next(request)
+    if path.startswith("/api/") or path.startswith("/outputs"):
+        return Response("auth required", status_code=401)
+    return RedirectResponse("/login")
+
+
+@app.get("/login", response_class=HTMLResponse)
+def login_page():
+    return (Path(__file__).parent / "static" / "login.html").read_text(encoding="utf-8")
+
+
+@app.post("/api/login")
+def do_login(username: str = Form(""), password: str = Form(...)):
+    user_ok = (not username) or secrets.compare_digest(username, STUDIO_USER)
+    if user_ok and STUDIO_PASS and secrets.compare_digest(password, STUDIO_PASS):
+        resp = RedirectResponse("/cabinet", status_code=303)
+        resp.set_cookie("sid", _make_session(), httponly=True, samesite="lax", max_age=_MAXAGE)
+        return resp
+    return RedirectResponse("/login?e=1", status_code=303)
+
+
+@app.get("/logout")
+def logout():
+    resp = RedirectResponse("/login", status_code=303)
+    resp.delete_cookie("sid")
+    return resp
 
 
 app.mount("/outputs", StaticFiles(directory=str(OUT)), name="outputs")
@@ -72,6 +121,16 @@ KANBANS = {"board", "content"}   # whitelist of board files
 
 def _board_html():
     return (Path(__file__).parent / "static" / "board.html").read_text(encoding="utf-8")
+
+
+@app.get("/cabinet", response_class=HTMLResponse)
+def cabinet_page():
+    return (Path(__file__).parent / "static" / "cabinet.html").read_text(encoding="utf-8")
+
+
+@app.get("/connect/{platform}", response_class=HTMLResponse)
+def connect_page(platform: str):
+    return (Path(__file__).parent / "static" / "connect.html").read_text(encoding="utf-8")
 
 
 @app.get("/board", response_class=HTMLResponse)

@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ru"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Prometey — вход</title>
+<style>
+  :root{--bg:#0e0e12;--card:#17171f;--mut:#9a9aa5;--acc:#ff6a2b;--txt:#f5f5f7;--ln:#2a2a33}
+  *{box-sizing:border-box}html,body{height:100%}
+  body{margin:0;background:radial-gradient(60% 80% at 50% 0%,#1a1320,#0e0e12);color:var(--txt);
+    font-family:-apple-system,Segoe UI,Roboto,sans-serif;display:flex;align-items:center;justify-content:center}
+  .box{background:var(--card);border:1px solid var(--ln);border-radius:18px;padding:30px 28px;width:340px;text-align:center}
+  .logo{font-size:40px}h1{font-size:20px;margin:8px 0 2px}.sub{color:var(--mut);font-size:13px;margin-bottom:20px}
+  label{display:block;text-align:left;font-size:12px;color:var(--mut);margin:12px 0 5px}
+  input{width:100%;background:#0e0e14;border:1px solid var(--ln);border-radius:10px;color:var(--txt);padding:11px;font-size:15px}
+  button{width:100%;margin-top:18px;background:var(--acc);color:#111;border:0;border-radius:10px;padding:12px;font-size:15px;font-weight:700;cursor:pointer}
+  .err{color:#ff8d8d;font-size:13px;margin-top:12px;min-height:16px}
+</style></head><body>
+  <form class="box" method="post" action="/api/login">
+    <div class="logo">🔥</div>
+    <h1>Prometey</h1>
+    <div class="sub">Личный кабинет фабрики контента</div>
+    <label>Логин</label>
+    <input name="username" placeholder="admin" autocomplete="username"/>
+    <label>Пароль</label>
+    <input name="password" type="password" placeholder="••••••••" autocomplete="current-password" required/>
+    <button type="submit">Войти</button>
+    <div class="err" id="err"></div>
+  </form>
+<script>
+  if(new URLSearchParams(location.search).get('e'))document.getElementById('err').textContent='Неверный логин или пароль';
+</script>
+</body></html>

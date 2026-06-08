@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ru"><head>
+<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Prometey — подключение</title>
+<style>
+  :root{--bg:#0e0e12;--card:#17171f;--mut:#9a9aa5;--acc:#ff6a2b;--txt:#f5f5f7;--ln:#2a2a33}
+  *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font-family:-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.5}
+  header{padding:14px 22px;border-bottom:1px solid var(--ln)}header a{color:var(--acc);text-decoration:none;font-size:13px}
+  .wrap{max-width:760px;margin:0 auto;padding:24px 18px 60px}
+  h1{font-size:22px;margin:6px 0 4px}.status{font-size:13px;margin-bottom:18px}
+  .ok{color:#7fe0a8}.no{color:#ffb27f}
+  .guide{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:16px 20px;margin:16px 0}
+  .guide h3{font-size:14px;margin:0 0 8px;color:var(--acc)}
+  .guide ol{margin:0;padding-left:20px;font-size:14px}.guide li{margin-bottom:7px}
+  .guide a{color:#7db4ff}
+  label{display:block;font-size:12px;color:var(--mut);margin:14px 0 5px}
+  input{width:100%;background:#0e0e14;border:1px solid var(--ln);border-radius:10px;color:var(--txt);padding:11px;font-size:14px}
+  button{margin-top:18px;background:var(--acc);color:#111;border:0;border-radius:10px;padding:12px 20px;font-size:14px;font-weight:700;cursor:pointer}
+  .note{color:var(--mut);font-size:12.5px;margin-top:8px}.msg{margin-top:12px;font-size:14px}
+</style></head><body>
+<header><a href="/cabinet">← кабинет</a></header>
+<div class="wrap">
+  <h1 id="title">Подключение</h1>
+  <div class="status" id="status"></div>
+  <div id="guide"></div>
+  <form id="form"></form>
+  <div class="msg" id="msg"></div>
+</div>
+<script>
+const PLATFORM=location.pathname.split('/').pop();
+const GUIDES={
+  youtube:{title:"YouTube Shorts",steps:[
+    "Google Cloud Console → создай проект → включи <b>YouTube Data API v3</b>.",
+    "APIs &amp; Services → OAuth consent screen (External) → добавь свой email в Test users.",
+    "Credentials → Create OAuth client ID → тип <b>Desktop app</b> → возьми Client ID и Client secret.",
+    "Локально: <code>python -m publish.youtube_auth</code> → войди и нажми «Разрешить» → получишь Refresh token.",
+    "Вставь три значения ниже и сохрани."]},
+  telegram:{title:"Telegram",steps:[
+    "В @BotFather создай бота → получи <b>Bot token</b>.",
+    "Добавь бота администратором в свой канал.",
+    "Укажи канал как <b>@username</b> (или числовой chat id) и сохрани."]},
+  tiktok:{title:"TikTok",steps:[
+    "developers.tiktok.com → создай приложение, добавь <b>Login Kit</b> и <b>Content Posting API</b>.",
+    "Возьми Client key и Client secret; пройди OAuth (scope video.publish) для Refresh token.",
+    "Важно: публичный постинг — после аудита приложения TikTok (заявка + дни)."]},
+  instagram:{title:"Instagram Reels",steps:[
+    "Переключи Instagram в <b>Business/Creator</b> и привяжи к Facebook-странице.",
+    "developers.facebook.com → приложение → Instagram Graph API, право instagram_content_publish.",
+    "Получи долгоживущий Access token и IG user id → вставь ниже."]},
+};
+(async()=>{
+  const ps=await (await fetch('/api/settings')).json();
+  const p=ps.find(x=>x.name===PLATFORM);
+  if(!p){document.getElementById('title').textContent='Неизвестная платформа';return;}
+  const g=GUIDES[PLATFORM]||{title:p.label,steps:[p.setup_hint||'']};
+  document.getElementById('title').textContent='Подключение · '+g.title;
+  document.getElementById('status').innerHTML=p.configured?'<span class="ok">✅ уже подключено — можно обновить токены</span>':'<span class="no">не подключено</span>';
+  document.getElementById('guide').innerHTML='<div class="guide"><h3>Как получить доступ</h3><ol>'+g.steps.map(s=>'<li>'+s+'</li>').join('')+'</ol></div>';
+  const f=document.getElementById('form');
+  p.fields.forEach(fl=>{
+    f.insertAdjacentHTML('beforeend',`<label>${fl.label}</label>
+      <input data-k="${fl.key}" type="${fl.secret?'password':'text'}" placeholder="${fl.set?(fl.preview||'сохранено'):''}"/>`);
+  });
+  f.insertAdjacentHTML('beforeend','<button type="submit">💾 Сохранить и подключить</button>'+
+    '<div class="note">Токены хранятся на сервере. После сохранения платформа появится подключённой в кабинете.</div>');
+  f.onsubmit=async(e)=>{e.preventDefault();
+    const vals={};f.querySelectorAll('[data-k]').forEach(i=>{if(i.value.trim())vals[i.getAttribute('data-k')]=i.value.trim();});
+    const fd=new FormData();fd.append('body',JSON.stringify(vals));
+    const r=await fetch('/api/settings/'+PLATFORM,{method:'POST',body:fd});const d=await r.json().catch(()=>({}));
+    document.getElementById('msg').innerHTML=r.ok?(d.configured?'<span class="ok">Подключено ✅ <a href="/cabinet">← в кабинет</a></span>':'Сохранено, но не хватает полей'):'Ошибка';
+  };
+})();
+</script>
+</body></html>
