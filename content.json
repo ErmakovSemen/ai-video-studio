@@ -72,6 +72,11 @@
       "cards": []
     },
     {
+      "id": "review",
+      "name": "👀 Ревью",
+      "cards": []
+    },
+    {
       "id": "await_post",
       "name": "⏳ Ждёт постинга",
       "cards": [

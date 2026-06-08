@@ -1,7 +1,11 @@
+!media/
+!media/**
 *.mp3
 *.mp4
+*.plan.json
 *.pyc
 *.token
+*_ai.json
 .DS_Store
 .env
 .secrets.env
@@ -16,5 +20,3 @@ token.json
 venv/
 work/
 yt_token.json
-!media/
-!media/**
