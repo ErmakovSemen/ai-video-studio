@@ -129,7 +129,7 @@ def trim(raw_clip: str, seconds: float, out: str):
     """Scale/crop a raw clip to vertical frame and trim to length (no caption, no audio)."""
     vf = f"scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H}"
     subprocess.run([FF, "-y", "-i", raw_clip, "-t", f"{seconds:.2f}", "-vf", vf,
-                    "-an", "-r", "30", "-c:v", "libx264", "-pix_fmt", "yuv420p", out],
+                    "-an", "-r", "30", "-c:v", "libx264", "-threads", "1", "-preset", "ultrafast", "-pix_fmt", "yuv420p", out],
                    capture_output=True)
     return out
 
@@ -139,7 +139,7 @@ def trim(raw_clip: str, seconds: float, out: str):
 def xfade_stitch(clips: list, out: str, trans: float = 0.4, transition: str = "fade"):
     """Concatenate scene clips with crossfade transitions (no audio; video only)."""
     if len(clips) == 1:
-        subprocess.run([FF, "-y", "-i", clips[0], "-c:v", "libx264", "-pix_fmt",
+        subprocess.run([FF, "-y", "-i", clips[0], "-c:v", "libx264", "-threads", "1", "-preset", "ultrafast", "-pix_fmt",
                         "yuv420p", "-r", "30", out], capture_output=True)
         return out
     durs = [_duration(c) for c in clips]
@@ -157,7 +157,7 @@ def xfade_stitch(clips: list, out: str, trans: float = 0.4, transition: str = "f
                   f"offset={offset:.3f}[{label}]")
         prev = label
     subprocess.run([FF, "-y", *inputs, "-filter_complex", ";".join(fc),
-                    "-map", "[vout]", "-c:v", "libx264", "-pix_fmt", "yuv420p",
+                    "-map", "[vout]", "-c:v", "libx264", "-threads", "1", "-preset", "ultrafast", "-pix_fmt", "yuv420p",
                     "-r", "30", out], capture_output=True)
     return out
 
@@ -185,7 +185,7 @@ def finalize(video_noaudio: str, narration: str, out: str, ass: str = None,
         amap = ["-map", "0:v:0", "-map", "1:a:0"]
     if vf:
         args += ["-vf", vf]
-    args += [*amap, "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac",
+    args += [*amap, "-c:v", "libx264", "-threads", "1", "-preset", "ultrafast", "-pix_fmt", "yuv420p", "-c:a", "aac",
              "-shortest", out]
     subprocess.run(args, capture_output=True)
     return out

@@ -72,7 +72,7 @@ def mock_clip(image_path: str | None, fallback_text: str, seconds: float, out: s
     subprocess.run([FF, "-y", "-loop", "1", "-i", src, "-t", f"{seconds:.2f}",
                     "-vf", (f"scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},"
                             f"zoompan=z='min(zoom+0.0009,1.16)':d={frames}:s={W}x{H}:fps=30,format=yuv420p"),
-                    "-c:v", "libx264", "-preset", "veryfast", "-an", out], capture_output=True)
+                    "-c:v", "libx264", "-threads", "1", "-preset", "ultrafast", "-an", out], capture_output=True)
     if tmp and os.path.exists(tmp):
         os.remove(tmp)
 
@@ -84,7 +84,7 @@ def scene_clip(raw_clip: str, caption: str, seconds: float, out: str):
           f"drawtext=textfile='{capf}':fontfile='{FONT}':fontsize=44:fontcolor=white:"
           f"borderw=3:bordercolor=black:x=(w-tw)/2:y=h-300")
     subprocess.run([FF, "-y", "-i", raw_clip, "-t", f"{seconds:.2f}", "-vf", vf,
-                    "-an", "-r", "30", "-c:v", "libx264", "-pix_fmt", "yuv420p", out],
+                    "-an", "-r", "30", "-c:v", "libx264", "-threads", "1", "-preset", "ultrafast", "-pix_fmt", "yuv420p", out],
                    capture_output=True)
 
 
@@ -108,7 +108,7 @@ def endcard(brand_img: str, title: str, sub: str, seconds: float, out: str):
            fill=(230, 230, 235), anchor="mm")
     p = out + ".png"; img.save(p)
     subprocess.run([FF, "-y", "-loop", "1", "-i", p, "-t", f"{seconds:.2f}",
-                    "-vf", "format=yuv420p", "-r", "30", "-c:v", "libx264", "-an", out],
+                    "-vf", "format=yuv420p", "-r", "30", "-c:v", "libx264", "-threads", "1", "-preset", "ultrafast", "-an", out],
                    capture_output=True)
 
 
@@ -118,7 +118,7 @@ def stitch(scene_videos: list[str], voice_segs: list[str], out: str, workdir: st
     open(lst, "w").write("".join(f"file '{os.path.abspath(p)}'\n" for p in scene_videos))
     vcat = os.path.join(workdir, "vcat.mp4")
     subprocess.run([FF, "-y", "-f", "concat", "-safe", "0", "-i", lst,
-                    "-c:v", "libx264", "-pix_fmt", "yuv420p", "-r", "30", vcat],
+                    "-c:v", "libx264", "-threads", "1", "-preset", "ultrafast", "-pix_fmt", "yuv420p", "-r", "30", vcat],
                    capture_output=True)
     ins = []
     for v in voice_segs:
