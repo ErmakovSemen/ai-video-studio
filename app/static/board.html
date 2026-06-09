@@ -159,7 +159,7 @@ function openCard(colId,cardId){
     const st=document.getElementById('m_genst');st.textContent='Загружаю сценарий…';gen.disabled=true;
     try{
       const sc=await (await fetch('/api/scenarios/'+card.scenario)).json();
-      const fd=new FormData();fd.append('body',JSON.stringify(sc));fd.append('draft','true');fd.append('polish','true');
+      const fd=new FormData();fd.append('body',JSON.stringify(sc));fd.append('draft','true');fd.append('polish','true');fd.append('gen_stills','true');
       st.textContent='🎬 Рендер запущен…';
       const r=await fetch('/api/render',{method:'POST',body:fd});const d=await r.json();
       if(!r.ok||!d.job_id)throw new Error(d.detail||'render err');const jid=d.job_id;
