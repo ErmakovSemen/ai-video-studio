@@ -1,0 +1,67 @@
+name: Daily YouTube Shorts autopost
+
+# Fully free, durable autopost: renders the next Огонёк episode (draft+polish,
+# no paid API) and uploads it to YouTube as a scheduled Short. Runs in GitHub's
+# cloud on a cron — no open app, no Render uptime needed.
+
+on:
+  schedule:
+    - cron: "0 9 * * *"        # every day 09:00 UTC (12:00 MSK)
+  workflow_dispatch:           # manual "Run workflow" button
+    inputs:
+      schedule_in:
+        description: "Hours until the Short goes public (publishAt)"
+        required: false
+        default: "18"
+      dry_run:
+        description: "Render only, do not upload"
+        type: boolean
+        required: false
+        default: false
+
+permissions:
+  contents: write              # to commit the updated post-state back
+
+concurrency:
+  group: autopost
+  cancel-in-progress: false
+
+jobs:
+  render-and-post:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install deps
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Render + upload next Short
+        env:
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+        run: |
+          python -m scripts.autopost_daily \
+            --schedule-in "${{ github.event.inputs.schedule_in || '18' }}" \
+            ${{ (github.event.inputs.dry_run == 'true') && '--dry-run' || '' }}
+
+      - name: Commit updated post-state
+        if: ${{ github.event.inputs.dry_run != 'true' }}
+        run: |
+          git config user.name  "prometey-autopost"
+          git config user.email "autopost@users.noreply.github.com"
+          if ! git diff --quiet -- scripts/autopost_state.json; then
+            git add scripts/autopost_state.json
+            git commit -m "autopost: mark episode posted [skip ci]"
+            git push
+          else
+            echo "no state change to commit"
+          fi
