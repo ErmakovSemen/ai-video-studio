@@ -27,6 +27,10 @@ from publish import registry, VideoMeta               # noqa: E402
 QUEUE = os.path.join(ROOT, "queue")
 STATE = os.path.join(ROOT, "scripts", "autopost_state.json")
 
+# Ducked music bed (CC-BY, see ATTRIBUTION). Looped under the narration at -18dB.
+MUSIC = os.path.join(ROOT, "assets", "music", "inspired.mp3")
+ATTRIBUTION = "Music: «Inspired» by Kevin MacLeod (incompetech.com), CC BY 4.0"
+
 # Ready, locked-canon Огонёк episodes (greece already live on the channel).
 ROTATION = ["ognyok_norse", "ognyok_japan", "ognyok_space"]
 
@@ -83,8 +87,9 @@ def render_free(slug: str) -> str:
     print(f"[render] {slug}: draft+polish (free) "
           + ("with baked scene stills" if has_baked else "on canon art (no baked stills)")
           + f" -> {out}")
+    music = MUSIC if os.path.exists(MUSIC) else None
     story.build(sc, out, wd, base_dir=ROOT, draft=True, polish=True,
-                stills_dir=sdir if has_baked else None)
+                stills_dir=sdir if has_baked else None, music=music)
     if not os.path.exists(out) or os.path.getsize(out) < 10_000:
         raise RuntimeError(f"render produced no usable file: {out}")
     print(f"[render] ok: {os.path.getsize(out)//1024} KB")
@@ -124,8 +129,11 @@ def main():
 
     t = datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=a.schedule_in)
     publish_at = t.strftime("%Y-%m-%dT%H:%M:%SZ")
+    desc = m.get("desc", "")
+    if os.path.exists(MUSIC):                       # CC-BY: attribution required
+        desc = (desc + "\n\n" + ATTRIBUTION).strip()
     meta = VideoMeta(title=m.get("title", f"Prometey · {slug}"),
-                     description=m.get("desc", ""), tags=m.get("tags", []),
+                     description=desc, tags=m.get("tags", []),
                      privacy="public", publish_at=publish_at)
     print(f"[upload] {slug} -> youtube (publishAt {publish_at})")
     res = pub.publish(mp4, meta)

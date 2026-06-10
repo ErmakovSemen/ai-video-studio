@@ -2,6 +2,8 @@
 !media/**
 *.mp3
 *.mp4
+!assets/music/
+!assets/music/**
 *.plan.json
 *.pyc
 *.token
