@@ -1,6 +1,6 @@
 {
   "title": "Prometey — доска проекта",
-  "updated": "2026-06-09",
+  "updated": "2026-06-10",
   "columns": [
     {
       "id": "backlog",
@@ -13,14 +13,6 @@
           "tags": [
             "posting",
             "blocked"
-          ]
-        },
-        {
-          "id": "cloud-sched",
-          "title": "Durable облачный планировщик",
-          "desc": "Чтобы автопостинг шёл без открытого app. /schedule пока падает.",
-          "tags": [
-            "infra"
           ]
         },
         {
@@ -46,17 +38,26 @@
           ]
         },
         {
-          "id": "content-batch",
-          "title": "Контент-батч: Огонёк в разных мирах",
-          "desc": "Серия эпизодов (Север/Япония/космос…) одним консистентным героем → очередь автопостинга.",
+          "id": "yt-verify",
+          "title": "YouTube OAuth-верификация (public без ручного флипа)",
+          "desc": "Пока приложение не аудировано Google, API-заливки могут форситься в private. Проверить первый авто-ролик (youtu.be/JrxyU62HcJM, выходит 11.06 12:00 МСК): вышел ли публично. Если нет — запросить верификацию или флипать вручную.",
+          "tags": [
+            "posting",
+            "blocked"
+          ]
+        },
+        {
+          "id": "content-stock",
+          "title": "Запас контента для ротации (>3 эпизодов)",
+          "desc": "ROTATION в scripts/autopost_daily.py = norse/japan/space (хватит на 3 дня). Дорисовать новые миры Огонька, чтобы автопостинг шёл непрерывно. Север уже залит.",
           "tags": [
             "content"
           ]
         },
         {
-          "id": "daily-autopost",
-          "title": "Ежедневный автопостинг из очереди",
-          "desc": "Механизм готов (publish/autopost.py + publishAt). Включить расписание, когда есть батч.",
+          "id": "multi-autopost",
+          "title": "Автопостинг в Telegram (и IG) тем же cron",
+          "desc": "GitHub Action сейчас постит только в YouTube. Расширить autopost_daily на @PrometeyApp (telegram-публикатор готов) → один рендер во все каналы.",
           "tags": [
             "posting"
           ]
@@ -127,6 +128,22 @@
           "desc": "Караоке-субтитры (реальный тайминг), переходы, музыка, чистый эндкард.",
           "tags": [
             "content"
+          ]
+        },
+        {
+          "id": "daily-autopost",
+          "title": "Ежедневный автопостинг (GitHub Actions, durable)",
+          "desc": "scripts/autopost_daily.py + .github/workflows/autopost.yml: cron 09:00 UTC → бесплатный рендер следующего эпизода → заливка Shorts с publishAt → коммит состояния. Работает в облаке без открытого app. Проверено: youtu.be/JrxyU62HcJM.",
+          "tags": [
+            "posting"
+          ]
+        },
+        {
+          "id": "cloud-sched",
+          "title": "Durable облачный планировщик (решено через GH Actions)",
+          "desc": "Вместо падающего /schedule и платного Render-крона — бесплатный GitHub Actions cron. Секреты в repo Secrets, состояние коммитится обратно.",
+          "tags": [
+            "infra"
           ]
         },
         {
