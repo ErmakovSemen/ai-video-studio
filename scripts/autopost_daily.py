@@ -78,8 +78,13 @@ def render_free(slug: str) -> str:
     os.makedirs(QUEUE, exist_ok=True)
     out = os.path.join(QUEUE, f"{slug}.mp4")
     wd = os.path.join(ROOT, "work", f"auto_{slug}_{int(time.time())}")
-    print(f"[render] {slug}: draft+polish (free, no paid API) -> {out}")
-    story.build(sc, out, wd, base_dir=ROOT, draft=True, polish=True)
+    sdir = os.path.join(ROOT, "assets", "scenes", slug)
+    has_baked = os.path.isdir(sdir) and any(f.startswith("scene") for f in os.listdir(sdir))
+    print(f"[render] {slug}: draft+polish (free) "
+          + ("with baked scene stills" if has_baked else "on canon art (no baked stills)")
+          + f" -> {out}")
+    story.build(sc, out, wd, base_dir=ROOT, draft=True, polish=True,
+                stills_dir=sdir if has_baked else None)
     if not os.path.exists(out) or os.path.getsize(out) < 10_000:
         raise RuntimeError(f"render produced no usable file: {out}")
     print(f"[render] ok: {os.path.getsize(out)//1024} KB")

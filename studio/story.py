@@ -25,10 +25,14 @@ PAD = 0.35  # seconds of trailing silence per scene so cuts breathe
 
 def build(scenario: dict, out_path: str, workdir: str, base_dir: str = ".",
           draft: bool = False, polish: bool = False, music: str = None,
-          gen_stills: bool = False) -> dict:
+          gen_stills: bool = False, stills_dir: str | None = None) -> dict:
     """Render a scenario into a cartoon.
 
     draft=True       → FREE: Ken-Burns on the reference art, for flow/timing.
+    draft+stills_dir → FREE rich render: Ken-Burns on PRE-BAKED per-scene stills
+                       (stills_dir/scene{i}.png, committed once) — full-bleed scenes,
+                       greece-level quality, zero per-run cost. Falls back to ref art
+                       for any scene whose still is missing.
     draft+gen_stills → cheap rich render: generate the scene image via Gemini (per-scene
                        composition) then Ken-Burns on it — no Kling, ~cents/scene.
     polish=True      → montage layer: word-level KARAOKE captions (real edge-tts timing)
@@ -53,7 +57,11 @@ def build(scenario: dict, out_path: str, workdir: str, base_dir: str = ".",
             compose.tts(sc["vo"], vo); dur = compose.dur(vo)
         seconds = dur + PAD
         img = None
-        if draft and gen_stills:
+        baked = os.path.join(stills_dir, f"scene{i}.png") if stills_dir else None
+        if draft and baked and os.path.exists(baked):
+            img = baked
+            compose.mock_clip(baked, sc.get("caption", sc["vo"]), seconds, raw)
+        elif draft and gen_stills:
             img = os.path.join(workdir, f"img{i}.png")
             no_text = (" IMPORTANT: absolutely NO text, NO letters, NO words, NO captions, "
                        "NO writing, NO watermark, NO signs anywhere in the image — clean illustration only.")
