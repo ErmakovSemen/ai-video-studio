@@ -80,6 +80,11 @@ def build(scenario: dict, out_path: str, workdir: str, base_dir: str = ".",
                 words_global.append([w, t + a, t + b])
         else:
             compose.scene_clip(raw, sc.get("caption", ""), seconds, sv)
+        # First-second grab: bold hook line over scene 0 (retention lever for Shorts)
+        hook = scenario.get("hook") if i == 0 else None
+        if hook:
+            hv = os.path.join(workdir, f"sc{i}_hook.mp4")
+            compose.burn_hook(sv, hook, hv); sv = hv
         sil = os.path.join(workdir, f"sil{i}.mp3"); compose.silence(sil, PAD)
         scene_videos.append(sv)
         voice_segs.append(vo); voice_segs.append(sil)
