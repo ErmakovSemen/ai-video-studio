@@ -3,7 +3,7 @@ Pick/edit a scenario -> render (free draft or final) -> preview -> download / po
 """
 import os, uuid, json, time, threading, urllib.request
 from pathlib import Path
-from fastapi import FastAPI, Form, HTTPException
+from fastapi import FastAPI, Form, HTTPException, UploadFile, File
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from studio import story, imagegen, video, compose
@@ -278,6 +278,55 @@ def job(jid: str):
     if jid not in JOBS:
         raise HTTPException(404, "no job")
     return JOBS[jid]
+
+
+@app.post("/api/upload")
+async def upload_asset(file: UploadFile = File(...)):
+    """Загрузить сырьё (видео/фото) для монтажа -> /media/uploads/..."""
+    up = MEDIA / "uploads"; up.mkdir(exist_ok=True)
+    ext = (os.path.splitext(file.filename or "")[1] or ".bin")[:8]
+    name = f"{uuid.uuid4().hex[:12]}{ext}"
+    data = await file.read()
+    (up / name).write_bytes(data)
+    kind = "video" if ext.lower().lstrip(".") in ("mp4", "mov", "webm", "mkv", "avi") else "image"
+    return {"path": f"/media/uploads/{name}", "name": file.filename, "kind": kind}
+
+
+def _resolve_media(p: str):
+    if p.startswith("/media/"):
+        return MEDIA / p[len("/media/"):]
+    if p.startswith("/outputs/"):
+        return OUT / p[len("/outputs/"):]
+    return None
+
+
+@app.post("/api/ai_montage")
+def api_ai_montage(assets: str = Form(...), prompt: str = Form(...)):
+    """ИИ-монтаж из сырья: список ассетов (/media|/outputs) + промт -> монтаж."""
+    try:
+        paths = json.loads(assets)
+    except Exception:
+        raise HTTPException(400, "assets must be JSON list")
+    fs = []
+    for p in paths:
+        r = _resolve_media(p)
+        if r and r.exists():
+            fs.append(str(r))
+    if not fs:
+        raise HTTPException(400, "нет валидных ассетов")
+    jid = uuid.uuid4().hex[:12]
+    JOBS[jid] = {"status": "running"}
+
+    def _run():
+        try:
+            from studio import ai_montage
+            res = ai_montage.ai_montage(fs, prompt, str(OUT / f"{jid}.mp4"), str(WORK / jid))
+            JOBS[jid].update(status="done", info={"segments": res["segments"], "duration": res["duration"], "plan": res["plan"]}, video=f"/outputs/{jid}.mp4")
+        except Exception as e:
+            import traceback; traceback.print_exc()
+            JOBS[jid].update(status="error", error=str(e)[:300])
+    threading.Thread(target=_run, args=(), daemon=True).start()
+    return {"job_id": jid}
 
 
 @app.post("/api/publish_file")

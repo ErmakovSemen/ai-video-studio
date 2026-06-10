@@ -121,6 +121,7 @@ function openCard(colId,cardId){
      <input id="m_link" placeholder="ссылка: подпись | https://…" style="margin-top:6px">
      ${card.scenario?`<label>🤖 ИИ-монтажёр</label><div style="font-size:12px;color:var(--mut);margin-bottom:8px">Сценарий: ${esc(card.scenario)}. Запустит улучшение субтитров → перенесёт карточку в «Ревью».</div><button class="mbtn sec" id="m_ai">🤖 Запустить ИИ-монтаж</button><div style="font-size:13px;margin-top:8px" id="m_aist"></div>`:''}
      ${(col.id==='draft'||col.id==='montage')&&card.scenario?`<label>🎬 Видео</label><div style="font-size:12px;color:var(--mut);margin-bottom:8px">${card.video?'Видео есть — можно перерендерить.':'Видео ещё нет — сгенерировать из сценария.'} Сценарий: ${esc(card.scenario)} · бесплатный драфт (ken-burns+караоке)</div><button class="mbtn" id="m_gen">${card.video?'♻️ Перерендерить видео':'🎬 Сгенерировать видео'}</button><div style="font-size:13px;margin-top:8px" id="m_genst"></div>`:''}
+     ${col.id==='montage'?`<label>🎬 Профи ИИ-монтаж из сырья</label><div style="font-size:12px;color:var(--mut);margin-bottom:6px">Брось сырые клипы и фото + опиши задачу — ИИ соберёт монтаж (порядок, обрезка, вставки, подписи) → Ревью.</div><input type="file" id="m_up" multiple accept="video/*,image/*" style="font-size:12px;margin-bottom:6px;width:100%"><div id="m_assets" style="font-size:12px;color:var(--mut);margin-bottom:6px"></div><textarea id="m_mprompt" placeholder="Напр.: динамичный ролик про дисциплину, сильный хук, фото в середине, чёткие подписи" style="min-height:56px">${esc(card.montage_prompt||'')}</textarea><button class="mbtn" id="m_montage" style="margin-top:8px">🎬 Собрать ИИ-монтаж</button><div style="font-size:13px;margin-top:8px" id="m_montst"></div>`:''}
      ${col.id==='review'?`<label>👀 Решение ревью</label><div class="mrow" style="margin-top:4px"><button class="mbtn" id="m_pass">✅ На раскатку</button><button class="mbtn sec" id="m_back">↩ В монтаж</button></div>`:''}
      ${(col.id==='await_post'||col.id==='posting')&&card.video?`<label>📤 Постинг</label><div style="font-size:12px;color:var(--mut);margin-bottom:8px">Залить видео карточки в подключённые соцсети.</div><button class="mbtn" id="m_post">📤 Запостить</button><div style="font-size:13px;margin-top:8px" id="m_postst"></div>`:''}
      <div class="mrow">
@@ -186,6 +187,42 @@ function openCard(colId,cardId){
       st.innerHTML='Готово ✅ '+(ok.join(' · ')||JSON.stringify(d.results));
     }catch(e){st.textContent='Ошибка: '+e.message;post.disabled=false;}
   };
+  // --- raw AI montage ---
+  const up=document.getElementById('m_up');
+  if(up){
+    card.assets=card.assets||[];
+    const al=document.getElementById('m_assets');
+    const drawAssets=()=>{al.innerHTML=card.assets.length?('Сырьё: '+card.assets.map((a,i)=>`${a.kind==='video'?'📹':'🖼'} ${a.name||a.path.split('/').pop()} <a href="#" data-rm="${i}" style="color:#ff8d8d">✕</a>`).join(' · ')):'Сырьё не добавлено';
+      al.querySelectorAll('[data-rm]').forEach(x=>x.onclick=(e)=>{e.preventDefault();card.assets.splice(+x.dataset.rm,1);persist();drawAssets();});};
+    drawAssets();
+    up.onchange=async()=>{const st=document.getElementById('m_montst');
+      for(const f of up.files){st.textContent='⬆ Загружаю '+f.name+'…';
+        const fd=new FormData();fd.append('file',f);
+        try{const r=await fetch('/api/upload',{method:'POST',body:fd});const d=await r.json();
+          if(d.path)card.assets.push({path:d.path,kind:d.kind,name:d.name});}catch(e){st.textContent='Ошибка загрузки: '+e.message;}}
+      persist();drawAssets();st.textContent='Сырьё загружено ('+card.assets.length+')';up.value='';};
+    const mb=document.getElementById('m_montage');
+    mb.onclick=async()=>{const st=document.getElementById('m_montst');
+      card.montage_prompt=document.getElementById('m_mprompt').value.trim();
+      if(!card.assets.length){st.textContent='Добавь сырьё (клипы/фото)';return;}
+      if(!card.montage_prompt){st.textContent='Опиши задачу монтажа';return;}
+      mb.disabled=true;st.textContent='🎬 ИИ-монтажёр собирает…';
+      try{
+        const fd=new FormData();fd.append('assets',JSON.stringify(card.assets.map(a=>a.path)));fd.append('prompt',card.montage_prompt);
+        const r=await fetch('/api/ai_montage',{method:'POST',body:fd});const d=await r.json();
+        if(!r.ok||!d.job_id)throw new Error(d.detail||'err');const jid=d.job_id;
+        for(let i=0;i<200;i++){await new Promise(s=>setTimeout(s,3000));
+          const j=await (await fetch('/api/jobs/'+jid)).json();st.textContent='🎬 Сборка… ('+(j.status||'?')+')';
+          if(j.status==='done'){card.video='/outputs/'+jid+'.mp4';card.tags=Array.from(new Set([...(card.tags||[]),'ai-montage']));
+            persist();render();const rev=data.columns.find(c=>c.id==='review');
+            if(rev){const k=cur.col.cards.indexOf(card);cur.col.cards.splice(k,1);rev.cards.unshift(card);persist();render();}
+            st.innerHTML='Готово ✅ монтаж собран ('+(j.info?j.info.segments+' сегм., '+j.info.duration+'с':'')+'), → Ревью. <a href="#" id="m_mre">открыть</a>';
+            const re=document.getElementById('m_mre');if(re)re.onclick=(e)=>{e.preventDefault();const c=data.columns.find(x=>x.cards.includes(card));closeCard();openCard(c.id,card.id);};return;}
+          if(j.status==='error')throw new Error(j.error||'err');}
+        throw new Error('таймаут');
+      }catch(e){st.textContent='Ошибка: '+e.message;mb.disabled=false;}
+    };
+  }
 }
 function closeCard(){document.getElementById('ov').classList.remove('show');cur=null;}
 function saveCard(){
