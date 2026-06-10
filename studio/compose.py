@@ -77,7 +77,7 @@ def mock_clip(image_path: str | None, fallback_text: str, seconds: float, out: s
         os.remove(tmp)
 
 
-def _wrap(text: str, width: int = 18) -> str:
+def _wrap(text: str, width: int = 14) -> str:
     """Greedy word-wrap into lines of ~width chars (drawtext has no auto-wrap)."""
     words, lines, cur = text.split(), [], ""
     for w in words:
@@ -100,8 +100,8 @@ def burn_hook(clip: str, hook: str, out: str):
         return out
     hf = out + ".hook.txt"
     open(hf, "w", encoding="utf-8").write(_wrap(hook.strip().upper()))
-    vf = (f"drawtext=textfile='{hf}':fontfile='{FONT}':fontsize=62:fontcolor=0x0AD6FF:"
-          f"borderw=6:bordercolor=black:box=1:boxcolor=black@0.45:boxborderw=26:"
+    vf = (f"drawtext=textfile='{hf}':fontfile='{FONT}':fontsize=54:fontcolor=0x0AD6FF:"
+          f"borderw=6:bordercolor=black:box=1:boxcolor=black@0.45:boxborderw=24:"
           f"line_spacing=12:x=(w-tw)/2:y=170")
     subprocess.run([FF, "-y", "-i", clip, "-vf", vf, "-an", "-r", "30",
                     "-c:v", "libx264", "-threads", "1", "-preset", "ultrafast",
