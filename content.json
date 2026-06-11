@@ -31,20 +31,6 @@
           "scenario": "ognyok_norse"
         },
         {
-          "id": "japan",
-          "title": "Огонёк · Япония (путь/кайдзен)",
-          "desc": "Сценарий готов: scenarios/ognyok_japan.json. Кайдзен: 1 маленький шаг каждый день.",
-          "tags": [
-            "content",
-            "ready"
-          ],
-          "images": [
-            "/media/japan_turn.png"
-          ],
-          "notes": "Сценарий готов: scenarios/ognyok_japan.json. Геро-превью ок. Дальше: рендер.",
-          "scenario": "ognyok_japan"
-        },
-        {
           "id": "space",
           "title": "Огонёк · космос",
           "desc": "Сценарий готов: scenarios/ognyok_space.json. Один разгон не довезёт — топливо понемногу каждый день.",
@@ -57,6 +43,20 @@
           ],
           "notes": "Сценарий готов: scenarios/ognyok_space.json. Геро-превью ок. Дальше: рендер.",
           "scenario": "ognyok_space"
+        },
+        {
+          "id": "japan",
+          "title": "Огонёк · Япония (путь/кайдзен)",
+          "desc": "Сценарий готов: scenarios/ognyok_japan.json. Кайдзен: 1 маленький шаг каждый день.",
+          "tags": [
+            "content",
+            "ready"
+          ],
+          "images": [
+            "/media/japan_turn.png"
+          ],
+          "notes": "Сценарий готов: scenarios/ognyok_japan.json. Геро-превью ок. Дальше: рендер.",
+          "scenario": "ognyok_japan"
         }
       ]
     },

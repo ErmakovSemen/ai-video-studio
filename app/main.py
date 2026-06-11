@@ -173,6 +173,16 @@ def content_page():
 def get_kanban(name: str):
     if name not in KANBANS:
         raise HTTPException(404, "no such board")
+    # Prefer the durable GitHub copy so agent results (and cross-host edits) show up.
+    from studio import boardsync
+    remote = boardsync.pull(name)
+    if remote is not None:
+        try:
+            (ROOT / f"{name}.json").write_text(
+                json.dumps(remote, ensure_ascii=False, indent=2), encoding="utf-8")
+        except Exception:
+            pass
+        return remote
     p = ROOT / f"{name}.json"
     if not p.exists():
         return {"title": name, "columns": []}
@@ -190,7 +200,9 @@ def save_kanban(name: str, body: str = Form(...)):
     import datetime
     data["updated"] = datetime.date.today().isoformat()
     (ROOT / f"{name}.json").write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
-    return {"saved": True, "updated": data["updated"]}
+    from studio import boardsync
+    synced = boardsync.push(name, data, message=f"board: {name} update from page")
+    return {"saved": True, "updated": data["updated"], "synced": synced}
 
 
 # back-compat aliases

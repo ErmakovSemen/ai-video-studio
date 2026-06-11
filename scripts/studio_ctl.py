@@ -140,6 +140,43 @@ def do_edit(b: dict, cid: str) -> bool:
     return True
 
 
+def do_publish(b: dict, cid: str, only: list[str] | None) -> bool:
+    from publish import registry, VideoMeta
+    c, _ = find_card(b, cid)
+    if not c or not c.get("video"):
+        print(f"  ! {cid}: no video on card"); return False
+    vid = c["video"]
+    if vid.startswith("http"):
+        local = host.fetch(vid, os.path.join(WORK, "pub", f"{cid}.mp4"))
+    else:
+        local = next((p for p in (os.path.join(ROOT, vid.lstrip("/")),
+                                  os.path.join(ROOT, "outputs", os.path.basename(vid)))
+                      if os.path.exists(p)), None)
+    if not local or not os.path.exists(local):
+        print(f"  ! {cid}: cannot resolve video file ({vid})"); return False
+    meta = VideoMeta(title=(c.get("title", "Prometey"))[:100],
+                     description=c.get("desc", ""), privacy="public")
+    results, links = [], c.get("links", [])
+    for p in registry.publishers():
+        if only and p.name not in only:
+            continue
+        if not p.configured():
+            continue
+        try:
+            r = p.publish(local, meta)
+            results.append(r)
+            if r.get("url"):
+                links.append({"label": p.label, "url": r["url"]})
+            print(f"  + {p.name}: {r.get('url', r)}")
+        except Exception as e:
+            print(f"  ! {p.name}: {str(e)[:160]}")
+    if not results:
+        print("  ! no configured platforms posted"); return False
+    c["links"] = links
+    c.setdefault("tags", []); ("posted" in c["tags"]) or c["tags"].append("posted")
+    return True
+
+
 def cmd_claim(b: dict):
     col = next((k for k in b["columns"] if k["id"] == CLAUDE_COL), None)
     if not col or not col["cards"]:
@@ -166,6 +203,7 @@ def main():
     e = sub.add_parser("edit"); e.add_argument("card_id")
     sub.add_parser("claim")
     pu = sub.add_parser("publish"); pu.add_argument("card_id")
+    pu.add_argument("--to", help="comma-separated platforms (default: all configured)")
     a = ap.parse_args()
 
     b = load_board()
@@ -192,11 +230,9 @@ def main():
         cmd_claim(b); save_board(b)
         return
     if a.cmd == "publish":
-        c, _ = find_card(b, a.card_id)
-        if not c or not c.get("video"):
-            print("no video on card"); return
-        print(f"publish wiring: card {a.card_id} video={c['video']} "
-              f"(use /api/publish_file or publish.registry)")
+        only = [s.strip() for s in a.to.split(",")] if a.to else None
+        if do_publish(b, a.card_id, only):
+            move_card(b, a.card_id, "posted"); save_board(b)
         return
 
 

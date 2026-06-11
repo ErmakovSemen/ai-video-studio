@@ -124,6 +124,7 @@ function openCard(colId,cardId){
      ${col.id==='montage'?`<label>🎬 Профи ИИ-монтаж из сырья</label><div style="font-size:12px;color:var(--mut);margin-bottom:6px">Брось сырые клипы и фото + опиши задачу — ИИ соберёт монтаж (порядок, обрезка, вставки, подписи) → Ревью.</div><input type="file" id="m_up" multiple accept="video/*,image/*" style="font-size:12px;margin-bottom:6px;width:100%"><div id="m_assets" style="font-size:12px;color:var(--mut);margin-bottom:6px"></div><textarea id="m_mprompt" placeholder="Напр.: динамичный ролик про дисциплину, сильный хук, фото в середине, чёткие подписи" style="min-height:56px">${esc(card.montage_prompt||'')}</textarea><button class="mbtn" id="m_montage" style="margin-top:8px">🎬 Собрать ИИ-монтаж</button><div style="font-size:13px;margin-top:8px" id="m_montst"></div>`:''}
      ${col.id==='review'?`<label>👀 Решение ревью</label><div class="mrow" style="margin-top:4px"><button class="mbtn" id="m_pass">✅ На раскатку</button><button class="mbtn sec" id="m_back">↩ В монтаж</button></div>`:''}
      ${(col.id==='await_post'||col.id==='posting')&&card.video?`<label>📤 Постинг</label><div style="font-size:12px;color:var(--mut);margin-bottom:8px">Залить видео карточки в подключённые соцсети.</div><button class="mbtn" id="m_post">📤 Запостить</button><div style="font-size:13px;margin-top:8px" id="m_postst"></div>`:''}
+     ${col.id!=='claude'&&col.id!=='posted'&&(card.scenario||(card.assets&&card.assets.length))?`<label>🤖 Отдать Claude</label><div style="font-size:12px;color:var(--mut);margin-bottom:8px">Передать карточку агенту: ${card.scenario?'отрендерит сценарий':'смонтирует из сырья'} → результат вернётся в «Ревью». Обрабатывается фоном (studio_ctl claim).</div><button class="mbtn sec" id="m_claude">🤖 Отдать Claude</button>`:''}
      <div class="mrow">
        <button class="mbtn" id="m_save">💾 Сохранить</button>
        <button class="mbtn sec" id="m_close">Закрыть</button>
@@ -155,6 +156,7 @@ function openCard(colId,cardId){
     const i=cur.col.cards.indexOf(card);if(i>=0)cur.col.cards.splice(i,1);t.cards.unshift(card);persist();render();closeCard();}
   const pass=document.getElementById('m_pass');if(pass)pass.onclick=()=>moveTo('await_post');
   const back=document.getElementById('m_back');if(back)back.onclick=()=>moveTo('montage');
+  const clb=document.getElementById('m_claude');if(clb)clb.onclick=()=>{card.notes=((card.notes||'')+'\n🤖 Передано Claude '+new Date().toLocaleString('ru-RU')).trim();card.tags=Array.from(new Set([...(card.tags||[]),'claude-queued']));moveTo('claude');};
   const gen=document.getElementById('m_gen');
   if(gen)gen.onclick=async()=>{
     const st=document.getElementById('m_genst');st.textContent='Загружаю сценарий…';gen.disabled=true;

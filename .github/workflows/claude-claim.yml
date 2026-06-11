@@ -1,0 +1,67 @@
+name: Claude claim — process "Отдать Claude" column
+
+# Closes the handshake in the cloud: the page commits the board to the repo (boardsync),
+# this job picks up every card in the 🤖 column, renders/montages it via the studio code,
+# mirrors the result to catbox, writes the URL back on the card → Review, and commits.
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"     # every 10 minutes
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: claude-claim
+  cancel-in-progress: false
+
+jobs:
+  claim:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Skip if nothing handed to Claude
+        id: gate
+        run: |
+          python - <<'PY'
+          import json, os
+          b = json.load(open("content.json"))
+          col = next((c for c in b["columns"] if c["id"] == "claude"), None)
+          n = len(col["cards"]) if col else 0
+          print(f"claude column has {n} card(s)")
+          open(os.environ["GITHUB_OUTPUT"], "a").write(f"count={n}\n")
+          PY
+
+      - uses: actions/setup-python@v5
+        if: steps.gate.outputs.count != '0'
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install deps
+        if: steps.gate.outputs.count != '0'
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Claim & process
+        if: steps.gate.outputs.count != '0'
+        env:
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: python -m scripts.studio_ctl claim
+
+      - name: Commit processed board
+        if: steps.gate.outputs.count != '0'
+        run: |
+          git config user.name  "prometey-claude"
+          git config user.email "claude@users.noreply.github.com"
+          if ! git diff --quiet -- content.json; then
+            git add content.json
+            git commit -m "board: claude processed handed cards [skip ci]"
+            git push
+          else
+            echo "no board change to commit"
+          fi
