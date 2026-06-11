@@ -57,3 +57,8 @@ severity: 🔴 блокер · 🟠 серьёзно · 🟡 мелочь/UX · 
   - Фикс №1: запинил requirements.txt в lockfile (детерминированная установка, меньше запросов к PyPI, нет бэктрекинга).
   - Фикс №2 (решающий): env `PIP_DEFAULT_TIMEOUT=120` + `PIP_RETRIES=10` → билд прошёл, деплой LIVE.
 - 🔵 Урок: на free-Render держать pip-таймаут/ретраи повышенными и зависимости запиненными, иначе случайный медленный ответ PyPI роняет деплой.
+
+### Шаг 9 — ФИНАЛ: заливка с доски в YouTube (e2e замкнут)
+- ✅✅ **e2e ПРОЙДЕН ЦЕЛИКОМ:** на доске нажал «📤 Запостить» на карточке «космос» → `/api/publish_file` скачал durable-видео с catbox → залил в YouTube. Результат: **https://youtu.be/6RhLrrOJ_rQ**, privacy=public, uploadStatus=processed. Постинг идёт во все подключённые платформы (YouTube + Telegram).
+- ✅ Неаудированный OAuth НЕ форсит private — ролик сразу публичный (при прямом privacy=public без publishAt).
+- Связанные фиксы для этого финала: YT_* в Render env (YouTube configured), publish_file принимает http-URL (durable), pip-таймаут (билды зелёные), космос снят с автопостинга (без дубля).

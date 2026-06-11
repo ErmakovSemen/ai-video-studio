@@ -117,21 +117,6 @@
       "name": "⏳ Ждёт постинга",
       "cards": [
         {
-          "id": "space",
-          "title": "Топливо понемногу каждый день 🚀🔥 #Shorts",
-          "desc": "Один разгон не довезёт до цели. Топливо — понемногу, но каждый день. Так доходят далеко.\n\nMusic: «Inspired» by Kevin MacLeod (incompetech.com), CC BY 4.0",
-          "tags": [
-            "content",
-            "ready"
-          ],
-          "images": [
-            "/media/space_turn.png"
-          ],
-          "scenario": "ognyok_space",
-          "video": "https://files.catbox.moe/dwe8dr.mp4",
-          "video_local": "/outputs/card_space.mp4"
-        },
-        {
           "id": "brand-demo",
           "title": "Прометей — брендовый ролик (демо)",
           "desc": "outputs/prometey_brand_demo.mp4. Решить: постить/доработать.",
@@ -152,6 +137,28 @@
       "id": "posted",
       "name": "✅ Залито",
       "cards": [
+        {
+          "id": "space",
+          "title": "Топливо понемногу каждый день 🚀🔥 #Shorts",
+          "desc": "Один разгон не довезёт до цели. Топливо — понемногу, но каждый день. Так доходят далеко.\n\nMusic: «Inspired» by Kevin MacLeod (incompetech.com), CC BY 4.0",
+          "tags": [
+            "content",
+            "posting"
+          ],
+          "images": [
+            "/media/space_turn.png"
+          ],
+          "scenario": "ognyok_space",
+          "video": "https://files.catbox.moe/dwe8dr.mp4",
+          "video_local": "/outputs/card_space.mp4",
+          "links": [
+            {
+              "label": "YouTube",
+              "url": "https://youtu.be/6RhLrrOJ_rQ"
+            }
+          ],
+          "notes": "Залито с доски (кнопка «Запостить») → YouTube public + Telegram. e2e идея→YouTube подтверждён."
+        },
         {
           "id": "greece-yt",
           "title": "Огонь не от рывка (Греция) → YouTube",
