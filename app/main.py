@@ -242,7 +242,9 @@ def _run(jid: str, scenario: dict, draft: bool, polish: bool = True, music: str 
     try:
         log = story.build(scenario, out, wd, base_dir=str(ROOT), draft=draft,
                           polish=polish, music=music, gen_stills=gen_stills)
-        JOBS[jid].update(status="done", info=log, video=f"/outputs/{jid}.mp4")
+        from studio.host import upload_best_effort
+        url = upload_best_effort(out)          # durable mirror so the agent can fetch it
+        JOBS[jid].update(status="done", info=log, video=f"/outputs/{jid}.mp4", url=url)
     except Exception as e:
         import traceback; traceback.print_exc()
         JOBS[jid].update(status="error", error=str(e)[:300])
@@ -289,7 +291,9 @@ async def upload_asset(file: UploadFile = File(...)):
     data = await file.read()
     (up / name).write_bytes(data)
     kind = "video" if ext.lower().lstrip(".") in ("mp4", "mov", "webm", "mkv", "avi") else "image"
-    return {"path": f"/media/uploads/{name}", "name": file.filename, "kind": kind}
+    from studio.host import upload_best_effort
+    url = upload_best_effort(str(up / name), filename=name)   # durable mirror for the agent
+    return {"path": f"/media/uploads/{name}", "name": file.filename, "kind": kind, "url": url}
 
 
 def _resolve_media(p: str):
@@ -321,7 +325,9 @@ def api_ai_montage(assets: str = Form(...), prompt: str = Form(...)):
         try:
             from studio import ai_montage
             res = ai_montage.ai_montage(fs, prompt, str(OUT / f"{jid}.mp4"), str(WORK / jid))
-            JOBS[jid].update(status="done", info={"segments": res["segments"], "duration": res["duration"], "plan": res["plan"]}, video=f"/outputs/{jid}.mp4")
+            from studio.host import upload_best_effort
+            url = upload_best_effort(str(OUT / f"{jid}.mp4"))
+            JOBS[jid].update(status="done", info={"segments": res["segments"], "duration": res["duration"], "plan": res["plan"]}, video=f"/outputs/{jid}.mp4", url=url)
         except Exception as e:
             import traceback; traceback.print_exc()
             JOBS[jid].update(status="error", error=str(e)[:300])

@@ -16,20 +16,9 @@ GRAPH = "https://graph.facebook.com/v21.0"
 
 
 def _public_url(path: str) -> str:
-    """Upload the file to catbox.moe and return a public URL (multipart)."""
-    b = "----b" + uuid.uuid4().hex
-
-    def field(n, v):
-        return (f'--{b}\r\nContent-Disposition: form-data; name="{n}"\r\n\r\n{v}\r\n').encode()
-
-    body = field("reqtype", "fileupload")
-    body += (f'--{b}\r\nContent-Disposition: form-data; name="fileToUpload"; filename="v.mp4"\r\n'
-             f'Content-Type: video/mp4\r\n\r\n').encode() + open(path, "rb").read() + b"\r\n"
-    body += (f'--{b}--\r\n').encode()
-    r = urllib.request.urlopen(urllib.request.Request(
-        "https://catbox.moe/user/api.php", data=body,
-        headers={"Content-Type": f"multipart/form-data; boundary={b}"}), timeout=300)
-    return r.read().decode().strip()
+    """Upload the file to a public host and return its URL (shared with the studio)."""
+    from studio.host import upload
+    return upload(path, filename="v.mp4")
 
 
 def _post(url, params):

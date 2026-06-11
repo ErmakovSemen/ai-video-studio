@@ -104,6 +104,11 @@
       ]
     },
     {
+      "id": "claude",
+      "name": "🤖 Отдать Claude",
+      "cards": []
+    },
+    {
       "id": "review",
       "name": "👀 Ревью",
       "cards": [
