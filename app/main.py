@@ -349,8 +349,17 @@ def api_ai_montage(assets: str = Form(...), prompt: str = Form(...)):
 
 @app.post("/api/publish_file")
 def publish_file(video: str = Form(...), title: str = Form(...), description: str = Form("")):
-    """Залить файл (из /outputs или /media) во все подключённые соцсети."""
-    if video.startswith("/outputs/"):
+    """Залить файл (из /outputs, /media или durable URL) во все подключённые соцсети."""
+    if video.startswith(("http://", "https://")):
+        # durable-ссылка (catbox и т.п.) — скачиваем во временный файл и постим
+        from studio.host import fetch
+        path = OUT / f"pub_{uuid.uuid4().hex[:10]}.mp4"
+        OUT.mkdir(exist_ok=True)
+        try:
+            fetch(video, str(path))
+        except Exception as e:
+            raise HTTPException(400, f"не скачать видео по URL: {str(e)[:160]}")
+    elif video.startswith("/outputs/"):
         path = OUT / video[len("/outputs/"):]
     elif video.startswith("/media/"):
         path = MEDIA / video[len("/media/"):]
