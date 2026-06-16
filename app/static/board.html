@@ -60,6 +60,10 @@
 <script>
 const $=s=>document.querySelector(s);let data={columns:[]};let dirty=false;
 const NAME=new URLSearchParams(location.search).get('name')||'board';
+// stage navigation: move a card forward/back without dragging across columns
+const NEXT={ideas:'draft',assets:'draft',draft:'montage',montage:'review',claude:'review',review:'await_post',await_post:'posting',posting:'posted'};
+const PREV={draft:'ideas',montage:'draft',review:'montage',await_post:'review',posting:'await_post',posted:'posting'};
+const colName=id=>{const c=(data.columns||[]).find(x=>x.id===id);return c?c.name:id;};
 if(window.self!==window.top){const h=document.querySelector('header');if(h)h.style.display='none';}
 function tagClass(t){return ['posting','content','product','infra','blocked'].includes(t)?t:'';}
 function render(){
@@ -122,7 +126,7 @@ function openCard(colId,cardId){
      ${card.scenario?`<label>✍️ Улучшить субтитры (ИИ)</label><div style="font-size:12px;color:var(--mut);margin-bottom:8px">ИИ перепишет и подчистит подписи сценария «${esc(card.scenario)}» → карточка уйдёт в «Ревью».</div><button class="mbtn sec" id="m_ai">✍️ Улучшить субтитры</button><div style="font-size:13px;margin-top:8px" id="m_aist"></div>`:''}
      ${(col.id==='ideas'||col.id==='draft'||col.id==='montage')&&card.scenario?`<label>🎬 Видео</label><div style="font-size:12px;color:var(--mut);margin-bottom:8px">${card.video?'Видео есть — можно перерендерить.':'Видео ещё нет — сгенерировать из сценария.'} Сценарий: ${esc(card.scenario)} · бесплатно (сцены+хук+караоке+музыка)</div><button class="mbtn" id="m_gen">${card.video?'♻️ Перерендерить видео':'🎬 Сгенерировать видео'}</button><div style="font-size:13px;margin-top:8px" id="m_genst"></div>`:''}
      ${col.id==='montage'?`<label>🎬 Профи ИИ-монтаж из сырья</label><div style="font-size:12px;color:var(--mut);margin-bottom:6px">Брось сырые клипы и фото + опиши задачу — ИИ соберёт монтаж (порядок, обрезка, вставки, подписи) → Ревью.</div><input type="file" id="m_up" multiple accept="video/*,image/*" style="font-size:12px;margin-bottom:6px;width:100%"><div id="m_assets" style="font-size:12px;color:var(--mut);margin-bottom:6px"></div><textarea id="m_mprompt" placeholder="Напр.: динамичный ролик про дисциплину, сильный хук, фото в середине, чёткие подписи" style="min-height:56px">${esc(card.montage_prompt||'')}</textarea><button class="mbtn" id="m_montage" style="margin-top:8px">🎬 Собрать ИИ-монтаж</button><div style="font-size:13px;margin-top:8px" id="m_montst"></div>`:''}
-     ${col.id==='review'?`<label>👀 Решение ревью</label><div class="mrow" style="margin-top:4px"><button class="mbtn" id="m_pass">✅ На раскатку</button><button class="mbtn sec" id="m_back">↩ В монтаж</button></div>`:''}
+     ${(PREV[col.id]||NEXT[col.id])?`<label>➡️ Перемещение по стадиям</label><div class="mrow" style="margin-top:4px">${PREV[col.id]?`<button class="mbtn sec" id="m_prev">← ${esc(colName(PREV[col.id]))}</button>`:''}${NEXT[col.id]?`<button class="mbtn" id="m_next">${esc(colName(NEXT[col.id]))} →</button>`:''}</div>`:''}
      ${(col.id==='await_post'||col.id==='posting')&&card.video?`<label>📤 Постинг</label><div style="font-size:12px;color:var(--mut);margin-bottom:8px">Залить видео карточки в подключённые соцсети.</div><button class="mbtn" id="m_post">📤 Запостить</button><div style="font-size:13px;margin-top:8px" id="m_postst"></div>`:''}
      ${col.id!=='claude'&&col.id!=='posted'&&(card.scenario||(card.assets&&card.assets.length))?`<label>🤖 Отдать Claude</label><div style="font-size:12px;color:var(--mut);margin-bottom:8px">Передать карточку Claude: ${card.scenario?'он отрендерит сценарий':'он смонтирует из сырья'} в фоне → готовый ролик вернётся в «Ревью» (обычно в течение ~10 минут).</div><button class="mbtn sec" id="m_claude">🤖 Отдать Claude</button>`:''}
      <div class="mrow">
@@ -154,8 +158,8 @@ function openCard(colId,cardId){
   };
   function moveTo(target){const t=data.columns.find(c=>c.id===target);if(!t)return;
     const i=cur.col.cards.indexOf(card);if(i>=0)cur.col.cards.splice(i,1);t.cards.unshift(card);persist();render();closeCard();}
-  const pass=document.getElementById('m_pass');if(pass)pass.onclick=()=>moveTo('await_post');
-  const back=document.getElementById('m_back');if(back)back.onclick=()=>moveTo('montage');
+  const pv=document.getElementById('m_prev');if(pv)pv.onclick=()=>moveTo(PREV[col.id]);
+  const nx=document.getElementById('m_next');if(nx)nx.onclick=()=>moveTo(NEXT[col.id]);
   const clb=document.getElementById('m_claude');if(clb)clb.onclick=()=>{card.notes=((card.notes||'')+'\n🤖 Передано Claude '+new Date().toLocaleString('ru-RU')).trim();card.tags=Array.from(new Set([...(card.tags||[]),'claude-queued']));moveTo('claude');};
   const gen=document.getElementById('m_gen');
   if(gen)gen.onclick=async()=>{
