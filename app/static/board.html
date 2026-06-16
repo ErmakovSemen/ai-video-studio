@@ -82,7 +82,7 @@ function render(){
     });
     const add=document.createElement('button');add.className='add';add.textContent='+ карточка';
     add.onclick=()=>{const t=prompt('Заголовок задачи:');if(!t)return;
-      col.cards.push({id:'c'+Date.now(),title:t,desc:'',tags:[]});markDirty();render();};
+      col.cards.push({id:'c'+Date.now(),title:t,desc:'',tags:[]});render();persist();};
     c.appendChild(add);
     c.addEventListener('dragover',e=>{e.preventDefault();c.classList.add('over');});
     c.addEventListener('dragleave',()=>c.classList.remove('over'));
@@ -95,7 +95,7 @@ function render(){
 function move(id,from,to){
   const fc=data.columns.find(c=>c.id===from),tc=data.columns.find(c=>c.id===to);
   const i=fc.cards.findIndex(c=>c.id===id);if(i<0)return;
-  tc.cards.unshift(fc.cards.splice(i,1)[0]);markDirty();render();
+  tc.cards.unshift(fc.cards.splice(i,1)[0]);render();persist();   // autosave on drop
 }
 function markDirty(){dirty=true;$('#save').classList.add('dirty');}
 function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');}
@@ -119,12 +119,12 @@ function openCard(colId,cardId){
      <label>Добавить артефакт</label>
      <input id="m_vid" placeholder="видео URL (напр. /outputs/x.mp4 или /media/x.mp4)" value="${esc(card.video)}">
      <input id="m_link" placeholder="ссылка: подпись | https://…" style="margin-top:6px">
-     ${card.scenario?`<label>🤖 ИИ-монтажёр</label><div style="font-size:12px;color:var(--mut);margin-bottom:8px">Сценарий: ${esc(card.scenario)}. Запустит улучшение субтитров → перенесёт карточку в «Ревью».</div><button class="mbtn sec" id="m_ai">🤖 Запустить ИИ-монтаж</button><div style="font-size:13px;margin-top:8px" id="m_aist"></div>`:''}
-     ${(col.id==='draft'||col.id==='montage')&&card.scenario?`<label>🎬 Видео</label><div style="font-size:12px;color:var(--mut);margin-bottom:8px">${card.video?'Видео есть — можно перерендерить.':'Видео ещё нет — сгенерировать из сценария.'} Сценарий: ${esc(card.scenario)} · бесплатный драфт (ken-burns+караоке)</div><button class="mbtn" id="m_gen">${card.video?'♻️ Перерендерить видео':'🎬 Сгенерировать видео'}</button><div style="font-size:13px;margin-top:8px" id="m_genst"></div>`:''}
+     ${card.scenario?`<label>✍️ Улучшить субтитры (ИИ)</label><div style="font-size:12px;color:var(--mut);margin-bottom:8px">ИИ перепишет и подчистит подписи сценария «${esc(card.scenario)}» → карточка уйдёт в «Ревью».</div><button class="mbtn sec" id="m_ai">✍️ Улучшить субтитры</button><div style="font-size:13px;margin-top:8px" id="m_aist"></div>`:''}
+     ${(col.id==='ideas'||col.id==='draft'||col.id==='montage')&&card.scenario?`<label>🎬 Видео</label><div style="font-size:12px;color:var(--mut);margin-bottom:8px">${card.video?'Видео есть — можно перерендерить.':'Видео ещё нет — сгенерировать из сценария.'} Сценарий: ${esc(card.scenario)} · бесплатно (сцены+хук+караоке+музыка)</div><button class="mbtn" id="m_gen">${card.video?'♻️ Перерендерить видео':'🎬 Сгенерировать видео'}</button><div style="font-size:13px;margin-top:8px" id="m_genst"></div>`:''}
      ${col.id==='montage'?`<label>🎬 Профи ИИ-монтаж из сырья</label><div style="font-size:12px;color:var(--mut);margin-bottom:6px">Брось сырые клипы и фото + опиши задачу — ИИ соберёт монтаж (порядок, обрезка, вставки, подписи) → Ревью.</div><input type="file" id="m_up" multiple accept="video/*,image/*" style="font-size:12px;margin-bottom:6px;width:100%"><div id="m_assets" style="font-size:12px;color:var(--mut);margin-bottom:6px"></div><textarea id="m_mprompt" placeholder="Напр.: динамичный ролик про дисциплину, сильный хук, фото в середине, чёткие подписи" style="min-height:56px">${esc(card.montage_prompt||'')}</textarea><button class="mbtn" id="m_montage" style="margin-top:8px">🎬 Собрать ИИ-монтаж</button><div style="font-size:13px;margin-top:8px" id="m_montst"></div>`:''}
      ${col.id==='review'?`<label>👀 Решение ревью</label><div class="mrow" style="margin-top:4px"><button class="mbtn" id="m_pass">✅ На раскатку</button><button class="mbtn sec" id="m_back">↩ В монтаж</button></div>`:''}
      ${(col.id==='await_post'||col.id==='posting')&&card.video?`<label>📤 Постинг</label><div style="font-size:12px;color:var(--mut);margin-bottom:8px">Залить видео карточки в подключённые соцсети.</div><button class="mbtn" id="m_post">📤 Запостить</button><div style="font-size:13px;margin-top:8px" id="m_postst"></div>`:''}
-     ${col.id!=='claude'&&col.id!=='posted'&&(card.scenario||(card.assets&&card.assets.length))?`<label>🤖 Отдать Claude</label><div style="font-size:12px;color:var(--mut);margin-bottom:8px">Передать карточку агенту: ${card.scenario?'отрендерит сценарий':'смонтирует из сырья'} → результат вернётся в «Ревью». Обрабатывается фоном (studio_ctl claim).</div><button class="mbtn sec" id="m_claude">🤖 Отдать Claude</button>`:''}
+     ${col.id!=='claude'&&col.id!=='posted'&&(card.scenario||(card.assets&&card.assets.length))?`<label>🤖 Отдать Claude</label><div style="font-size:12px;color:var(--mut);margin-bottom:8px">Передать карточку Claude: ${card.scenario?'он отрендерит сценарий':'он смонтирует из сырья'} в фоне → готовый ролик вернётся в «Ревью» (обычно в течение ~10 минут).</div><button class="mbtn sec" id="m_claude">🤖 Отдать Claude</button>`:''}
      <div class="mrow">
        <button class="mbtn" id="m_save">💾 Сохранить</button>
        <button class="mbtn sec" id="m_close">Закрыть</button>
@@ -162,19 +162,20 @@ function openCard(colId,cardId){
     const st=document.getElementById('m_genst');st.textContent='Загружаю сценарий…';gen.disabled=true;
     try{
       const sc=await (await fetch('/api/scenarios/'+card.scenario)).json();
-      const fd=new FormData();fd.append('body',JSON.stringify(sc));fd.append('draft','true');fd.append('polish','true');fd.append('gen_stills','true');
+      const fd=new FormData();fd.append('body',JSON.stringify(sc));fd.append('draft','true');fd.append('polish','true');fd.append('stills',card.scenario||'');
       st.textContent='🎬 Рендер запущен…';
       const r=await fetch('/api/render',{method:'POST',body:fd});const d=await r.json();
       if(!r.ok||!d.job_id)throw new Error(d.detail||'render err');const jid=d.job_id;
       for(let i=0;i<150;i++){await new Promise(s=>setTimeout(s,3000));
         const j=await (await fetch('/api/jobs/'+jid)).json();st.textContent='🎬 Рендер… ('+(j.status||'?')+')';
-        if(j.status==='done'){card.video='/outputs/'+jid+'.mp4';card.tags=Array.from(new Set([...(card.tags||[]),'rendered']));
-          if(cur.col.id==='draft'){const m=data.columns.find(c=>c.id==='montage');if(m){const k=cur.col.cards.indexOf(card);cur.col.cards.splice(k,1);m.cards.unshift(card);}}
-          persist();render();st.innerHTML='Готово ✅ видео прикреплено'+(cur.col.id==='draft'?', → Монтаж':'')+'. <a href="#" id="m_re">открыть</a>';
+        if(j.status==='done'){card.video=j.url||('/outputs/'+jid+'.mp4');card.tags=Array.from(new Set([...(card.tags||[]),'rendered']));
+          const moveToMontage=(cur.col.id==='draft'||cur.col.id==='ideas');
+          if(moveToMontage){const m=data.columns.find(c=>c.id==='montage');if(m){const k=cur.col.cards.indexOf(card);cur.col.cards.splice(k,1);m.cards.unshift(card);}}
+          persist();render();st.innerHTML='Готово ✅ видео прикреплено'+(moveToMontage?', → Монтаж':'')+'. <a href="#" id="m_re">открыть</a>';
           const re=document.getElementById('m_re');if(re)re.onclick=(e)=>{e.preventDefault();const c=data.columns.find(x=>x.cards.includes(card));closeCard();openCard(c.id,card.id);};return;}
         if(j.status==='error')throw new Error(j.error||'render error');}
       throw new Error('таймаут');
-    }catch(e){st.textContent='Ошибка: '+e.message+' · на free-Render рендер падает по памяти — нужен локальный/платный инстанс';gen.disabled=false;}
+    }catch(e){st.textContent='Ошибка: '+e.message+' · попробуй ещё раз (бесплатный TTS иногда подводит)';gen.disabled=false;}
   };
   const post=document.getElementById('m_post');
   if(post)post.onclick=async()=>{
@@ -215,7 +216,7 @@ function openCard(colId,cardId){
         if(!r.ok||!d.job_id)throw new Error(d.detail||'err');const jid=d.job_id;
         for(let i=0;i<200;i++){await new Promise(s=>setTimeout(s,3000));
           const j=await (await fetch('/api/jobs/'+jid)).json();st.textContent='🎬 Сборка… ('+(j.status||'?')+')';
-          if(j.status==='done'){card.video='/outputs/'+jid+'.mp4';card.tags=Array.from(new Set([...(card.tags||[]),'ai-montage']));
+          if(j.status==='done'){card.video=j.url||('/outputs/'+jid+'.mp4');card.tags=Array.from(new Set([...(card.tags||[]),'ai-montage']));
             persist();render();const rev=data.columns.find(c=>c.id==='review');
             if(rev){const k=cur.col.cards.indexOf(card);cur.col.cards.splice(k,1);rev.cards.unshift(card);persist();render();}
             st.innerHTML='Готово ✅ монтаж собран ('+(j.info?j.info.segments+' сегм., '+j.info.duration+'с':'')+'), → Ревью. <a href="#" id="m_mre">открыть</a>';

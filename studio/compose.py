@@ -33,8 +33,17 @@ W, H = 720, 1280
 
 
 def tts(text: str, out: str):
-    import edge_tts
-    asyncio.run(edge_tts.Communicate(text, VOICE, rate="+8%").save(out))
+    import edge_tts, time
+    last = None
+    for attempt in range(4):                       # edge-tts intermittently returns no audio
+        try:
+            asyncio.run(edge_tts.Communicate(text, VOICE, rate="+8%").save(out))
+            if os.path.exists(out) and os.path.getsize(out) > 0:
+                return
+        except Exception as e:
+            last = e
+        time.sleep(1.2 * (attempt + 1))
+    raise RuntimeError(f"edge-tts no audio after retries: {last}")
 
 
 def dur(path: str) -> float:

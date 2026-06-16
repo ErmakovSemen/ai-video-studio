@@ -248,12 +248,13 @@ def save_scenario(name: str, body: str = Form(...)):
 
 
 def _run(jid: str, scenario: dict, draft: bool, polish: bool = True, music: str = None,
-         gen_stills: bool = False):
+         gen_stills: bool = False, stills_dir: str = None):
     out = str(OUT / f"{jid}.mp4")
     wd = str(WORK / jid)
     try:
         log = story.build(scenario, out, wd, base_dir=str(ROOT), draft=draft,
-                          polish=polish, music=music, gen_stills=gen_stills)
+                          polish=polish, music=music, gen_stills=gen_stills,
+                          stills_dir=stills_dir)
         from studio.host import upload_best_effort
         url = upload_best_effort(out)          # durable mirror so the agent can fetch it
         JOBS[jid].update(status="done", info=log, video=f"/outputs/{jid}.mp4", url=url)
@@ -263,20 +264,32 @@ def _run(jid: str, scenario: dict, draft: bool, polish: bool = True, music: str 
 
 
 @app.post("/api/render")
-def render(body: str = Form(...), draft: bool = Form(True),
-           polish: bool = Form(True), music: str = Form(""), gen_stills: bool = Form(False)):
+def render(body: str = Form(...), draft: bool = Form(True), polish: bool = Form(True),
+           music: str = Form(""), gen_stills: bool = Form(False), stills: str = Form("")):
     try:
         scenario = json.loads(body)
     except Exception as e:
         raise HTTPException(400, f"invalid scenario json: {e}")
     if not scenario.get("scenes"):
         raise HTTPException(400, "scenario has no scenes")
-    music_path = str(ASSETS / "music" / music) if music else None
+    # Prefer pre-baked scene stills (free, fast, greece-level) over per-scene Gemini.
+    slug = "".join(c for c in stills if c.isalnum() or c in "-_")[:60]
+    sdir = ROOT / "assets" / "scenes" / slug if slug else None
+    has_baked = bool(sdir and sdir.is_dir() and any(p.name.startswith("scene") for p in sdir.iterdir()))
+    if has_baked:
+        gen_stills = False                         # don't pay for Gemini when stills are committed
+    # Default to the ducked music bed for parity with autopost quality.
+    if music:
+        music_path = str(ASSETS / "music" / music)
+    else:
+        default_bed = ASSETS / "music" / "inspired.mp3"
+        music_path = str(default_bed) if default_bed.exists() else None
     jid = uuid.uuid4().hex[:12]
     JOBS[jid] = {"status": "running"}
-    threading.Thread(target=_run, args=(jid, scenario, draft, polish, music_path, gen_stills),
-                     daemon=True).start()
-    return {"job_id": jid, "draft": draft, "polish": polish, "scenes": len(scenario["scenes"])}
+    threading.Thread(target=_run, args=(jid, scenario, draft, polish, music_path, gen_stills,
+                                        str(sdir) if has_baked else None), daemon=True).start()
+    return {"job_id": jid, "draft": draft, "polish": polish, "scenes": len(scenario["scenes"]),
+            "baked_stills": has_baked}
 
 
 @app.get("/api/music")

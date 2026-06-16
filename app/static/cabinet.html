@@ -18,7 +18,10 @@
   .spacer{flex:1}
   .side .foot a{color:var(--mut);font-size:13px}
   /* main */
-  .main{flex:1;height:100vh;overflow:auto}
+  .main{flex:1;height:100vh;overflow:auto;position:relative}
+  .frameload{position:absolute;left:0;right:0;top:52px;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:var(--bg);color:var(--mut);z-index:3;text-align:center;padding:20px}
+  .frameload .sp{width:34px;height:34px;border:3px solid #2a2a34;border-top-color:var(--acc);border-radius:50%;animation:spin 1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
   .topbar{padding:14px 24px;border-bottom:1px solid var(--ln);font-size:15px;font-weight:650;display:flex;align-items:center;gap:10px;position:sticky;top:0;background:var(--bg);z-index:2}
   .pad{padding:22px 24px 60px}
   iframe{width:100%;height:calc(100vh - 52px);border:0;background:var(--bg);display:block}
@@ -67,18 +70,37 @@
       <div class="conn" id="connCards"></div>
     </div>
     <iframe id="frame" class="hide"></iframe>
+    <div id="frameload" class="frameload hide">
+      <div class="sp"></div>
+      <div id="frameloadmsg">Загружаю…</div>
+      <button class="btn sec" id="framereload" style="display:none">↻ Обновить</button>
+    </div>
   </main>
 <script>
 const nav=document.getElementById('nav'),frame=document.getElementById('frame'),
   dash=document.getElementById('dash'),connview=document.getElementById('connview'),
   title=document.getElementById('title');
 const VIEWS={dash:{el:dash,title:'🏠 Дашборд'},conn:{el:connview,title:'🔌 Подключения'}};
+const frameload=document.getElementById('frameload'),frameloadmsg=document.getElementById('frameloadmsg'),
+  framereload=document.getElementById('framereload');
+let ft1,ft2;
+function showFrameLoading(){
+  clearTimeout(ft1);clearTimeout(ft2);
+  frameloadmsg.textContent='Загружаю…';framereload.style.display='none';frameload.classList.remove('hide');
+  ft1=setTimeout(()=>{frameloadmsg.textContent='Бесплатный сервер просыпается (до ~минуты)…';},6000);
+  ft2=setTimeout(()=>{framereload.style.display='inline-block';},22000);
+}
+frame.addEventListener('load',()=>{
+  if(!frame.getAttribute('src'))return;            // ignore initial empty load
+  clearTimeout(ft1);clearTimeout(ft2);frameload.classList.add('hide');
+});
+framereload.onclick=()=>{showFrameLoading();const s=frame.getAttribute('src');frame.src='';frame.src=s;};
 function show(item){
   nav.querySelectorAll('a').forEach(a=>a.classList.remove('active'));
-  Object.values(VIEWS).forEach(v=>v.el.classList.add('hide'));frame.classList.add('hide');
+  Object.values(VIEWS).forEach(v=>v.el.classList.add('hide'));frame.classList.add('hide');frameload.classList.add('hide');
   if(item.view){const v=VIEWS[item.view];v.el.classList.remove('hide');title.textContent=v.title;
     const a=nav.querySelector(`[data-view="${item.view}"]`);if(a)a.classList.add('active');loadConn();}
-  else{frame.src=item.src;frame.classList.remove('hide');
+  else{showFrameLoading();frame.src=item.src;frame.classList.remove('hide');
     const a=nav.querySelector(`[data-src="${item.src}"]`);if(a){a.classList.add('active');title.textContent=a.textContent.trim();}}
 }
 nav.querySelectorAll('a[data-view],a[data-src]').forEach(a=>a.onclick=(e)=>{e.preventDefault();

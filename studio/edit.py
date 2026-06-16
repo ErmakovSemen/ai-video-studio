@@ -39,7 +39,19 @@ def tts_timed(text: str, out_mp3: str, voice: str = None, rate: str = "+8%"):
                 elif t == "SentenceBoundary":
                     s = ch["offset"] / 1e7
                     sent_b.append([ch["text"], s, s + ch["duration"] / 1e7])
-    asyncio.run(_run())
+    import time
+    last = None
+    for attempt in range(4):                       # edge-tts intermittently returns no audio
+        word_b.clear(); sent_b.clear()
+        try:
+            asyncio.run(_run())
+            if os.path.exists(out_mp3) and os.path.getsize(out_mp3) > 0:
+                break
+        except Exception as e:
+            last = e
+        time.sleep(1.2 * (attempt + 1))
+    else:
+        raise RuntimeError(f"edge-tts no audio after retries: {last}")
 
     dur = _duration(out_mp3)
     if word_b:
