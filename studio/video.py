@@ -6,6 +6,15 @@ import os, json, time, uuid, urllib.request
 
 OPENROUTER_KEY = os.getenv("OPENROUTER_API_KEY")
 VIDEO_MODEL = os.getenv("OR_VIDEO_MODEL", "kwaivgi/kling-v3.0-std")
+VIDEO_PROVIDER = os.getenv("VIDEO_PROVIDER", "openrouter").lower()
+
+
+def animate(image_path: str, motion_prompt: str, out_path: str) -> str:
+    """Dispatch image->video to the configured provider (openrouter | higgsfield)."""
+    if VIDEO_PROVIDER == "higgsfield":
+        from studio import higgsfield
+        return higgsfield.animate(image_path, motion_prompt, out_path)
+    return _animate_openrouter(image_path, motion_prompt, out_path)
 
 
 def _public_url(path: str) -> str:
@@ -19,7 +28,7 @@ def _public_url(path: str) -> str:
     return urllib.request.urlopen(req, timeout=120).read().decode().strip()
 
 
-def animate(image_path: str, motion_prompt: str, out_path: str) -> str:
+def _animate_openrouter(image_path: str, motion_prompt: str, out_path: str) -> str:
     """Animate a still image into a short 9:16 clip via OpenRouter video API."""
     if not OPENROUTER_KEY:
         raise RuntimeError("OPENROUTER_API_KEY required")

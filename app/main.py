@@ -213,7 +213,10 @@ def get_board():
 
 @app.get("/api/health")
 def health():
-    return {"video_model": video.VIDEO_MODEL, "image_model": imagegen.IMAGE_MODEL,
+    from studio import higgsfield
+    return {"video_provider": video.VIDEO_PROVIDER, "video_model": video.VIDEO_MODEL,
+            "higgsfield_ready": higgsfield.configured(), "higgsfield_model": higgsfield.MODEL,
+            "image_model": imagegen.IMAGE_MODEL,
             "tg_ready": bool(TG_TOKEN), "channel": TG_CHANNEL, "credits": _credits()}
 
 
