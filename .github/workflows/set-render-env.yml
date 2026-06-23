@@ -1,0 +1,38 @@
+name: Set Render Env Vars
+
+# Manual trigger to push env vars to the Render service.
+# Requires RENDER_API_KEY in GitHub Secrets (once).
+# Reads HIGGSFIELD_API_KEY from the HIGGSFIELD_API_KEY GitHub secret.
+on:
+  workflow_dispatch:
+    inputs:
+      video_provider:
+        description: 'VIDEO_PROVIDER value'
+        default: 'higgsfield'
+        required: true
+
+jobs:
+  set-env:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Push env vars to Render
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          HIGGSFIELD_API_KEY: ${{ secrets.HIGGSFIELD_API_KEY }}
+          SERVICE_ID: srv-d8h65k58nd3s73bttekg
+          VIDEO_PROVIDER: ${{ inputs.video_provider }}
+        run: |
+          echo "Setting env vars on Render service $SERVICE_ID ..."
+          PAYLOAD=$(jq -n \
+            --arg hf "$HIGGSFIELD_API_KEY" \
+            --arg vp "$VIDEO_PROVIDER" \
+            '[{"key":"HIGGSFIELD_API_KEY","value":$hf},{"key":"VIDEO_PROVIDER","value":$vp}]')
+          HTTP=$(curl -sf -o /tmp/render_resp.json -w "%{http_code}" \
+            -X PUT "https://api.render.com/v1/services/${SERVICE_ID}/env-vars" \
+            -H "Authorization: Bearer ${RENDER_API_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD")
+          cat /tmp/render_resp.json
+          echo "HTTP status: $HTTP"
+          [[ "$HTTP" == "200" ]] || { echo "Failed"; exit 1; }
+          echo "Done — trigger a manual deploy to pick up new vars."
