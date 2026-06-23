@@ -11,16 +11,18 @@ Higgsfield — платный AI-видеогенератор (image→video, к
 
 ## 2. Задать env (на Render и/или локально в .secrets.env)
 ```
-HIGGSFIELD_API_KEY=KEY_ID:KEY_SECRET   # обязательно
-VIDEO_PROVIDER=higgsfield               # переключить с openrouter на higgsfield
-# опционально (значения по умолчанию):
+HIGGSFIELD_KEY_ID=745f4f41-b5ba-4f2f-a2f8-acbd28de30e9   # ID ключа (уже вшит в код как дефолт)
+HIGGSFIELD_API_KEY=<KEY_SECRET>                            # секрет ключа (обязательно)
+VIDEO_PROVIDER=higgsfield                                  # переключить с openrouter на higgsfield
+# опционально:
 HIGGSFIELD_BASE=https://platform.higgsfield.ai
-HIGGSFIELD_PATH=/v1/image2video/dop
-HIGGSFIELD_MODEL=turbo
-HIGGSFIELD_AUTH=key                      # "key" -> "Authorization: Key …"; "bearer" если нужен Bearer
+HIGGSFIELD_MODEL_PATH=/higgsfield-ai/dop/standard
+HIGGSFIELD_DURATION=5
 ```
-На Render — через дашборд Environment или Render API. В GitHub Secrets (для Action) —
-`gh secret set HIGGSFIELD_API_KEY`.
+На Render — через дашборд Environment или Render API. Секрет через:
+`gh secret set HIGGSFIELD_API_KEY`
+
+Если `HIGGSFIELD_API_KEY` уже содержит двоеточие (`KEY_ID:SECRET`) — код подхватит как есть.
 
 ## 3. Проверить
 `GET /api/health` → должно показать `"higgsfield_ready": true` и `"video_provider": "higgsfield"`.

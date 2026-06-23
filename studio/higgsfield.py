@@ -1,29 +1,25 @@
 """Higgsfield video provider (image -> short cinematic clip).
 
-Canonical API (official higgsfield-js SDK):
-  base    https://platform.higgsfield.ai
-  auth    Authorization: Key KEY_ID:KEY_SECRET     (one env string "KEY_ID:KEY_SECRET")
-  img2vid POST /v1/image2video/dop  {model, prompt, input_images:[{image_url}], motions:[...]}
-  status  GET  /requests/{id}/status -> {status, results|video:{url}}
+REST API (platform.higgsfield.ai):
+  auth    Authorization: Key KEY_ID:KEY_SECRET
+  img2vid POST /{model_path}  {"image_url": "...", "prompt": "...", "duration": N}
+  status  GET  /requests/{id}/status -> {video:{url}} or {status, video:{url}}
 
-Everything is env-configurable so the exact host/model/path can be tuned without code:
-  HIGGSFIELD_API_KEY   "KEY_ID:KEY_SECRET"   (required to actually call the paid API)
+Env vars:
+  HIGGSFIELD_KEY_ID    key ID  (default: 745f4f41-b5ba-4f2f-a2f8-acbd28de30e9)
+  HIGGSFIELD_API_KEY   key secret  (required)
   HIGGSFIELD_BASE      default https://platform.higgsfield.ai
-  HIGGSFIELD_PATH      default /v1/image2video/dop
-  HIGGSFIELD_MODEL     default turbo
-  HIGGSFIELD_AUTH      default "key"  ("key" -> "Key <v>", "bearer" -> "Bearer <v>")
-
-Paid generator: it only runs when a key is set AND the final (non-draft) render path
-calls it. Drafts/board "Сгенерировать видео" never touch it.
+  HIGGSFIELD_MODEL_PATH default /higgsfield-ai/dop/standard
+  HIGGSFIELD_DURATION  default 5
 """
 import os, json, time, urllib.request
 from studio.host import upload
 
+KEY_ID = os.getenv("HIGGSFIELD_KEY_ID", "745f4f41-b5ba-4f2f-a2f8-acbd28de30e9")
 API_KEY = os.getenv("HIGGSFIELD_API_KEY", "")
 BASE = os.getenv("HIGGSFIELD_BASE", "https://platform.higgsfield.ai").rstrip("/")
-PATH = os.getenv("HIGGSFIELD_PATH", "/v1/image2video/dop")
-MODEL = os.getenv("HIGGSFIELD_MODEL", "turbo")
-AUTH_SCHEME = os.getenv("HIGGSFIELD_AUTH", "key").lower()
+MODEL_PATH = os.getenv("HIGGSFIELD_MODEL_PATH", "/higgsfield-ai/dop/standard")
+DURATION = int(os.getenv("HIGGSFIELD_DURATION", "5"))
 
 
 def configured() -> bool:
@@ -31,8 +27,9 @@ def configured() -> bool:
 
 
 def _auth_header() -> dict:
-    scheme = "Bearer" if AUTH_SCHEME == "bearer" else "Key"
-    return {"Authorization": f"{scheme} {API_KEY}", "Content-Type": "application/json"}
+    # If API_KEY already contains ":" it's already KEY_ID:SECRET, use as-is
+    token = API_KEY if ":" in API_KEY else f"{KEY_ID}:{API_KEY}"
+    return {"Authorization": f"Key {token}", "Content-Type": "application/json"}
 
 
 def _find_video_url(obj) -> str | None:
@@ -60,13 +57,11 @@ def _find_video_url(obj) -> str | None:
 def animate(image_path: str, motion_prompt: str, out_path: str) -> str:
     """Animate a still into a short clip via Higgsfield. Same signature as video.animate."""
     if not configured():
-        raise RuntimeError("HIGGSFIELD_API_KEY required (format KEY_ID:KEY_SECRET)")
-    img_url = upload(image_path, filename="frame.png")     # durable public URL for the API
+        raise RuntimeError("HIGGSFIELD_API_KEY required")
+    img_url = upload(image_path, filename="frame.png")
     prompt = (motion_prompt or "") + ", subtle minimal cinematic motion, keep the character stable"
-    payload = {"model": MODEL, "prompt": prompt,
-               "input_images": [{"type": "image_url", "image_url": img_url}],
-               "aspect_ratio": "9:16"}
-    req = urllib.request.Request(BASE + PATH, data=json.dumps(payload).encode(),
+    payload = {"image_url": img_url, "prompt": prompt, "duration": DURATION}
+    req = urllib.request.Request(BASE + MODEL_PATH, data=json.dumps(payload).encode(),
                                  headers=_auth_header())
     job = json.load(urllib.request.urlopen(req, timeout=120))
     rid = job.get("id") or job.get("request_id") or (job.get("data") or {}).get("id")
