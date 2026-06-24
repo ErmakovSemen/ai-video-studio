@@ -6,7 +6,7 @@ Recipe fixes from the Icarus pilot:
 - captions burned per scene; clean end-card; explicit audio map (use narration,
   not the clip's own audio).
 """
-import os, re, subprocess, asyncio
+import os, re, subprocess, asyncio, sys
 import imageio_ffmpeg
 
 FF = imageio_ffmpeg.get_ffmpeg_exe()
@@ -33,17 +33,27 @@ W, H = 720, 1280
 
 
 def tts(text: str, out: str):
-    import edge_tts, time
+    """Generate TTS via edge-tts CLI (more reliable than Python API)."""
+    import time, shutil
+    # Find edge-tts CLI: prefer same venv as current interpreter
+    venv_cli = os.path.join(os.path.dirname(sys.executable), "edge-tts")
+    cli = venv_cli if os.path.exists(venv_cli) else shutil.which("edge-tts") or "edge-tts"
     last = None
-    for attempt in range(4):                       # edge-tts intermittently returns no audio
+    for attempt in range(5):
+        if os.path.exists(out):
+            os.remove(out)
         try:
-            asyncio.run(edge_tts.Communicate(text, VOICE, rate="+8%").save(out))
-            if os.path.exists(out) and os.path.getsize(out) > 0:
+            result = subprocess.run(
+                [cli, "--voice", VOICE, "--rate", "+8%", "--text", text, "--write-media", out],
+                capture_output=True, text=True, timeout=30,
+            )
+            if result.returncode == 0 and os.path.exists(out) and os.path.getsize(out) > 0:
                 return
+            last = result.stderr or f"exit {result.returncode}"
         except Exception as e:
-            last = e
-        time.sleep(1.2 * (attempt + 1))
-    raise RuntimeError(f"edge-tts no audio after retries: {last}")
+            last = str(e)
+        time.sleep(2 * (attempt + 1))
+    raise RuntimeError(f"edge-tts CLI failed after retries: {last}")
 
 
 def dur(path: str) -> float:

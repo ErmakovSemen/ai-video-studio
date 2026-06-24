@@ -43,6 +43,9 @@ def build(scenario: dict, out_path: str, workdir: str, base_dir: str = ".",
     os.makedirs(workdir, exist_ok=True)
     chars = {k: os.path.join(base_dir, v) for k, v in scenario.get("characters", {}).items()}
     style = scenario.get("style", "")
+    # honour per-scenario voice (falls back to TTS_VOICE env / compose default)
+    if scenario.get("voice"):
+        compose.VOICE = scenario["voice"]
     scene_videos, voice_segs = [], []
     words_global = []           # [(word, start_s, end_s)] over the final timeline (polish)
     t = 0.0                     # running timeline offset (polish)

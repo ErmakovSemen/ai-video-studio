@@ -12,12 +12,12 @@ GEMINI_KEY = os.getenv("GEMINI_API_KEY")
 HF_TOKEN = os.getenv("HF_TOKEN")
 
 # Default: free OpenRouter model. Override per-call or via env.
-IMAGE_MODEL = os.getenv("OR_IMAGE_MODEL", "google/gemini-2.0-flash-exp:free")
+IMAGE_MODEL = os.getenv("OR_IMAGE_MODEL", "google/gemini-2.5-flash-image")
 HF_IMAGE_MODEL = os.getenv("HF_IMAGE_MODEL", "black-forest-labs/FLUX.1-schnell")
 
 IMAGE_MODELS = [
-    {"id": "google/gemini-2.0-flash-exp:free", "name": "Gemini Flash (free)",
-     "cost": "бесплатно", "cost_usd": 0.0, "note": "лимит 15 req/min, refs ✓", "badge": "FREE"},
+    {"id": "google/gemini-2.5-flash-image", "name": "Gemini 2.5 Flash Image",
+     "cost": "~$0.004/кадр", "cost_usd": 0.004, "note": "рекомендуется, refs ✓", "badge": "DEFAULT"},
     {"id": "google/gemini-2.5-flash-image", "name": "Gemini 2.5 Flash Image",
      "cost": "~$0.004/кадр", "cost_usd": 0.004, "note": "лучше качество, refs ✓"},
     {"id": "openai/dall-e-3", "name": "DALL-E 3",
