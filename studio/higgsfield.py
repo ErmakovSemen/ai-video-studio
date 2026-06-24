@@ -19,6 +19,7 @@ KEY_ID = os.getenv("HIGGSFIELD_KEY_ID", "745f4f41-b5ba-4f2f-a2f8-acbd28de30e9")
 API_KEY = os.getenv("HIGGSFIELD_API_KEY", "")
 BASE = os.getenv("HIGGSFIELD_BASE", "https://platform.higgsfield.ai").rstrip("/")
 MODEL_PATH = os.getenv("HIGGSFIELD_MODEL_PATH", "/higgsfield-ai/dop/standard")
+MODEL = MODEL_PATH.strip("/")
 DURATION = int(os.getenv("HIGGSFIELD_DURATION", "5"))
 
 
