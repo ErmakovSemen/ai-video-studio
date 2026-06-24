@@ -168,6 +168,8 @@ function openCard(colId,cardId){
     try{
       const sc=await (await fetch('/api/scenarios/'+card.scenario)).json();
       const fd=new FormData();fd.append('body',JSON.stringify(sc));fd.append('draft','true');fd.append('polish','true');fd.append('stills',card.scenario||'');
+      const imgMdl=localStorage.getItem('image_model')||'';if(imgMdl)fd.append('image_model',imgMdl);
+      if(localStorage.getItem('gen_stills')==='1')fd.append('gen_stills','true');
       st.textContent='🎬 Рендер запущен…';
       const r=await fetch('/api/render',{method:'POST',body:fd});const d=await r.json();
       if(!r.ok||!d.job_id)throw new Error(d.detail||'render err');const jid=d.job_id;

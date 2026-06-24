@@ -327,9 +327,12 @@ def save_scenario(name: str, body: str = Form(...), project: str = Form("")):
 
 
 def _run(jid: str, scenario: dict, draft: bool, polish: bool = True, music: str = None,
-         gen_stills: bool = False, stills_dir: str = None, hf_model_path: str = None):
+         gen_stills: bool = False, stills_dir: str = None, hf_model_path: str = None,
+         image_model: str = ""):
     out = str(OUT / f"{jid}.mp4")
     wd = str(WORK / jid)
+    if image_model:
+        imagegen.IMAGE_MODEL = image_model
     try:
         log = story.build(scenario, out, wd, base_dir=str(ROOT), draft=draft,
                           polish=polish, music=music, gen_stills=gen_stills,
@@ -342,10 +345,15 @@ def _run(jid: str, scenario: dict, draft: bool, polish: bool = True, music: str 
         JOBS[jid].update(status="error", error=str(e)[:300])
 
 
+@app.get("/api/image-models")
+def image_models():
+    return {"models": imagegen.IMAGE_MODELS, "current": imagegen.IMAGE_MODEL}
+
+
 @app.post("/api/render")
 def render(body: str = Form(...), draft: bool = Form(True), polish: bool = Form(True),
            music: str = Form(""), gen_stills: bool = Form(False), stills: str = Form(""),
-           hf_model: str = Form("")):
+           hf_model: str = Form(""), image_model: str = Form("")):
     try:
         scenario = json.loads(body)
     except Exception as e:
@@ -374,9 +382,11 @@ def render(body: str = Form(...), draft: bool = Form(True), polish: bool = Form(
     JOBS[jid] = {"status": "running"}
     threading.Thread(target=_run, args=(jid, scenario, draft, polish, music_path, gen_stills,
                                         str(sdir) if has_baked else None, hf_model_path),
+                     kwargs={"image_model": image_model},
                      daemon=True).start()
     return {"job_id": jid, "draft": draft, "polish": polish, "scenes": len(scenario["scenes"]),
-            "baked_stills": has_baked, "hf_model": hf_model or "default"}
+            "baked_stills": has_baked, "hf_model": hf_model or "default",
+            "image_model": image_model or imagegen.IMAGE_MODEL}
 
 
 @app.get("/api/music")
@@ -496,12 +506,12 @@ def ai_edit(scenario: str = Form(...)):
 
 
 @app.post("/api/image")
-def gen_image(prompt: str = Form(...), ref: str = Form("")):
+def gen_image(prompt: str = Form(...), ref: str = Form(""), image_model: str = Form("")):
     jid = uuid.uuid4().hex[:10]
     out = str(OUT / f"img_{jid}.png")
     refs = [str(ASSETS / ref)] if ref else []
     try:
-        imagegen.generate_image(prompt, out, refs)
+        imagegen.generate_image(prompt, out, refs, model=image_model or None)
         return {"image": f"/outputs/img_{jid}.png"}
     except Exception as e:
         raise HTTPException(500, str(e)[:200])

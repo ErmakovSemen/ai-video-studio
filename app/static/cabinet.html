@@ -105,6 +105,7 @@
     <a data-view="dash" class="active"><span class="ic">🏠</span> Дашборд</a>
     <a data-view="proj"><span class="ic">📁</span> Проекты</a>
     <a data-view="conn"><span class="ic">🔌</span> Подключения</a>
+    <a data-view="imgmod"><span class="ic">🎨</span> Картинки</a>
     <a id="navStudio" data-src="/studio"><span class="ic">🎬</span> Студия</a>
     <a id="navContent" data-src="/content?name=content"><span class="ic">📋</span> Контент</a>
     <a id="navBoard" data-src="/board?name=board"><span class="ic">🗺</span> Доска</a>
@@ -142,6 +143,22 @@
     <h2>🔌 Подключения соцсетей</h2>
     <div class="hint" style="margin-bottom:14px;color:var(--mut);font-size:13px">Токены хранятся на сервере.</div>
     <div class="conn" id="connCards"></div>
+  </div>
+
+  <!-- Картинки / модель генерации -->
+  <div class="pad hide" id="imgmodview">
+    <h2>🎨 Модель генерации картинок</h2>
+    <div class="hint" style="margin-bottom:4px;font-size:13px;color:var(--mut)">Выбор сохраняется и используется при каждом рендере (кнопка 🎬 на доске).</div>
+    <div id="imgModelDefault" style="margin-bottom:16px;font-size:12px;color:var(--mut)"></div>
+    <div class="conn" id="imgModelCards"></div>
+    <div style="margin-top:20px">
+      <h2>Генерировать картинки при рендере</h2>
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px">
+        <input type="checkbox" id="genStillsToggle" style="width:16px;height:16px">
+        Автоматически генерить кадры если нет готовых картинок
+      </label>
+      <div class="hint" style="margin-top:6px;font-size:12px;color:var(--mut)">Если выключено — рендер без картинок (только TTS + субтитры). Если включено — каждый кадр генерится выбранной моделью.</div>
+    </div>
   </div>
 
   <iframe id="frame" class="hide"></iframe>
@@ -193,10 +210,12 @@ const frameload = document.getElementById('frameload');
 const frameloadmsg = document.getElementById('frameloadmsg');
 const framereload = document.getElementById('framereload');
 
+const imgmodview = document.getElementById('imgmodview');
 const VIEWS = {
-  dash: {el: dash, title: '🏠 Дашборд'},
-  proj: {el: projview, title: '📁 Проекты'},
-  conn: {el: connview, title: '🔌 Подключения'},
+  dash:   {el: dash,       title: '🏠 Дашборд'},
+  proj:   {el: projview,   title: '📁 Проекты'},
+  conn:   {el: connview,   title: '🔌 Подключения'},
+  imgmod: {el: imgmodview, title: '🎨 Картинки'},
 };
 
 // ── project urls ──
@@ -273,8 +292,9 @@ function show(item) {
   if (item.view) {
     const v = VIEWS[item.view]; v.el.classList.remove('hide'); titleEl.textContent = v.title;
     const a = nav.querySelector(`[data-view="${item.view}"]`); if (a) a.classList.add('active');
-    if (item.view === 'conn') loadConn();
-    if (item.view === 'proj') renderProjCards();
+    if (item.view === 'conn')   loadConn();
+    if (item.view === 'proj')   renderProjCards();
+    if (item.view === 'imgmod') loadImgModels();
   } else {
     showFrameLoading(); frame.src = item.src; frame.classList.remove('hide');
     const a = nav.querySelector(`[data-src="${item.src}"]`);
@@ -315,6 +335,50 @@ async function loadConn() {
     d.innerHTML = `<div class="row"><b>${p.label}</b><span class="pill ${p.configured?'ok':''}">${p.configured?'✅ подключено':'не подключено'}</span></div>
       <div class="hint">${p.setup_hint||''}</div>
       <a class="btn ${p.configured?'sec':''}" href="/connect/${p.name}">${p.configured?'Настроить':'▶ Запустить '+p.label}</a>`;
+    wrap.appendChild(d);
+  });
+}
+
+// ── image model selector ──
+async function loadImgModels() {
+  const wrap = document.getElementById('imgModelCards');
+  const defEl = document.getElementById('imgModelDefault');
+  wrap.innerHTML = '<div style="color:var(--mut);font-size:13px">Загрузка…</div>';
+  let data;
+  try { data = await (await fetch('/api/image-models')).json(); }
+  catch(e) { wrap.innerHTML = `<div style="color:#e55">Ошибка: ${e.message}</div>`; return; }
+
+  const selected = localStorage.getItem('image_model') || data.current;
+  defEl.textContent = `Сервер по умолчанию: ${data.current}`;
+  wrap.innerHTML = '';
+
+  // gen_stills toggle
+  const tog = document.getElementById('genStillsToggle');
+  tog.checked = localStorage.getItem('gen_stills') === '1';
+  tog.onchange = () => localStorage.setItem('gen_stills', tog.checked ? '1' : '0');
+
+  data.models.forEach(m => {
+    const active = m.id === selected;
+    const d = document.createElement('div');
+    d.className = 'pf';
+    d.style.cursor = 'pointer';
+    if (active) d.style.borderColor = 'var(--acc)';
+    const badge = m.badge
+      ? `<span class="pill ok" style="font-size:11px">${m.badge}</span>`
+      : `<span class="pill" style="font-size:11px;color:#bba">${m.cost}</span>`;
+    d.innerHTML = `
+      <div class="row">
+        <b>${m.name}</b>${badge}
+        ${active ? '<span style="color:var(--acc);font-size:12px">✓ выбрана</span>' : ''}
+      </div>
+      <div class="hint" style="font-size:12px">${m.note || ''}</div>
+      ${!active ? '<button class="btn sec" style="margin-top:8px;padding:4px 12px;font-size:12px">Выбрать</button>' : ''}`;
+    if (!active) {
+      d.querySelector('button').onclick = () => {
+        localStorage.setItem('image_model', m.id);
+        loadImgModels();
+      };
+    }
     wrap.appendChild(d);
   });
 }
