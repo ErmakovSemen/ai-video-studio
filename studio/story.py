@@ -59,7 +59,8 @@ def build(scenario: dict, out_path: str, workdir: str, base_dir: str = ".",
         seconds = dur + PAD
         img = None
         baked = os.path.join(stills_dir, f"scene{i}.png") if stills_dir else None
-        if draft and baked and os.path.exists(baked):
+        baked_exists = baked and os.path.exists(baked)
+        if baked_exists and draft:
             img = baked
             compose.mock_clip(baked, sc.get("caption", sc["vo"]), seconds, raw)
         elif draft and gen_stills:
@@ -70,6 +71,10 @@ def build(scenario: dict, out_path: str, workdir: str, base_dir: str = ".",
             compose.mock_clip(img, sc.get("caption", sc["vo"]), seconds, raw)
         elif draft:
             compose.mock_clip(refs[0] if refs else None, sc.get("caption", sc["vo"]), seconds, raw)
+        elif baked_exists:
+            # Pro render: reuse precommitted stills (saves Gemini cost, consistent characters)
+            img = baked
+            video.animate(img, sc["motion"], raw, model_path=model_path)
         else:
             img = os.path.join(workdir, f"img{i}.png")
             imagegen.generate_image(f"{style} SCENE: {sc['image']}", img, refs)
