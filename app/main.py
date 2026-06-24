@@ -15,6 +15,7 @@ OUT = ROOT / "outputs"; OUT.mkdir(exist_ok=True)
 WORK = ROOT / "work"; WORK.mkdir(exist_ok=True)
 SCEN = ROOT / "scenarios"; SCEN.mkdir(exist_ok=True)
 ASSETS = ROOT / "assets"
+PROJECTS = ROOT / "projects"; PROJECTS.mkdir(exist_ok=True)
 TG_TOKEN = os.getenv("AGT_TG_BOT_TOKEN", "")
 TG_CHANNEL = os.getenv("TG_CHANNEL", "@PrometeyApp")
 OR_KEY = os.getenv("OPENROUTER_API_KEY", "")
@@ -233,34 +234,95 @@ def higgsfield_models():
     }
 
 
-@app.get("/api/scenarios")
-def scenarios():
-    out = []
-    for p in sorted(SCEN.glob("*.json")):
-        try:
-            out.append({"name": p.stem, "title": json.loads(p.read_text(encoding="utf-8")).get("title", p.stem)})
-        except Exception:
-            out.append({"name": p.stem, "title": p.stem})
-    return out
-
-
-@app.get("/api/scenarios/{name}")
-def get_scenario(name: str):
-    p = SCEN / f"{name}.json"
+def _load_project(slug: str) -> dict:
+    p = PROJECTS / slug / "project.json"
     if not p.exists():
-        raise HTTPException(404, "not found")
+        raise HTTPException(404, f"project not found: {slug}")
     return json.loads(p.read_text(encoding="utf-8"))
 
 
-@app.post("/api/scenarios/{name}")
-def save_scenario(name: str, body: str = Form(...)):
+@app.get("/api/projects")
+def list_projects():
+    out = []
+    for d in sorted(PROJECTS.iterdir()):
+        pf = d / "project.json"
+        if pf.exists():
+            try:
+                out.append(json.loads(pf.read_text(encoding="utf-8")))
+            except Exception:
+                pass
+    return out
+
+
+@app.get("/api/projects/{slug}")
+def get_project(slug: str):
+    return _load_project(slug)
+
+
+@app.post("/api/projects/{slug}")
+def save_project(slug: str, body: str = Form(...)):
+    safe = "".join(c for c in slug if c.isalnum() or c in "-_")[:40]
+    if not safe:
+        raise HTTPException(400, "bad slug")
     try:
         data = json.loads(body)
     except Exception as e:
         raise HTTPException(400, f"invalid json: {e}")
-    safe = "".join(c for c in name if c.isalnum() or c in "-_")[:40] or "scenario"
-    (SCEN / f"{safe}.json").write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
-    return {"saved": safe}
+    data["id"] = safe
+    d = PROJECTS / safe; d.mkdir(exist_ok=True)
+    (d / "project.json").write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    return {"saved": True}
+
+
+@app.get("/api/scenarios")
+def scenarios(project: str = ""):
+    if project:
+        scen_dir = SCEN / project
+        scen_dir.mkdir(exist_ok=True)
+    else:
+        scen_dir = SCEN
+    out = []
+    for p in sorted(scen_dir.glob("*.json")):
+        try:
+            out.append({"name": p.stem, "title": json.loads(p.read_text(encoding="utf-8")).get("title", p.stem),
+                        "project": project or ""})
+        except Exception:
+            out.append({"name": p.stem, "title": p.stem, "project": project or ""})
+    return out
+
+
+def _scen_path(name: str, project: str = "") -> Path:
+    """Resolve scenario file path, optionally scoped to a project subdir."""
+    safe_name = "".join(c for c in name if c.isalnum() or c in "-_")[:80]
+    if project:
+        safe_proj = "".join(c for c in project if c.isalnum() or c in "-_")[:40]
+        d = SCEN / safe_proj; d.mkdir(exist_ok=True)
+        return d / f"{safe_name}.json"
+    return SCEN / f"{safe_name}.json"
+
+
+@app.get("/api/scenarios/{name}")
+def get_scenario(name: str, project: str = ""):
+    p = _scen_path(name, project)
+    if not p.exists():
+        # fallback: look in root scenarios dir
+        p2 = SCEN / f"{name}.json"
+        if p2.exists():
+            p = p2
+        else:
+            raise HTTPException(404, "not found")
+    return json.loads(p.read_text(encoding="utf-8"))
+
+
+@app.post("/api/scenarios/{name}")
+def save_scenario(name: str, body: str = Form(...), project: str = Form("")):
+    try:
+        data = json.loads(body)
+    except Exception as e:
+        raise HTTPException(400, f"invalid json: {e}")
+    p = _scen_path(name, project)
+    p.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    return {"saved": p.stem}
 
 
 def _run(jid: str, scenario: dict, draft: bool, polish: bool = True, music: str = None,

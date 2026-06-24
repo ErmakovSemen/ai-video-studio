@@ -1,129 +1,363 @@
 <!doctype html>
 <html lang="ru"><head>
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Prometey — кабинет</title>
+<title>Студия — кабинет</title>
 <style>
-  :root{--bg:#0e0e12;--panel:#121219;--card:#17171f;--mut:#9a9aa5;--acc:#ff6a2b;--txt:#f5f5f7;--ln:#2a2a33}
+  :root{--bg:#0e0e12;--panel:#121219;--panel2:#0f0f16;--card:#17171f;--mut:#9a9aa5;--acc:#ff6a2b;--txt:#f5f5f7;--ln:#2a2a33}
   *{box-sizing:border-box}html,body{height:100%;margin:0}
   body{background:var(--bg);color:var(--txt);font-family:-apple-system,Segoe UI,Roboto,sans-serif;display:flex}
-  /* sidebar */
-  .side{width:230px;flex:0 0 230px;background:var(--panel);border-right:1px solid var(--ln);
+
+  /* ── project rail (far left) ── */
+  .rail{width:64px;flex:0 0 64px;background:var(--panel2);border-right:1px solid var(--ln);
+    height:100vh;position:sticky;top:0;display:flex;flex-direction:column;align-items:center;
+    padding:12px 0;gap:6px;overflow-y:auto}
+  .rail-item{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;
+    justify-content:center;font-size:20px;cursor:pointer;border:2px solid transparent;
+    position:relative;transition:.15s}
+  .rail-item:hover{background:#1c1c26}
+  .rail-item.active{background:#201420;border-color:var(--acc)}
+  .rail-item .tooltip{position:absolute;left:54px;top:50%;transform:translateY(-50%);
+    background:#1e1e28;border:1px solid var(--ln);border-radius:8px;padding:5px 10px;
+    font-size:12.5px;white-space:nowrap;pointer-events:none;opacity:0;transition:.15s;z-index:99}
+  .rail-item:hover .tooltip{opacity:1}
+  .rail-sep{width:32px;height:1px;background:var(--ln);margin:4px 0}
+  .rail-add{width:44px;height:44px;border-radius:12px;border:2px dashed #2e2e3a;
+    display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer;
+    color:var(--mut);transition:.15s}
+  .rail-add:hover{border-color:var(--acc);color:var(--acc)}
+
+  /* ── workspace sidebar ── */
+  .side{width:220px;flex:0 0 220px;background:var(--panel);border-right:1px solid var(--ln);
     height:100vh;position:sticky;top:0;display:flex;flex-direction:column;padding:16px 12px}
-  .brand{font-size:18px;font-weight:800;padding:8px 10px 16px;display:flex;align-items:center;gap:8px}
+  .proj-header{padding:6px 10px 14px;display:flex;align-items:center;gap:9px}
+  .proj-emoji{font-size:22px}
+  .proj-name{font-size:16px;font-weight:800;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .nav{display:flex;flex-direction:column;gap:3px}
-  .nav a{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:10px;color:var(--txt);
-    text-decoration:none;font-size:14.5px;cursor:pointer;border:1px solid transparent}
+  .nav a{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:10px;color:var(--txt);
+    text-decoration:none;font-size:14px;cursor:pointer;border:1px solid transparent}
   .nav a:hover{background:#1b1b24}.nav a.active{background:#20141a;border-color:#3a2622;color:var(--acc)}
   .nav .ic{width:20px;text-align:center}
   .spacer{flex:1}
   .side .foot a{color:var(--mut);font-size:13px}
-  /* main */
+
+  /* ── main area ── */
   .main{flex:1;height:100vh;overflow:auto;position:relative}
-  .frameload{position:absolute;left:0;right:0;top:52px;bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:var(--bg);color:var(--mut);z-index:3;text-align:center;padding:20px}
-  .frameload .sp{width:34px;height:34px;border:3px solid #2a2a34;border-top-color:var(--acc);border-radius:50%;animation:spin 1s linear infinite}
+  .frameload{position:absolute;left:0;right:0;top:52px;bottom:0;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:16px;background:var(--bg);color:var(--mut);z-index:3;
+    text-align:center;padding:20px}
+  .frameload .sp{width:34px;height:34px;border:3px solid #2a2a34;border-top-color:var(--acc);
+    border-radius:50%;animation:spin 1s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
-  .topbar{padding:14px 24px;border-bottom:1px solid var(--ln);font-size:15px;font-weight:650;display:flex;align-items:center;gap:10px;position:sticky;top:0;background:var(--bg);z-index:2}
+  .topbar{padding:14px 24px;border-bottom:1px solid var(--ln);font-size:15px;font-weight:650;
+    display:flex;align-items:center;gap:10px;position:sticky;top:0;background:var(--bg);z-index:2}
   .pad{padding:22px 24px 60px}
   iframe{width:100%;height:calc(100vh - 52px);border:0;background:var(--bg);display:block}
-  /* dashboard */
-  h2{font-size:14px;color:var(--mut);text-transform:uppercase;letter-spacing:.04em;margin:6px 0 12px}
-  .conn{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-bottom:26px}
+  h2{font-size:13px;color:var(--mut);text-transform:uppercase;letter-spacing:.04em;margin:6px 0 12px}
+  .conn{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-bottom:26px}
   .pf{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:14px}
   .pf .row{display:flex;justify-content:space-between;align-items:center}.pf b{font-size:15px}
   .pill{font-size:11.5px;padding:3px 9px;border-radius:20px;background:#22222c;color:#bdbdc7}
   .pill.ok{background:#1e2a23;color:#7fe0a8}
   .pf .hint{color:var(--mut);font-size:12px;margin:8px 0 12px;line-height:1.4}
-  .btn{display:inline-block;background:var(--acc);color:#111;border:0;border-radius:9px;padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none}
+  .btn{display:inline-block;background:var(--acc);color:#111;border:0;border-radius:9px;
+    padding:9px 14px;font-size:13px;font-weight:700;cursor:pointer;text-decoration:none}
   .btn.sec{background:#262630;color:var(--txt)}
   .hide{display:none}
+  /* project card on dash */
+  .proj-card{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:16px;
+    display:flex;flex-direction:column;gap:6px}
+  .proj-card .pname{font-size:15px;font-weight:700}
+  .proj-card .pstyle{font-size:12px;color:var(--mut);line-height:1.4;display:-webkit-box;
+    -webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .proj-card .pactions{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap}
+  .proj-card .pactions a{font-size:12px;padding:5px 10px;border-radius:7px;background:#1f1f2a;
+    color:var(--txt);text-decoration:none;cursor:pointer}
+  .proj-card .pactions a:hover{background:#2a2a36}
+  /* modal */
+  .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;display:flex;
+    align-items:center;justify-content:center}
+  .modal{background:#17171f;border:1px solid var(--ln);border-radius:18px;padding:28px;
+    width:min(480px,95vw);max-height:90vh;overflow-y:auto}
+  .modal h3{margin:0 0 18px;font-size:17px}
+  .field{display:flex;flex-direction:column;gap:6px;margin-bottom:14px}
+  .field label{font-size:12.5px;color:var(--mut)}
+  .field input,.field textarea,.field select{background:#0e0e14;border:1px solid var(--ln);
+    border-radius:9px;padding:9px 12px;color:var(--txt);font-size:14px;font-family:inherit;outline:none;width:100%}
+  .field input:focus,.field textarea:focus{border-color:var(--acc)}
+  .field textarea{resize:vertical;min-height:80px}
+  .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:18px}
 </style></head><body>
-  <aside class="side">
-    <div class="brand">🔥 Prometey</div>
-    <nav class="nav" id="nav">
-      <a data-view="dash" class="active"><span class="ic">🏠</span> Дашборд</a>
-      <a data-view="conn"><span class="ic">🔌</span> Подключения</a>
-      <a data-src="/studio" ><span class="ic">🎬</span> Студия</a>
-      <a data-src="/content?name=content"><span class="ic">📋</span> Контент</a>
-      <a data-src="/board?name=board"><span class="ic">🗺</span> Доска проекта</a>
-    </nav>
-    <div class="spacer"></div>
-    <div class="nav foot"><a href="/logout"><span class="ic">🚪</span> Выйти</a></div>
-  </aside>
-  <main class="main">
-    <div class="topbar" id="title">🏠 Дашборд</div>
-    <!-- Дашборд -->
-    <div class="pad" id="dash">
-      <h2>Быстрый доступ</h2>
-      <div class="conn" style="margin-bottom:24px">
-        <a class="pf" style="text-decoration:none;color:inherit" data-go="/studio"><b>🎬 Студия</b><div class="hint">генерация, монтаж, постинг</div></a>
-        <a class="pf" style="text-decoration:none;color:inherit" data-go="/content?name=content"><b>📋 Контент-доска</b><div class="hint">видео по стадиям</div></a>
-        <a class="pf" style="text-decoration:none;color:inherit" data-go="/board?name=board"><b>🗺 Доска проекта</b><div class="hint">развитие продукта</div></a>
-        <a class="pf" style="text-decoration:none;color:inherit" data-view-go="conn"><b>🔌 Подключения</b><div class="hint">токены соцсетей</div></a>
-      </div>
-      <h2>🔌 Статус подключений</h2>
-      <div class="conn" id="connSummary"></div>
+
+<!-- ── PROJECT RAIL ── -->
+<div class="rail" id="rail">
+  <!-- filled by JS -->
+  <div class="rail-sep" style="margin-top:auto"></div>
+  <div class="rail-add" id="railAdd" title="Новый проект">＋</div>
+</div>
+
+<!-- ── WORKSPACE SIDEBAR ── -->
+<aside class="side">
+  <div class="proj-header" id="projHeader">
+    <span class="proj-emoji" id="projEmoji">🔥</span>
+    <span class="proj-name" id="projName">Проект</span>
+  </div>
+  <nav class="nav" id="nav">
+    <a data-view="dash" class="active"><span class="ic">🏠</span> Дашборд</a>
+    <a data-view="proj"><span class="ic">📁</span> Проекты</a>
+    <a data-view="conn"><span class="ic">🔌</span> Подключения</a>
+    <a id="navStudio" data-src="/studio"><span class="ic">🎬</span> Студия</a>
+    <a id="navContent" data-src="/content?name=content"><span class="ic">📋</span> Контент</a>
+    <a id="navBoard" data-src="/board?name=board"><span class="ic">🗺</span> Доска</a>
+  </nav>
+  <div class="spacer"></div>
+  <div class="nav foot"><a href="/logout"><span class="ic">🚪</span> Выйти</a></div>
+</aside>
+
+<!-- ── MAIN ── -->
+<main class="main">
+  <div class="topbar" id="title">🏠 Дашборд</div>
+
+  <!-- Дашборд -->
+  <div class="pad" id="dash">
+    <h2>Быстрый доступ</h2>
+    <div class="conn" style="margin-bottom:24px">
+      <a class="pf" style="text-decoration:none;color:inherit" id="goContent"><b>📋 Контент-доска</b><div class="hint">видео по стадиям</div></a>
+      <a class="pf" style="text-decoration:none;color:inherit" id="goStudio"><b>🎬 Студия</b><div class="hint">генерация, монтаж, постинг</div></a>
+      <a class="pf" style="text-decoration:none;color:inherit" id="goBoard"><b>🗺 Доска проекта</b><div class="hint">задачи и развитие</div></a>
+      <a class="pf" style="text-decoration:none;color:inherit" data-view-go="conn"><b>🔌 Подключения</b><div class="hint">токены соцсетей</div></a>
     </div>
-    <!-- Подключения (токены) -->
-    <div class="pad hide" id="connview">
-      <h2>🔌 Подключения соцсетей — токены</h2>
-      <div class="hint" style="margin-bottom:14px">Введи доступы каждой платформы. Кнопка «Запустить X» ведёт к пошаговому гайду по получению токена. Токены хранятся на сервере.</div>
-      <div class="conn" id="connCards"></div>
+    <h2>🔌 Статус подключений</h2>
+    <div class="conn" id="connSummary"></div>
+  </div>
+
+  <!-- Проекты -->
+  <div class="pad hide" id="projview">
+    <h2>📁 Проекты</h2>
+    <div class="conn" id="projCards"></div>
+    <button class="btn sec" id="newProjBtn" style="margin-top:4px">＋ Новый проект</button>
+  </div>
+
+  <!-- Подключения -->
+  <div class="pad hide" id="connview">
+    <h2>🔌 Подключения соцсетей</h2>
+    <div class="hint" style="margin-bottom:14px;color:var(--mut);font-size:13px">Токены хранятся на сервере.</div>
+    <div class="conn" id="connCards"></div>
+  </div>
+
+  <iframe id="frame" class="hide"></iframe>
+  <div id="frameload" class="frameload hide">
+    <div class="sp"></div>
+    <div id="frameloadmsg">Загружаю…</div>
+    <button class="btn sec" id="framereload" style="display:none">↻ Обновить</button>
+  </div>
+</main>
+
+<!-- ── NEW PROJECT MODAL ── -->
+<div class="modal-bg hide" id="newProjModal">
+  <div class="modal">
+    <h3>Новый проект</h3>
+    <div class="field"><label>Эмодзи / иконка</label><input id="np_emoji" value="🎬" maxlength="4"></div>
+    <div class="field"><label>Название</label><input id="np_name" placeholder="Мой проект"></div>
+    <div class="field"><label>Стилистика (для промптов генерации)</label>
+      <textarea id="np_style" placeholder="мультяшный 2D, тёплые тона…"></textarea></div>
+    <div class="field"><label>Системный промпт (характер канала)</label>
+      <textarea id="np_prompt" placeholder="Ты — сторителлер канала…"></textarea></div>
+    <div class="field"><label>Голос TTS</label>
+      <select id="np_voice">
+        <option value="ru-RU-DmitryNeural">Дмитрий (муж.)</option>
+        <option value="ru-RU-SvetlanaNeural">Светлана (жен.)</option>
+        <option value="ru-RU-DariyaNeural">Дарья (жен.)</option>
+      </select>
     </div>
-    <iframe id="frame" class="hide"></iframe>
-    <div id="frameload" class="frameload hide">
-      <div class="sp"></div>
-      <div id="frameloadmsg">Загружаю…</div>
-      <button class="btn sec" id="framereload" style="display:none">↻ Обновить</button>
+    <div class="modal-actions">
+      <button class="btn sec" id="np_cancel">Отмена</button>
+      <button class="btn" id="np_save">Создать</button>
     </div>
-  </main>
+  </div>
+</div>
+
 <script>
-const nav=document.getElementById('nav'),frame=document.getElementById('frame'),
-  dash=document.getElementById('dash'),connview=document.getElementById('connview'),
-  title=document.getElementById('title');
-const VIEWS={dash:{el:dash,title:'🏠 Дашборд'},conn:{el:connview,title:'🔌 Подключения'}};
-const frameload=document.getElementById('frameload'),frameloadmsg=document.getElementById('frameloadmsg'),
-  framereload=document.getElementById('framereload');
-let ft1,ft2;
-function showFrameLoading(){
-  clearTimeout(ft1);clearTimeout(ft2);
-  frameloadmsg.textContent='Загружаю…';framereload.style.display='none';frameload.classList.remove('hide');
-  ft1=setTimeout(()=>{frameloadmsg.textContent='Бесплатный сервер просыпается (до ~минуты)…';},6000);
-  ft2=setTimeout(()=>{framereload.style.display='inline-block';},22000);
+// ── state ──
+let projects = [];
+let activeProject = null;
+
+const rail = document.getElementById('rail');
+const railAdd = document.getElementById('railAdd');
+const nav = document.getElementById('nav');
+const frame = document.getElementById('frame');
+const dash = document.getElementById('dash');
+const projview = document.getElementById('projview');
+const connview = document.getElementById('connview');
+const titleEl = document.getElementById('title');
+const frameload = document.getElementById('frameload');
+const frameloadmsg = document.getElementById('frameloadmsg');
+const framereload = document.getElementById('framereload');
+
+const VIEWS = {
+  dash: {el: dash, title: '🏠 Дашборд'},
+  proj: {el: projview, title: '📁 Проекты'},
+  conn: {el: connview, title: '🔌 Подключения'},
+};
+
+// ── project urls ──
+function contentUrl(p) { return `/content?name=${p.board||p.id+'_content'}`; }
+function boardUrl(p)   { return `/board?name=${p.id+'_board'}`; }
+
+function applyProject(p) {
+  activeProject = p;
+  localStorage.setItem('active_project', p.id);
+  document.getElementById('projEmoji').textContent = p.emoji || '📁';
+  document.getElementById('projName').textContent  = p.name;
+  document.getElementById('navContent').dataset.src = contentUrl(p);
+  document.getElementById('navBoard').dataset.src   = boardUrl(p);
+  document.getElementById('goContent').onclick = e => { e.preventDefault(); show({src: contentUrl(p)}); };
+  document.getElementById('goStudio').onclick  = e => { e.preventDefault(); show({src: '/studio'}); };
+  document.getElementById('goBoard').onclick   = e => { e.preventDefault(); show({src: boardUrl(p)}); };
+  // update active rail
+  rail.querySelectorAll('.rail-item').forEach(el => el.classList.toggle('active', el.dataset.id === p.id));
 }
-frame.addEventListener('load',()=>{
-  if(!frame.getAttribute('src'))return;            // ignore initial empty load
-  clearTimeout(ft1);clearTimeout(ft2);frameload.classList.add('hide');
+
+// ── render rail ──
+function renderRail() {
+  rail.querySelectorAll('.rail-item').forEach(el => el.remove());
+  const sep = rail.querySelector('.rail-sep');
+  projects.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'rail-item' + (activeProject && activeProject.id === p.id ? ' active' : '');
+    el.dataset.id = p.id;
+    el.innerHTML = `${p.emoji||'📁'}<div class="tooltip">${p.name}</div>`;
+    el.onclick = () => { applyProject(p); renderRail(); show({view:'dash'}); };
+    rail.insertBefore(el, sep);
+  });
+}
+
+// ── render project cards ──
+function renderProjCards() {
+  const wrap = document.getElementById('projCards');
+  wrap.innerHTML = '';
+  projects.forEach(p => {
+    const el = document.createElement('div');
+    el.className = 'proj-card';
+    el.innerHTML = `
+      <div class="pname">${p.emoji||'📁'} ${p.name}</div>
+      <div class="pstyle">${p.style||'—'}</div>
+      <div class="pactions">
+        <a data-switch="${p.id}">Переключиться</a>
+        <a data-open-content="${p.id}">📋 Контент</a>
+        <a data-open-board="${p.id}">🗺 Доска</a>
+      </div>`;
+    wrap.appendChild(el);
+  });
+}
+
+// ── frame loading ──
+let ft1, ft2;
+function showFrameLoading() {
+  clearTimeout(ft1); clearTimeout(ft2);
+  frameloadmsg.textContent = 'Загружаю…'; framereload.style.display = 'none';
+  frameload.classList.remove('hide');
+  ft1 = setTimeout(() => { frameloadmsg.textContent = 'Бесплатный сервер просыпается (~минута)…'; }, 6000);
+  ft2 = setTimeout(() => { framereload.style.display = 'inline-block'; }, 22000);
+}
+frame.addEventListener('load', () => {
+  if (!frame.getAttribute('src')) return;
+  clearTimeout(ft1); clearTimeout(ft2); frameload.classList.add('hide');
 });
-framereload.onclick=()=>{showFrameLoading();const s=frame.getAttribute('src');frame.src='';frame.src=s;};
-function show(item){
-  nav.querySelectorAll('a').forEach(a=>a.classList.remove('active'));
-  Object.values(VIEWS).forEach(v=>v.el.classList.add('hide'));frame.classList.add('hide');frameload.classList.add('hide');
-  if(item.view){const v=VIEWS[item.view];v.el.classList.remove('hide');title.textContent=v.title;
-    const a=nav.querySelector(`[data-view="${item.view}"]`);if(a)a.classList.add('active');loadConn();}
-  else{showFrameLoading();frame.src=item.src;frame.classList.remove('hide');
-    const a=nav.querySelector(`[data-src="${item.src}"]`);if(a){a.classList.add('active');title.textContent=a.textContent.trim();}}
+framereload.onclick = () => { showFrameLoading(); const s = frame.src; frame.src = ''; frame.src = s; };
+
+// ── show view ──
+function show(item) {
+  nav.querySelectorAll('a').forEach(a => a.classList.remove('active'));
+  Object.values(VIEWS).forEach(v => v.el.classList.add('hide'));
+  frame.classList.add('hide'); frameload.classList.add('hide');
+  if (item.view) {
+    const v = VIEWS[item.view]; v.el.classList.remove('hide'); titleEl.textContent = v.title;
+    const a = nav.querySelector(`[data-view="${item.view}"]`); if (a) a.classList.add('active');
+    if (item.view === 'conn') loadConn();
+    if (item.view === 'proj') renderProjCards();
+  } else {
+    showFrameLoading(); frame.src = item.src; frame.classList.remove('hide');
+    const a = nav.querySelector(`[data-src="${item.src}"]`);
+    if (a) { a.classList.add('active'); titleEl.textContent = a.textContent.trim(); }
+  }
 }
-nav.querySelectorAll('a[data-view],a[data-src]').forEach(a=>a.onclick=(e)=>{e.preventDefault();
-  show(a.dataset.view?{view:a.dataset.view}:{src:a.dataset.src});});
-document.addEventListener('click',e=>{
-  const g=e.target.closest('[data-go]');if(g){e.preventDefault();show({src:g.dataset.go});return;}
-  const vg=e.target.closest('[data-view-go]');if(vg){e.preventDefault();show({view:vg.dataset.viewGo});}});
-async function loadConn(){
-  const ps=await (await fetch('/api/settings')).json();
-  // compact status on dashboard
-  const sum=document.getElementById('connSummary');sum.innerHTML='';
-  ps.forEach(p=>{const d=document.createElement('div');d.className='pf';
-    d.innerHTML=`<div class="row"><b>${p.label}</b>
-      <span class="pill ${p.configured?'ok':''}">${p.configured?'✅':'—'}</span></div>`;sum.appendChild(d);});
-  // full cards in Подключения
-  const wrap=document.getElementById('connCards');wrap.innerHTML='';
-  ps.forEach(p=>{const d=document.createElement('div');d.className='pf';
-    d.innerHTML=`<div class="row"><b>${p.label}</b>
-      <span class="pill ${p.configured?'ok':''}">${p.configured?'✅ подключено':'не подключено'}</span></div>
+
+// ── nav clicks ──
+nav.querySelectorAll('a[data-view],a[data-src]').forEach(a => a.onclick = e => {
+  e.preventDefault();
+  show(a.dataset.view ? {view: a.dataset.view} : {src: a.dataset.src});
+});
+
+// ── delegated clicks ──
+document.addEventListener('click', e => {
+  const vg = e.target.closest('[data-view-go]');
+  if (vg) { e.preventDefault(); show({view: vg.dataset.viewGo}); return; }
+  const sw = e.target.closest('[data-switch]');
+  if (sw) { const p = projects.find(x => x.id === sw.dataset.switch); if (p) { applyProject(p); renderRail(); show({view:'dash'}); } return; }
+  const oc = e.target.closest('[data-open-content]');
+  if (oc) { const p = projects.find(x => x.id === oc.dataset.openContent); if (p) { applyProject(p); renderRail(); show({src: contentUrl(p)}); } return; }
+  const ob = e.target.closest('[data-open-board]');
+  if (ob) { const p = projects.find(x => x.id === ob.dataset.openBoard); if (p) { applyProject(p); renderRail(); show({src: boardUrl(p)}); } return; }
+});
+
+// ── connections ──
+async function loadConn() {
+  const ps = await (await fetch('/api/settings')).json();
+  const sum = document.getElementById('connSummary'); sum.innerHTML = '';
+  ps.forEach(p => {
+    const d = document.createElement('div'); d.className = 'pf';
+    d.innerHTML = `<div class="row"><b>${p.label}</b><span class="pill ${p.configured?'ok':''}">${p.configured?'✅':'—'}</span></div>`;
+    sum.appendChild(d);
+  });
+  const wrap = document.getElementById('connCards'); wrap.innerHTML = '';
+  ps.forEach(p => {
+    const d = document.createElement('div'); d.className = 'pf';
+    d.innerHTML = `<div class="row"><b>${p.label}</b><span class="pill ${p.configured?'ok':''}">${p.configured?'✅ подключено':'не подключено'}</span></div>
       <div class="hint">${p.setup_hint||''}</div>
       <a class="btn ${p.configured?'sec':''}" href="/connect/${p.name}">${p.configured?'Настроить':'▶ Запустить '+p.label}</a>`;
-    wrap.appendChild(d);});
+    wrap.appendChild(d);
+  });
 }
-loadConn();
+
+// ── new project modal ──
+const modal = document.getElementById('newProjModal');
+railAdd.onclick = () => { document.getElementById('newProjBtn').click(); };
+document.getElementById('newProjBtn').onclick = () => modal.classList.remove('hide');
+document.getElementById('np_cancel').onclick  = () => modal.classList.add('hide');
+document.getElementById('np_save').onclick = async () => {
+  const name  = document.getElementById('np_name').value.trim();
+  const emoji = document.getElementById('np_emoji').value.trim() || '📁';
+  const style = document.getElementById('np_style').value.trim();
+  const prompt= document.getElementById('np_prompt').value.trim();
+  const voice = document.getElementById('np_voice').value;
+  if (!name) { alert('Введи название проекта'); return; }
+  const slug  = name.toLowerCase().replace(/[^a-zа-яё0-9]/gi, '_').replace(/_+/g,'_').slice(0,30);
+  const data  = {id: slug, name, emoji, style, voice, system_prompt: prompt,
+                 board: slug+'_content', scenarios_dir: slug, brand_image:'assets/brand.png', characters:{}};
+  const fd = new FormData(); fd.append('body', JSON.stringify(data));
+  await fetch(`/api/projects/${slug}`, {method:'POST', body: fd});
+  modal.classList.add('hide');
+  await loadProjects();
+  const p = projects.find(x => x.id === slug);
+  if (p) { applyProject(p); renderRail(); show({view:'dash'}); }
+};
+
+// ── init ──
+async function loadProjects() {
+  projects = await (await fetch('/api/projects')).json();
+  renderRail();
+}
+
+async function init() {
+  await loadProjects();
+  const saved = localStorage.getItem('active_project');
+  const p = projects.find(x => x.id === saved) || projects[0];
+  if (p) applyProject(p);
+  renderRail();
+  loadConn();
+  show({view:'dash'});
+}
+
+init();
 </script>
 </body></html>

@@ -1,0 +1,13 @@
+{
+  "id": "chayniy",
+  "name": "Чайный",
+  "emoji": "🍵",
+  "style": "спокойная акварельная анимация, зелёные и бежевые тона, атмосфера чайной церемонии",
+  "voice": "ru-RU-SvetlanaNeural",
+  "music_default": "",
+  "system_prompt": "Ты — сторителлер чайного канала. Создавай медитативные короткие истории о чае, церемониях и замедлении. Стиль: спокойный, созерцательный, с восточной мудростью.",
+  "board": "chayniy_content",
+  "scenarios_dir": "chayniy",
+  "brand_image": "assets/brand.png",
+  "characters": {}
+}

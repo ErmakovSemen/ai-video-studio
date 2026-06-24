@@ -1,0 +1,15 @@
+{
+  "id": "prometey",
+  "name": "Прометей",
+  "emoji": "🔥",
+  "style": "мультяшный 2D, тёплые оранжево-золотые тона, главный герой Огонёк — маленький дух огня",
+  "voice": "ru-RU-DmitryNeural",
+  "music_default": "inspired.mp3",
+  "system_prompt": "Ты — сторителлер канала @PrometeyApp. Создавай короткие мотивационные истории про Огонька — духа огня, который помогает людям найти внутреннюю силу. Стиль: тёплый, вдохновляющий, с элементами мифологии.",
+  "board": "content",
+  "scenarios_dir": "prometey",
+  "brand_image": "assets/brand.png",
+  "characters": {
+    "ogonyok": "assets/ogonyok.png"
+  }
+}
