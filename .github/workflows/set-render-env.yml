@@ -15,18 +15,40 @@ jobs:
   set-env:
     runs-on: ubuntu-latest
     steps:
-      - name: Push env vars to Render
+      - name: Push env vars to Render (full set — PUT replaces all)
         env:
           RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
           HIGGSFIELD_API_KEY: ${{ secrets.HIGGSFIELD_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+          AGT_TG_BOT_TOKEN: ${{ secrets.AGT_TG_BOT_TOKEN }}
+          AGT_TG_CHAT_ID: ${{ secrets.AGT_TG_CHAT_ID }}
           SERVICE_ID: srv-d8h65k58nd3s73bttekg
           VIDEO_PROVIDER: ${{ inputs.video_provider }}
         run: |
-          echo "Setting env vars on Render service $SERVICE_ID ..."
+          echo "Setting full env on Render service $SERVICE_ID ..."
           PAYLOAD=$(jq -n \
-            --arg hf "$HIGGSFIELD_API_KEY" \
-            --arg vp "$VIDEO_PROVIDER" \
-            '[{"key":"HIGGSFIELD_API_KEY","value":$hf},{"key":"VIDEO_PROVIDER","value":$vp}]')
+            --arg hf  "$HIGGSFIELD_API_KEY" \
+            --arg vp  "$VIDEO_PROVIDER" \
+            --arg or  "$OPENROUTER_API_KEY" \
+            --arg ytid "$YT_CLIENT_ID" \
+            --arg ytsc "$YT_CLIENT_SECRET" \
+            --arg ytrt "$YT_REFRESH_TOKEN" \
+            --arg tgbt "$AGT_TG_BOT_TOKEN" \
+            --arg tgci "$AGT_TG_CHAT_ID" \
+            '[
+              {"key":"HIGGSFIELD_API_KEY",  "value":$hf},
+              {"key":"VIDEO_PROVIDER",       "value":$vp},
+              {"key":"OPENROUTER_API_KEY",   "value":$or},
+              {"key":"YT_CLIENT_ID",         "value":$ytid},
+              {"key":"YT_CLIENT_SECRET",     "value":$ytsc},
+              {"key":"YT_REFRESH_TOKEN",     "value":$ytrt},
+              {"key":"AGT_TG_BOT_TOKEN",     "value":$tgbt},
+              {"key":"AGT_TG_CHAT_ID",       "value":$tgci},
+              {"key":"STUDIO_PASS",          "value":"prometey2026fire"}
+            ]')
           HTTP=$(curl -sf -o /tmp/render_resp.json -w "%{http_code}" \
             -X PUT "https://api.render.com/v1/services/${SERVICE_ID}/env-vars" \
             -H "Authorization: Bearer ${RENDER_API_KEY}" \
@@ -35,4 +57,4 @@ jobs:
           cat /tmp/render_resp.json
           echo "HTTP status: $HTTP"
           [[ "$HTTP" == "200" ]] || { echo "Failed"; exit 1; }
-          echo "Done — trigger a manual deploy to pick up new vars."
+          echo "Done."
