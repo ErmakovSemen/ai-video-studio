@@ -220,6 +220,19 @@ def health():
             "tg_ready": bool(TG_TOKEN), "channel": TG_CHANNEL, "credits": _credits()}
 
 
+@app.get("/api/higgsfield/models")
+def higgsfield_models():
+    from studio import higgsfield
+    return {
+        "ready": higgsfield.configured(),
+        "models": [
+            {"id": k, **v}
+            for k, v in higgsfield.MODELS.items()
+        ],
+        "default": higgsfield.MODEL_PATH,
+    }
+
+
 @app.get("/api/scenarios")
 def scenarios():
     out = []
@@ -251,13 +264,13 @@ def save_scenario(name: str, body: str = Form(...)):
 
 
 def _run(jid: str, scenario: dict, draft: bool, polish: bool = True, music: str = None,
-         gen_stills: bool = False, stills_dir: str = None):
+         gen_stills: bool = False, stills_dir: str = None, hf_model_path: str = None):
     out = str(OUT / f"{jid}.mp4")
     wd = str(WORK / jid)
     try:
         log = story.build(scenario, out, wd, base_dir=str(ROOT), draft=draft,
                           polish=polish, music=music, gen_stills=gen_stills,
-                          stills_dir=stills_dir)
+                          stills_dir=stills_dir, model_path=hf_model_path)
         from studio.host import upload_best_effort
         url = upload_best_effort(out)          # durable mirror so the agent can fetch it
         JOBS[jid].update(status="done", info=log, video=f"/outputs/{jid}.mp4", url=url)
@@ -268,7 +281,8 @@ def _run(jid: str, scenario: dict, draft: bool, polish: bool = True, music: str 
 
 @app.post("/api/render")
 def render(body: str = Form(...), draft: bool = Form(True), polish: bool = Form(True),
-           music: str = Form(""), gen_stills: bool = Form(False), stills: str = Form("")):
+           music: str = Form(""), gen_stills: bool = Form(False), stills: str = Form(""),
+           hf_model: str = Form("")):
     try:
         scenario = json.loads(body)
     except Exception as e:
@@ -287,12 +301,19 @@ def render(body: str = Form(...), draft: bool = Form(True), polish: bool = Form(
     else:
         default_bed = ASSETS / "music" / "inspired.mp3"
         music_path = str(default_bed) if default_bed.exists() else None
+    # Resolve Higgsfield model path from model id or raw path
+    from studio import higgsfield as hf_mod
+    hf_model_path = None
+    if hf_model:
+        m = hf_mod.MODELS.get(hf_model)
+        hf_model_path = m["path"] if m else (hf_model if hf_model.startswith("/") else None)
     jid = uuid.uuid4().hex[:12]
     JOBS[jid] = {"status": "running"}
     threading.Thread(target=_run, args=(jid, scenario, draft, polish, music_path, gen_stills,
-                                        str(sdir) if has_baked else None), daemon=True).start()
+                                        str(sdir) if has_baked else None, hf_model_path),
+                     daemon=True).start()
     return {"job_id": jid, "draft": draft, "polish": polish, "scenes": len(scenario["scenes"]),
-            "baked_stills": has_baked}
+            "baked_stills": has_baked, "hf_model": hf_model or "default"}
 
 
 @app.get("/api/music")

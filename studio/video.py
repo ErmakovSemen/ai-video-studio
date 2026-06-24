@@ -9,11 +9,12 @@ VIDEO_MODEL = os.getenv("OR_VIDEO_MODEL", "kwaivgi/kling-v3.0-std")
 VIDEO_PROVIDER = os.getenv("VIDEO_PROVIDER", "openrouter").lower()
 
 
-def animate(image_path: str, motion_prompt: str, out_path: str) -> str:
+def animate(image_path: str, motion_prompt: str, out_path: str,
+            model_path: str | None = None) -> str:
     """Dispatch image->video to the configured provider (openrouter | higgsfield)."""
     if VIDEO_PROVIDER == "higgsfield":
         from studio import higgsfield
-        return higgsfield.animate(image_path, motion_prompt, out_path)
+        return higgsfield.animate(image_path, motion_prompt, out_path, model_path=model_path)
     return _animate_openrouter(image_path, motion_prompt, out_path)
 
 

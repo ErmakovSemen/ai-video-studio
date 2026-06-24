@@ -25,7 +25,8 @@ PAD = 0.35  # seconds of trailing silence per scene so cuts breathe
 
 def build(scenario: dict, out_path: str, workdir: str, base_dir: str = ".",
           draft: bool = False, polish: bool = False, music: str = None,
-          gen_stills: bool = False, stills_dir: str | None = None) -> dict:
+          gen_stills: bool = False, stills_dir: str | None = None,
+          model_path: str | None = None) -> dict:
     """Render a scenario into a cartoon.
 
     draft=True       → FREE: Ken-Burns on the reference art, for flow/timing.
@@ -72,7 +73,7 @@ def build(scenario: dict, out_path: str, workdir: str, base_dir: str = ".",
         else:
             img = os.path.join(workdir, f"img{i}.png")
             imagegen.generate_image(f"{style} SCENE: {sc['image']}", img, refs)
-            video.animate(img, sc["motion"], raw)
+            video.animate(img, sc["motion"], raw, model_path=model_path)
         sv = os.path.join(workdir, f"sc{i}.mp4")
         if polish:
             edit.trim(raw, seconds, sv)                    # no burned caption

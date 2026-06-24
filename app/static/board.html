@@ -124,7 +124,8 @@ function openCard(colId,cardId){
      <input id="m_vid" placeholder="видео URL (напр. /outputs/x.mp4 или /media/x.mp4)" value="${esc(card.video)}">
      <input id="m_link" placeholder="ссылка: подпись | https://…" style="margin-top:6px">
      ${card.scenario?`<label>✍️ Улучшить субтитры (ИИ)</label><div style="font-size:12px;color:var(--mut);margin-bottom:8px">ИИ перепишет и подчистит подписи сценария «${esc(card.scenario)}» → карточка уйдёт в «Ревью».</div><button class="mbtn sec" id="m_ai">✍️ Улучшить субтитры</button><div style="font-size:13px;margin-top:8px" id="m_aist"></div>`:''}
-     ${(col.id==='ideas'||col.id==='draft'||col.id==='montage')&&card.scenario?`<label>🎬 Видео</label><div style="font-size:12px;color:var(--mut);margin-bottom:8px">${card.video?'Видео есть — можно перерендерить.':'Видео ещё нет — сгенерировать из сценария.'} Сценарий: ${esc(card.scenario)} · бесплатно (сцены+хук+караоке+музыка)</div><button class="mbtn" id="m_gen">${card.video?'♻️ Перерендерить видео':'🎬 Сгенерировать видео'}</button><div style="font-size:13px;margin-top:8px" id="m_genst"></div>`:''}
+     ${(col.id==='ideas'||col.id==='draft'||col.id==='montage')&&card.scenario?`<label>🎬 Видео — черновик (бесплатно)</label><div style="font-size:12px;color:var(--mut);margin-bottom:8px">${card.video?'Видео есть — можно перерендерить.':'Видео ещё нет.'} Сценарий: ${esc(card.scenario)} · бесплатно (сцены+хук+субтитры+музыка)</div><button class="mbtn sec" id="m_gen">${card.video?'♻️ Перерендерить (черновик)':'🎬 Черновик (бесплатно)'}</button><div style="font-size:13px;margin-top:8px" id="m_genst"></div>`:''}
+     ${(col.id==='ideas'||col.id==='draft'||col.id==='montage')&&card.scenario&&(window._health&&window._health.higgsfield_ready)?`<label>🚀 Pro рендер — Higgsfield (платно)</label><div style="font-size:12px;color:var(--mut);margin-bottom:8px">Реальные видеоклипы с движением камеры (image→video). Тратит кредиты Higgsfield.</div><select id="m_hfmodel" style="margin-bottom:8px">${(window._hfModels||[]).map(m=>`<option value="${m.id}">${m.label} — $${m.price_usd}/сцена (~$${(m.price_usd*5).toFixed(2)} за эпизод) · ${m.desc}</option>`).join('')}</select><button class="mbtn" id="m_pro">🚀 Pro рендер</button><div style="font-size:13px;margin-top:8px" id="m_prost"></div>`:''}
      ${col.id==='montage'?`<label>🎬 Профи ИИ-монтаж из сырья</label><div style="font-size:12px;color:var(--mut);margin-bottom:6px">Брось сырые клипы и фото + опиши задачу — ИИ соберёт монтаж (порядок, обрезка, вставки, подписи) → Ревью.</div><input type="file" id="m_up" multiple accept="video/*,image/*" style="font-size:12px;margin-bottom:6px;width:100%"><div id="m_assets" style="font-size:12px;color:var(--mut);margin-bottom:6px"></div><textarea id="m_mprompt" placeholder="Напр.: динамичный ролик про дисциплину, сильный хук, фото в середине, чёткие подписи" style="min-height:56px">${esc(card.montage_prompt||'')}</textarea><button class="mbtn" id="m_montage" style="margin-top:8px">🎬 Собрать ИИ-монтаж</button><div style="font-size:13px;margin-top:8px" id="m_montst"></div>`:''}
      ${(PREV[col.id]||NEXT[col.id])?`<label>➡️ Перемещение по стадиям</label><div class="mrow" style="margin-top:4px">${PREV[col.id]?`<button class="mbtn sec" id="m_prev">← ${esc(colName(PREV[col.id]))}</button>`:''}${NEXT[col.id]?`<button class="mbtn" id="m_next">${esc(colName(NEXT[col.id]))} →</button>`:''}</div>`:''}
      ${(col.id==='await_post'||col.id==='posting')&&card.video?`<label>📤 Постинг</label><div style="font-size:12px;color:var(--mut);margin-bottom:8px">Залить видео карточки в подключённые соцсети.</div><button class="mbtn" id="m_post">📤 Запостить</button><div style="font-size:13px;margin-top:8px" id="m_postst"></div>`:''}
@@ -180,6 +181,47 @@ function openCard(colId,cardId){
         if(j.status==='error')throw new Error(j.error||'render error');}
       throw new Error('таймаут');
     }catch(e){st.textContent='Ошибка: '+e.message+' · попробуй ещё раз (бесплатный TTS иногда подводит)';gen.disabled=false;}
+  };
+  const pro=document.getElementById('m_pro');
+  if(pro)pro.onclick=async()=>{
+    const st=document.getElementById('m_prost');
+    const sel=document.getElementById('m_hfmodel');
+    const modelId=sel?sel.value:'';
+    const modelInfo=(window._hfModels||[]).find(m=>m.id===modelId)||{label:modelId,price_usd:0.10};
+    const scCount=(card._sceneCount||5);
+    const est=(modelInfo.price_usd*scCount).toFixed(2);
+    if(!confirm(`🚀 Pro рендер: ${modelInfo.label}\nОценка стоимости: ~$${est} (${scCount} сцен × $${modelInfo.price_usd})\n\nПродолжить? Это потратит кредиты Higgsfield.`))return;
+    st.textContent='Загружаю сценарий…';pro.disabled=true;
+    try{
+      const sc=await (await fetch('/api/scenarios/'+card.scenario)).json();
+      const nScenes=(sc.scenes||[]).length;
+      const fd=new FormData();
+      fd.append('body',JSON.stringify(sc));
+      fd.append('draft','false');
+      fd.append('polish','true');
+      fd.append('stills',card.scenario||'');
+      fd.append('hf_model',modelId);
+      st.textContent=`🚀 Pro рендер запущен (${nScenes} сцен × $${modelInfo.price_usd} ≈ $${(nScenes*modelInfo.price_usd).toFixed(2)})…`;
+      const r=await fetch('/api/render',{method:'POST',body:fd});const d=await r.json();
+      if(!r.ok||!d.job_id)throw new Error(d.detail||'render err');const jid=d.job_id;
+      for(let i=0;i<300;i++){await new Promise(s=>setTimeout(s,5000));
+        const j=await (await fetch('/api/jobs/'+jid)).json();
+        st.textContent=`🚀 Pro рендер… (${j.status||'?'}) · сцены генерируются (~6 мин)`;
+        if(j.status==='done'){
+          card.video=j.url||('/outputs/'+jid+'.mp4');
+          card.tags=Array.from(new Set([...(card.tags||[]),'higgsfield','pro-rendered']));
+          const rev=data.columns.find(c=>c.id==='review');
+          if(rev){const k=cur.col.cards.indexOf(card);cur.col.cards.splice(k,1);rev.cards.unshift(card);}
+          persist();render();
+          st.innerHTML='Готово ✅ Pro видео → «Ревью». <a href="#" id="m_re2">открыть</a>';
+          const re2=document.getElementById('m_re2');
+          if(re2)re2.onclick=(e)=>{e.preventDefault();const c=data.columns.find(x=>x.cards.includes(card));closeCard();if(c)openCard(c.id,card.id);};
+          return;
+        }
+        if(j.status==='error')throw new Error(j.error||'render error');
+      }
+      throw new Error('таймаут');
+    }catch(e){st.textContent='Ошибка: '+e.message;pro.disabled=false;}
   };
   const post=document.getElementById('m_post');
   if(post)post.onclick=async()=>{
@@ -255,7 +297,17 @@ $('#save').onclick=async()=>{
   if(r.ok){dirty=false;$('#save').classList.remove('dirty');$('#save').textContent='Сохранено ✅';
     setTimeout(()=>$('#save').textContent='💾 Сохранить',1500);}
 };
-(async()=>{data=await (await fetch('/api/kanban/'+NAME)).json();
+(async()=>{
+  // Load board + health + Higgsfield models in parallel
+  const [bd, hlt, hfm] = await Promise.all([
+    fetch('/api/kanban/'+NAME).then(r=>r.json()),
+    fetch('/api/health').then(r=>r.json()).catch(()=>({})),
+    fetch('/api/higgsfield/models').then(r=>r.json()).catch(()=>({models:[]})),
+  ]);
+  data=bd;
+  window._health=hlt;
+  window._hfModels=hfm.models||[];
   $('#title').textContent='🔥 '+(data.title||'Prometey');
-  $('#upd').textContent='обновлено '+(data.updated||'');render();})();
+  $('#upd').textContent='обновлено '+(data.updated||'');render();
+})();
 </script></body></html>
