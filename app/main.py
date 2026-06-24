@@ -251,6 +251,7 @@ def list_projects():
                 out.append(json.loads(pf.read_text(encoding="utf-8")))
             except Exception:
                 pass
+    out.sort(key=lambda p: p.get("order", 99))
     return out
 
 
