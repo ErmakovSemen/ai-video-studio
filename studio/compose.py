@@ -96,7 +96,7 @@ def mock_clip(image_path: str | None, fallback_text: str, seconds: float, out: s
         os.remove(tmp)
 
 
-def _wrap(text: str, width: int = 14) -> str:
+def _wrap(text: str, width: int = 22) -> str:
     """Greedy word-wrap into lines of ~width chars (drawtext has no auto-wrap)."""
     words, lines, cur = text.split(), [], ""
     for w in words:
@@ -130,10 +130,11 @@ def burn_hook(clip: str, hook: str, out: str):
 
 def scene_clip(raw_clip: str, caption: str, seconds: float, out: str):
     """Trim a raw clip to `seconds`, burn a bottom caption, drop its audio."""
-    capf = out + ".txt"; open(capf, "w", encoding="utf-8").write(caption)
+    capf = out + ".txt"
+    open(capf, "w", encoding="utf-8").write(_wrap(caption, width=22))
     vf = (f"scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},"
           f"drawtext=textfile='{capf}':fontfile='{FONT}':fontsize=44:fontcolor=white:"
-          f"borderw=3:bordercolor=black:x=(w-tw)/2:y=h-300")
+          f"borderw=3:bordercolor=black:line_spacing=8:x=(w-tw)/2:y=h-320")
     subprocess.run([FF, "-y", "-i", raw_clip, "-t", f"{seconds:.2f}", "-vf", vf,
                     "-an", "-r", "30", "-c:v", "libx264", "-threads", "1", "-preset", "ultrafast", "-pix_fmt", "yuv420p", out],
                    capture_output=True)

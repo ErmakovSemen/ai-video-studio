@@ -127,6 +127,16 @@ function openCard(colId,cardId){
      ${(col.id==='ideas'||col.id==='draft'||col.id==='montage')&&card.scenario?`<label>🎬 Видео — черновик (бесплатно)</label><div style="font-size:12px;color:var(--mut);margin-bottom:8px">${card.video?'Видео есть — можно перерендерить.':'Видео ещё нет.'} Сценарий: ${esc(card.scenario)} · бесплатно (сцены+хук+субтитры+музыка)</div><button class="mbtn sec" id="m_gen">${card.video?'♻️ Перерендерить (черновик)':'🎬 Черновик (бесплатно)'}</button><div style="font-size:13px;margin-top:8px" id="m_genst"></div>`:''}
      ${(col.id==='ideas'||col.id==='draft'||col.id==='montage')&&card.scenario&&(window._health&&window._health.higgsfield_ready)?`<label>🚀 Pro рендер — Higgsfield (платно)</label><div style="font-size:12px;color:var(--mut);margin-bottom:8px">Реальные видеоклипы с движением камеры (image→video). Тратит кредиты Higgsfield.</div><select id="m_hfmodel" style="margin-bottom:8px">${(window._hfModels||[]).map(m=>`<option value="${m.id}">${m.label} — $${m.price_usd}/сцена (~$${(m.price_usd*5).toFixed(2)} за эпизод) · ${m.desc}</option>`).join('')}</select><button class="mbtn" id="m_pro">🚀 Pro рендер</button><div style="font-size:13px;margin-top:8px" id="m_prost"></div>`:''}
      ${col.id==='montage'?`<label>🎬 Профи ИИ-монтаж из сырья</label><div style="font-size:12px;color:var(--mut);margin-bottom:6px">Брось сырые клипы и фото + опиши задачу — ИИ соберёт монтаж (порядок, обрезка, вставки, подписи) → Ревью.</div><input type="file" id="m_up" multiple accept="video/*,image/*" style="font-size:12px;margin-bottom:6px;width:100%"><div id="m_assets" style="font-size:12px;color:var(--mut);margin-bottom:6px"></div><textarea id="m_mprompt" placeholder="Напр.: динамичный ролик про дисциплину, сильный хук, фото в середине, чёткие подписи" style="min-height:56px">${esc(card.montage_prompt||'')}</textarea><button class="mbtn" id="m_montage" style="margin-top:8px">🎬 Собрать ИИ-монтаж</button><div style="font-size:13px;margin-top:8px" id="m_montst"></div>`:''}
+     ${col.id==='review'&&card.scenario?`<label>🧠 AI-ревьюер</label>
+       <div style="font-size:12px;color:var(--mut);margin-bottom:8px">LLM проверит сценарий по чеклисту: длина субтитров, CTA, темп, хук, логика сцен.</div>
+       <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;flex-wrap:wrap">
+         <select id="m_autonomy" style="font-size:12px;padding:4px 8px;border-radius:6px;background:var(--card);border:1px solid var(--border);color:var(--txt)">
+           <option value="manual" ${localStorage.getItem('review_autonomy')!=='auto'?'selected':''}>🤝 Ручной — я решаю</option>
+           <option value="auto" ${localStorage.getItem('review_autonomy')==='auto'?'selected':''}>🤖 Авто — отправить назад если есть проблемы</option>
+         </select>
+         <button class="mbtn" id="m_review">🧠 Критиковать</button>
+       </div>
+       <div id="m_revst"></div>`:''}
      ${(PREV[col.id]||NEXT[col.id])?`<label>➡️ Перемещение по стадиям</label><div class="mrow" style="margin-top:4px">${PREV[col.id]?`<button class="mbtn sec" id="m_prev">← ${esc(colName(PREV[col.id]))}</button>`:''}${NEXT[col.id]?`<button class="mbtn" id="m_next">${esc(colName(NEXT[col.id]))} →</button>`:''}</div>`:''}
      ${(col.id==='await_post'||col.id==='posting')&&card.video?`<label>📤 Постинг</label><div style="font-size:12px;color:var(--mut);margin-bottom:8px">Залить видео карточки в подключённые соцсети.</div><button class="mbtn" id="m_post">📤 Запостить</button><div style="font-size:13px;margin-top:8px" id="m_postst"></div>`:''}
      ${col.id!=='claude'&&col.id!=='posted'&&(card.scenario||(card.assets&&card.assets.length))?`<label>🤖 Отдать Claude</label><div style="font-size:12px;color:var(--mut);margin-bottom:8px">Передать карточку Claude: ${card.scenario?'он отрендерит сценарий':'он смонтирует из сырья'} в фоне → готовый ролик вернётся в «Ревью» (обычно в течение ~10 минут).</div><button class="mbtn sec" id="m_claude">🤖 Отдать Claude</button>`:''}
@@ -162,6 +172,101 @@ function openCard(colId,cardId){
   const pv=document.getElementById('m_prev');if(pv)pv.onclick=()=>moveTo(PREV[col.id]);
   const nx=document.getElementById('m_next');if(nx)nx.onclick=()=>moveTo(NEXT[col.id]);
   const clb=document.getElementById('m_claude');if(clb)clb.onclick=()=>{card.notes=((card.notes||'')+'\n🤖 Передано Claude '+new Date().toLocaleString('ru-RU')).trim();card.tags=Array.from(new Set([...(card.tags||[]),'claude-queued']));moveTo('claude');};
+
+  // ── AI reviewer ──
+  const revBtn=document.getElementById('m_review');
+  if(revBtn)revBtn.onclick=async()=>{
+    const st=document.getElementById('m_revst');
+    const autonomySel=document.getElementById('m_autonomy');
+    const autonomy=autonomySel?autonomySel.value:'manual';
+    localStorage.setItem('review_autonomy',autonomy);
+    st.innerHTML='<span style="color:var(--mut)">🧠 Анализирую сценарий…</span>';
+    revBtn.disabled=true;
+    try{
+      const sc=await (await fetch('/api/scenarios/'+card.scenario+(card.scenario_project?'?project='+card.scenario_project:''))).json();
+      const fd=new FormData();
+      fd.append('scenario',JSON.stringify(sc));
+      fd.append('notes',card.notes||'');
+      fd.append('project',card.scenario_project||'');
+      const r=await fetch('/api/review',{method:'POST',body:fd});
+      const d=await r.json();
+      if(!r.ok)throw new Error(d.detail||'review error');
+
+      const scoreColor=d.score>=8?'#4caf50':d.score>=5?'#ff9800':'#e53935';
+      const issuesHtml=(d.issues||[]).map(iss=>`
+        <div style="padding:6px 10px;margin:4px 0;border-radius:6px;background:${iss.severity==='critical'?'rgba(229,57,53,.15)':'rgba(255,152,0,.1)'};border-left:3px solid ${iss.severity==='critical'?'#e53935':'#ff9800'}">
+          <b>${iss.check}</b>: ${iss.problem}
+        </div>`).join('');
+
+      const verdict=d.verdict==='pass'?'✅ Готово к публикации':'⚠️ Нужна доработка';
+      let html=`
+        <div style="padding:12px;border-radius:8px;background:var(--card);border:1px solid var(--border);margin-top:4px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+            <b style="font-size:14px">${verdict}</b>
+            <span style="font-size:20px;font-weight:700;color:${scoreColor}">${d.score}/10</span>
+          </div>
+          <div style="font-size:13px;color:var(--mut);margin-bottom:8px">${d.summary||''}</div>
+          ${issuesHtml}`;
+
+      if(d.verdict==='needs_work'&&d.improved_scenario){
+        const impJson=JSON.stringify(d.improved_scenario);
+        html+=`<div style="margin-top:10px;font-size:12px;color:var(--mut)">Улучшенный сценарий готов.</div>
+          <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">`;
+        if(autonomy==='auto'){
+          html+=`<div style="font-size:12px;color:#ff9800">🤖 Авто: карточка уходит в черновик с исправленным сценарием…</div>`;
+        } else {
+          html+=`<button class="mbtn" id="m_rev_apply" style="font-size:12px">✏️ Применить и перерендерить</button>
+            <button class="mbtn sec" id="m_rev_skip" style="font-size:12px">Пропустить → публикация</button>`;
+        }
+        html+=`</div>`;
+        html+=`<div id="m_rev_improved" data-sc='${impJson.replace(/'/g,"&#39;")}'></div>`;
+      } else if(d.verdict==='pass'){
+        if(autonomy==='auto'){
+          html+=`<div style="font-size:12px;color:#4caf50;margin-top:8px">🤖 Авто: карточка → ожидание постинга.</div>`;
+        } else {
+          html+=`<button class="mbtn" id="m_rev_pub" style="font-size:12px;margin-top:10px">→ Ожидание постинга</button>`;
+        }
+      }
+      html+=`</div>`;
+      st.innerHTML=html;
+
+      // save critique to notes
+      const critiqueNote=`🧠 AI-ревью ${new Date().toLocaleString('ru-RU')} | ${verdict} ${d.score}/10\n${d.summary}\n${(d.issues||[]).map(i=>`• ${i.check}: ${i.problem}`).join('\n')}`;
+      card.notes=((card.notes||'')+'\n\n'+critiqueNote).trim();
+
+      // autonomy: auto-move
+      if(autonomy==='auto'){
+        if(d.verdict==='pass'){
+          await new Promise(r=>setTimeout(r,1500));moveTo('await_post');persist();render();
+        } else if(d.verdict==='needs_work'&&d.improved_scenario){
+          // save improved scenario over card.scenario file
+          const scName=card.scenario;
+          const saveFd=new FormData();saveFd.append('body',JSON.stringify(d.improved_scenario));saveFd.append('project',card.scenario_project||'');
+          await fetch('/api/scenarios/'+scName,{method:'POST',body:saveFd});
+          card.tags=Array.from(new Set([...(card.tags||[]),'ai-reviewed','needs-work']));
+          await new Promise(r=>setTimeout(r,1500));moveTo('draft');persist();render();
+        }
+      }
+
+      // manual: wire up action buttons
+      const applyBtn=document.getElementById('m_rev_apply');
+      if(applyBtn)applyBtn.onclick=async()=>{
+        applyBtn.disabled=true;applyBtn.textContent='Сохраняю…';
+        const impSc=JSON.parse(document.getElementById('m_rev_improved').dataset.sc);
+        const saveFd=new FormData();saveFd.append('body',JSON.stringify(impSc));saveFd.append('project',card.scenario_project||'');
+        await fetch('/api/scenarios/'+card.scenario,{method:'POST',body:saveFd});
+        card.tags=Array.from(new Set([...(card.tags||[]),'ai-reviewed','needs-work']));
+        persist();moveTo('draft');render();
+      };
+      const skipBtn=document.getElementById('m_rev_skip');
+      if(skipBtn)skipBtn.onclick=()=>moveTo('await_post');
+      const pubBtn=document.getElementById('m_rev_pub');
+      if(pubBtn)pubBtn.onclick=()=>moveTo('await_post');
+
+    }catch(e){st.innerHTML=`<span style="color:#e55">Ошибка: ${e.message}</span>`;}
+    finally{revBtn.disabled=false;}
+  };
+
   const gen=document.getElementById('m_gen');
   if(gen)gen.onclick=async()=>{
     const st=document.getElementById('m_genst');st.textContent='Загружаю сценарий…';gen.disabled=true;

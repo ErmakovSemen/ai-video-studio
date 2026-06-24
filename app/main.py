@@ -490,6 +490,98 @@ def publish_file(video: str = Form(...), title: str = Form(...), description: st
     return {"results": results}
 
 
+@app.post("/api/review")
+def ai_review(scenario: str = Form(...), notes: str = Form(""), project: str = Form("")):
+    """AI-ревьюер: критикует сценарий по чеклисту и возвращает вердикт + исправленный сценарий."""
+    try:
+        sc = json.loads(scenario)
+    except Exception:
+        raise HTTPException(400, "invalid scenario json")
+    if not OR_KEY:
+        raise HTTPException(503, "OPENROUTER_API_KEY not set")
+
+    proj = {}
+    if project:
+        try: proj = _load_project(project)
+        except Exception: pass
+
+    # build scene summary for the critic
+    scenes_txt = "\n".join(
+        f"  {i+1}. VO: «{s.get('vo','')}» | Caption: «{s.get('caption','')}»"
+        for i, s in enumerate(sc.get("scenes", []))
+    )
+    endcard = sc.get("endcard", {})
+    channel_ctx = ""
+    if proj:
+        channel_ctx = f"Канал: {proj.get('name','')}. Стиль: {proj.get('style','')}. Системный промпт: {proj.get('system_prompt','')}"
+
+    critic_prompt = f"""Ты — строгий редактор вертикальных коротких видео (Reels/Shorts, 60 с).
+Проверь сценарий по чеклисту и верни JSON.
+
+{channel_ctx}
+
+СЦЕНАРИЙ «{sc.get('title','')}»:
+Сцены:
+{scenes_txt}
+Endcard: {endcard.get('vo','')}
+
+ЧЕКЛИСТ — проверь каждый пункт:
+1. Subtext (Caption) — не длиннее 28 символов на строку, не длиннее 2 строк.
+2. CTA (призывы к действию) — максимум 1, только в последней сцене или endcard. «Завари чай», «Выпей кофе», «Попробуй» — это CTA.
+3. VO (озвучка) — каждая фраза < 18 слов. Не должно быть повторов темы между соседними сценами.
+4. Hook — первая сцена VO должна зацепить за 3 сек (вопрос, факт, провокация).
+5. Поток — логика сцен: завязка → развитие → инсайт → вывод. Не должно быть рваных переходов.
+6. Соответствие каналу — тон и стиль соответствуют описанию канала.
+
+ВЕРНИ СТРОГО JSON (без markdown, только объект):
+{{
+  "verdict": "pass" | "needs_work",
+  "score": 1-10,
+  "issues": [
+    {{"check": "название пункта", "problem": "описание проблемы", "severity": "critical"|"minor"}}
+  ],
+  "improved_scenes": [  // ТОЛЬКО если verdict=needs_work — исправленные сцены (полный массив)
+    {{"vo": "...", "caption": "...", "image": "...", "refs": [...], "motion": "..."}}
+  ],
+  "summary": "2-3 предложения общего вывода"
+}}"""
+
+    body = {
+        "model": os.getenv("OPENROUTER_MODEL", "meta-llama/llama-3.3-70b-instruct"),
+        "messages": [{"role": "user", "content": critic_prompt}],
+        "temperature": 0.3,
+    }
+    req = urllib.request.Request(
+        "https://openrouter.ai/api/v1/chat/completions",
+        data=json.dumps(body).encode(),
+        headers={"Authorization": f"Bearer {OR_KEY}", "Content-Type": "application/json"},
+    )
+    try:
+        resp = json.load(urllib.request.urlopen(req, timeout=60))
+        raw = resp["choices"][0]["message"]["content"].strip()
+        # strip markdown code fences if model wrapped in them
+        if raw.startswith("```"):
+            raw = raw.split("```")[1]
+            if raw.startswith("json"): raw = raw[4:]
+        result = json.loads(raw.strip())
+    except Exception as e:
+        raise HTTPException(500, f"LLM error: {str(e)[:300]}")
+
+    # if needs_work, merge improved scenes back into scenario
+    improved_scenario = None
+    if result.get("verdict") == "needs_work" and result.get("improved_scenes"):
+        improved_scenario = dict(sc)
+        improved_scenario["scenes"] = result["improved_scenes"]
+
+    return {
+        "verdict": result.get("verdict", "pass"),
+        "score": result.get("score", 7),
+        "issues": result.get("issues", []),
+        "summary": result.get("summary", ""),
+        "improved_scenario": improved_scenario,
+    }
+
+
 @app.post("/api/ai_edit")
 def ai_edit(scenario: str = Form(...)):
     """ИИ-монтажёр: LLM улучшает субтитры сценария -> render-ready *_ai.json + правки."""
