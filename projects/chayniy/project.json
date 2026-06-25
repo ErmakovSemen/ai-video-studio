@@ -9,6 +9,13 @@
   "system_prompt": "Ты — сторителлер чайного канала. Создавай медитативные короткие истории о чае, церемониях и замедлении. Стиль: спокойный, созерцательный, с восточной мудростью.",
   "board": "chayniy_content",
   "scenarios_dir": "chayniy",
-  "brand_image": "assets/brand.png",
-  "characters": {}
+  "brand_image": "assets/chayniy/panda_standing.png",
+  "characters": {
+    "panda": "assets/chayniy/panda_ink.png",
+    "panda_standing": "assets/chayniy/panda_standing.png",
+    "panda_face": "assets/chayniy/panda_face.png",
+    "teacup": "assets/chayniy/teacup_steam.png",
+    "tealeaf": "assets/chayniy/tealeaf.png",
+    "branch": "assets/chayniy/branch_teabush.png"
+  }
 }
