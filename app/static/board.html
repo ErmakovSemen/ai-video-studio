@@ -68,6 +68,7 @@ if(window.self!==window.top){const h=document.querySelector('header');if(h)h.sty
 function tagClass(t){return ['posting','content','product','infra','blocked'].includes(t)?t:'';}
 function render(){
   const b=$('#board');b.innerHTML='';
+  if(!data||!data.columns){b.innerHTML='<div style="padding:40px;color:#666">Борда пустая — добавь первую карточку.</div>';return;}
   data.columns.forEach(col=>{
     const c=document.createElement('div');c.className='col';c.dataset.col=col.id;
     c.innerHTML=`<h2>${col.name}<span>${col.cards.length}</span></h2>`;

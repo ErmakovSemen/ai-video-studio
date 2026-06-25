@@ -144,7 +144,9 @@ def studio():
     return (Path(__file__).parent / "static" / "index.html").read_text(encoding="utf-8")
 
 
-KANBANS = {"board", "content"}   # whitelist of board files
+import re as _re
+def _board_name_ok(name: str) -> bool:
+    return bool(_re.match(r'^[a-zA-Zа-яА-ЯёЁ0-9_\-]{1,80}$', name))
 
 
 def _board_html():
@@ -173,8 +175,8 @@ def content_page():
 
 @app.get("/api/kanban/{name}")
 def get_kanban(name: str):
-    if name not in KANBANS:
-        raise HTTPException(404, "no such board")
+    if not _board_name_ok(name):
+        raise HTTPException(400, "invalid board name")
     # Prefer the durable GitHub copy so agent results (and cross-host edits) show up.
     from studio import boardsync
     remote = boardsync.pull(name)
@@ -193,8 +195,8 @@ def get_kanban(name: str):
 
 @app.post("/api/kanban/{name}")
 def save_kanban(name: str, body: str = Form(...)):
-    if name not in KANBANS:
-        raise HTTPException(404, "no such board")
+    if not _board_name_ok(name):
+        raise HTTPException(400, "invalid board name")
     try:
         data = json.loads(body)
     except Exception as e:
