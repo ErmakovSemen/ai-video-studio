@@ -3,7 +3,7 @@
   "id": "chayniy",
   "name": "Чайный",
   "emoji": "🍵",
-  "style": "спокойная акварельная анимация, зелёные и бежевые тона, атмосфера чайной церемонии",
+  "style": "minimalist pencil sketch, clean thin lines, lots of white space, soft watercolor accents in green and beige only, few colors, Japanese illustration aesthetic, no text in image, vertical 9:16",
   "voice": "ru-RU-SvetlanaNeural",
   "music_default": "",
   "system_prompt": "Ты — сторителлер чайного канала. Создавай медитативные короткие истории о чае, церемониях и замедлении. Стиль: спокойный, созерцательный, с восточной мудростью.",
