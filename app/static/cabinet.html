@@ -287,7 +287,7 @@ framereload.onclick = () => { showFrameLoading(); const s = frame.src; frame.src
 // ── show view ──
 function show(item) {
   nav.querySelectorAll('a').forEach(a => a.classList.remove('active'));
-  Object.values(VIEWS).forEach(v => v.el.classList.add('hide'));
+  Object.values(VIEWS).forEach(v => v.el && v.el.classList.add('hide'));
   frame.classList.add('hide'); frameload.classList.add('hide');
   if (item.view) {
     const v = VIEWS[item.view]; v.el.classList.remove('hide'); titleEl.textContent = v.title;
@@ -388,6 +388,8 @@ const modal = document.getElementById('newProjModal');
 railAdd.onclick = () => { document.getElementById('newProjBtn').click(); };
 document.getElementById('newProjBtn').onclick = () => modal.classList.remove('hide');
 document.getElementById('np_cancel').onclick  = () => modal.classList.add('hide');
+modal.addEventListener('click', e => { if (e.target === modal) modal.classList.add('hide'); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') modal.classList.add('hide'); });
 document.getElementById('np_save').onclick = async () => {
   const name  = document.getElementById('np_name').value.trim();
   const emoji = document.getElementById('np_emoji').value.trim() || '📁';
