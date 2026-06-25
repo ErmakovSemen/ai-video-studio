@@ -1,0 +1,54 @@
+{
+  "title": "Зелёный vs Чёрный",
+  "hook": "Один лист. Два характера. Что выбрать?",
+  "world": "визуальное сравнение / образовательное",
+  "voice": "ru-RU-SvetlanaNeural",
+  "hero": "panda",
+  "brand_image": "assets/chayniy/panda_canon.png",
+  "characters": {
+    "panda": "assets/chayniy/panda_canon.png"
+  },
+  "style": "minimalist pencil sketch, clean thin lines, lots of white space, soft watercolor accents in green and beige only, few colors, Japanese illustration aesthetic, no text in image, vertical 9:16",
+  "scenes": [
+    {
+      "image": "red panda holds two small cups side by side — one pale green, one dark amber — looking between them curiously, white background, fine pencil lines, two color accents only: green and warm brown",
+      "refs": ["panda"],
+      "motion": "panda glances left and right between cups",
+      "vo": "Зелёный и чёрный чай — это один и тот же лист. Просто разная судьба.",
+      "caption": "Один лист — две судьбы"
+    },
+    {
+      "image": "left half: fresh green tea leaves on a branch, light and airy, pencil sketch; right half: rolled dark dried tea leaves, compact and dense — split composition on white, minimal color",
+      "refs": [],
+      "motion": "gentle split-screen reveal",
+      "vo": "Зелёный — не ферментируют. Чёрный — ферментируют полностью. Именно это меняет всё.",
+      "caption": "Ферментация меняет всё"
+    },
+    {
+      "image": "red panda drinking from a pale green cup, eyes bright and alert, light expression, energetic posture, pencil lines on white, soft green watercolor on cup",
+      "refs": ["panda"],
+      "motion": "panda's eyes widen alertly",
+      "vo": "Зелёный — мягкий кофеин плюс L-теанин. Фокус без тревоги.",
+      "caption": "Фокус без тревоги"
+    },
+    {
+      "image": "red panda drinking from a dark amber cup, relaxed slouch, cozy evening light, warm expression, pencil sketch, beige-brown watercolor on cup, white space dominant",
+      "refs": ["panda"],
+      "motion": "panda settles back comfortably",
+      "vo": "Чёрный — глубже, насыщеннее. Согревает и заземляет.",
+      "caption": "Согревает и заземляет"
+    },
+    {
+      "image": "red panda sitting with both cups in front, making a small shrug with paws — no wrong answer — gentle smile, white background, pencil and minimal watercolor",
+      "refs": ["panda"],
+      "motion": "relaxed shrug gesture",
+      "vo": "Нет правильного ответа. Есть только твоё утро.",
+      "caption": "Нет правильного ответа"
+    }
+  ],
+  "endcard": {
+    "title": "ЧАЙНЫЙ",
+    "sub": "Истории о чае и замедлении",
+    "vo": "Подписывайся — узнаешь всё, что важно о чае."
+  }
+}
