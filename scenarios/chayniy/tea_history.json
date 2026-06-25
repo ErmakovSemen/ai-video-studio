@@ -8,46 +8,58 @@
   "characters": {
     "panda": "assets/chayniy/panda_canon.png"
   },
-  "style": "minimalist pencil sketch with soft watercolor wash, green and beige tones, lots of white space, Japanese illustration aesthetic, vertical 9:16, no text",
+  "style": "Japanese ink brush illustration, fine pen and ink linework with variable line weight (thicker where pressed, thinner where lifted), no color fills — black ink only on white background, occasional diluted ink wash for depth (monochrome only), large empty white space 65-75% of frame, single focal object or character, wabi-sabi aesthetic, ukiyo-e inspired, hand-drawn spontaneous feel, no text no watermark no gradients, vertical 9:16",
   "scenes": [
     {
       "image": "a cute red panda in a dark blue kimono sitting cross-legged, holding a steaming clay teacup with both paws, eyes closed in calm enjoyment, minimal pencil lines, soft green watercolor wash background",
-      "refs": ["panda"],
+      "refs": [
+        "panda"
+      ],
       "motion": "steam rises slowly from the cup",
       "vo": "Чай пьют два миллиарда человек каждый день. Но откуда он взялся?",
       "caption": "Два миллиарда человек пьют чай каждый день"
     },
     {
       "image": "ancient Chinese emperor Shennong sitting under a tree, a leaf falls into his bronze cauldron of boiling water, the red panda mascot watches curiously from behind the tree, pencil sketch watercolor style",
-      "refs": ["panda"],
+      "refs": [
+        "panda"
+      ],
       "motion": "leaf drifts down gently into the cauldron",
       "vo": "2737 год до нашей эры. Китайский мудрец Шэнь-нун варил воду под деревом.",
       "caption": "2737 до н.э. — случайность изменила мир"
     },
     {
       "image": "a single tea leaf falling from a wild bush into golden water, the red panda mascot catches it with one paw and sniffs it with curiosity, soft beige and green watercolor, minimal lines",
-      "refs": ["panda"],
+      "refs": [
+        "panda"
+      ],
       "motion": "the leaf falls in slow motion, panda reacts",
       "vo": "Листок упал в воду. Цвет изменился. Запах — невероятный. Мудрец попробовал.",
       "caption": "Листок упал — и всё изменилось"
     },
     {
       "image": "a map showing tea spreading from China along the Silk Road to Arabia, Persia, India, Japan — illustrated as hand-drawn pencil map with small red panda walking the route, watercolor accents",
-      "refs": ["panda"],
+      "refs": [
+        "panda"
+      ],
       "motion": "route traces itself across the map slowly",
       "vo": "Тысячи лет чай шёл по Шёлковому пути — в Персию, Японию, Европу.",
       "caption": "Шёлковый путь разнёс чай по всему миру"
     },
     {
       "image": "the red panda mascot in kimono pouring tea from a small teapot into two cups at a low wooden table, gentle smile, soft morning light through a paper screen, pencil and watercolor",
-      "refs": ["panda"],
+      "refs": [
+        "panda"
+      ],
       "motion": "tea pours gently, steam curls up",
       "vo": "Сегодня в каждой стране — свой чай. Но у каждой чашки одна история.",
       "caption": "У каждой чашки — одна история"
     },
     {
       "image": "close-up of the red panda mascot holding a cup with both paws, looking straight ahead warmly, steam framing the face, clean white background with faint pencil texture",
-      "refs": ["panda"],
+      "refs": [
+        "panda"
+      ],
       "motion": "gentle breath, steam drifts",
       "vo": "Сделай паузу. Завари чай. И помни — ты держишь в руках пять тысяч лет истории.",
       "caption": "5000 лет истории — в одной чашке"
