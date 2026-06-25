@@ -189,6 +189,16 @@ def get_kanban(name: str):
         return remote
     p = ROOT / f"{name}.json"
     if not p.exists():
+        # auto-init content pipeline boards (*_content) with standard Kanban columns
+        if name.endswith("_content"):
+            return {"title": name, "columns": [
+                {"id": "ideas",       "name": "💡 Идеи",            "cards": []},
+                {"id": "draft",       "name": "✏️ Черновик",         "cards": []},
+                {"id": "montage",     "name": "🎬 Монтаж",           "cards": []},
+                {"id": "review",      "name": "🔍 Ревью",             "cards": []},
+                {"id": "await_post",  "name": "📤 Ожидание постинга", "cards": []},
+                {"id": "posted",      "name": "✅ Опубликовано",      "cards": []},
+            ]}
         return {"title": name, "columns": []}
     return json.loads(p.read_text(encoding="utf-8"))
 
