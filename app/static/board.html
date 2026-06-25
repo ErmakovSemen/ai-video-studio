@@ -180,7 +180,8 @@ function openCard(colId,cardId){
     const autonomySel=document.getElementById('m_autonomy');
     const autonomy=autonomySel?autonomySel.value:'manual';
     localStorage.setItem('review_autonomy',autonomy);
-    st.innerHTML='<span style="color:var(--mut)">🧠 Анализирую сценарий…</span>';
+    const hasVideo=!!(card.video);
+    st.innerHTML=`<span style="color:var(--mut)">${hasVideo?'🎬 Загружаю видео в Gemini…':'🧠 Анализирую сценарий…'}</span>`;
     revBtn.disabled=true;
     try{
       const sc=await (await fetch('/api/scenarios/'+card.scenario+(card.scenario_project?'?project='+card.scenario_project:''))).json();
@@ -188,6 +189,7 @@ function openCard(colId,cardId){
       fd.append('scenario',JSON.stringify(sc));
       fd.append('notes',card.notes||'');
       fd.append('project',card.scenario_project||'');
+      if(card.video)fd.append('video_path',card.video);
       const r=await fetch('/api/review',{method:'POST',body:fd});
       const d=await r.json();
       if(!r.ok)throw new Error(d.detail||'review error');
@@ -199,11 +201,13 @@ function openCard(colId,cardId){
         </div>`).join('');
 
       const verdict=d.verdict==='pass'?'✅ Готово к публикации':'⚠️ Нужна доработка';
+      const methodBadge=d.method==='gemini-video'?'<span style="font-size:10px;background:#1a3a2a;color:#4caf50;padding:2px 6px;border-radius:4px;margin-left:6px">🎬 видео</span>':'<span style="font-size:10px;background:#2a2a1a;color:#ff9800;padding:2px 6px;border-radius:4px;margin-left:6px">📝 текст</span>';
+      const visualBadge=d.visual_score!=null?`<span style="font-size:12px;color:var(--mut);margin-left:8px">визуал ${d.visual_score}/10</span>`:'';
       let html=`
         <div style="padding:12px;border-radius:8px;background:var(--card);border:1px solid var(--border);margin-top:4px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-            <b style="font-size:14px">${verdict}</b>
-            <span style="font-size:20px;font-weight:700;color:${scoreColor}">${d.score}/10</span>
+            <b style="font-size:14px">${verdict}${methodBadge}</b>
+            <span style="font-size:20px;font-weight:700;color:${scoreColor}">${d.score}/10${visualBadge}</span>
           </div>
           <div style="font-size:13px;color:var(--mut);margin-bottom:8px">${d.summary||''}</div>
           ${issuesHtml}`;

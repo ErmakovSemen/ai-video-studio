@@ -19,6 +19,7 @@ PROJECTS = ROOT / "projects"; PROJECTS.mkdir(exist_ok=True)
 TG_TOKEN = os.getenv("AGT_TG_BOT_TOKEN", "")
 TG_CHANNEL = os.getenv("TG_CHANNEL", "@PrometeyApp")
 OR_KEY = os.getenv("OPENROUTER_API_KEY", "")
+GEMINI_KEY = os.getenv("GEMINI_API_KEY", "")
 
 app = FastAPI(title="AI Video Studio")
 
@@ -490,20 +491,125 @@ def publish_file(video: str = Form(...), title: str = Form(...), description: st
     return {"results": results}
 
 
+def _gemini_video_review(video_file_path: str, scenario: dict, notes: str, channel_ctx: str) -> dict:
+    """Upload video to Google Files API and get Gemini visual critique."""
+    import google.generativeai as genai
+    genai.configure(api_key=GEMINI_KEY)
+
+    uploaded = genai.upload_file(path=video_file_path, mime_type="video/mp4")
+    # poll until ACTIVE (usually 5-15s for a short Shorts video)
+    for _ in range(30):
+        uploaded = genai.get_file(uploaded.name)
+        if uploaded.state.name == "ACTIVE":
+            break
+        if uploaded.state.name == "FAILED":
+            raise RuntimeError("Gemini video processing failed")
+        time.sleep(2)
+    else:
+        raise RuntimeError("Gemini video processing timeout")
+
+    sc = scenario
+    scenes_txt = "\n".join(
+        f"  {i+1}. VO: «{s.get('vo','')}» | Caption: «{s.get('caption','')}»"
+        for i, s in enumerate(sc.get("scenes", []))
+    )
+
+    prompt = f"""Ты — строгий редактор вертикальных коротких видео (Reels/Shorts, до 60 с).
+Ты ВИДИШЬ само видео. Оцени его по чеклисту и верни JSON.
+
+{channel_ctx}
+
+СЦЕНАРИЙ «{sc.get('title','')}»:
+{scenes_txt}
+Заметки: {notes}
+
+ЧЕКЛИСТ — проверь каждый пункт, смотря на видео:
+1. Caption — текст субтитров виден полностью, не обрезается краями экрана, не длиннее 2 строк.
+2. CTA (призывы к действию) — максимум 1, только в финале. Подсчитай все явные и неявные призывы.
+3. Визуальный стиль — соответствует ли картинка описанию канала/стилю.
+4. Читаемость — шрифт, контраст caption, не перекрывает ли текст важные части изображения.
+5. Темп — не слишком ли быстро/медленно сменяются сцены относительно VO.
+6. Hook (первые 3 сек) — достаточно ли цепляет начало.
+
+ВЕРНИ СТРОГО JSON (без markdown):
+{{
+  "verdict": "pass" | "needs_work",
+  "score": 1-10,
+  "visual_score": 1-10,
+  "issues": [
+    {{"check": "название пункта", "problem": "описание проблемы", "severity": "critical"|"minor"}}
+  ],
+  "improved_scenes": [],
+  "summary": "2-3 предложения: что хорошо визуально, что надо исправить"
+}}"""
+
+    model = genai.GenerativeModel("gemini-2.0-flash")
+    resp = model.generate_content([uploaded, prompt])
+    raw = resp.text.strip()
+    if raw.startswith("```"):
+        raw = raw.split("```")[1]
+        if raw.startswith("json"): raw = raw[4:]
+    result = json.loads(raw.strip())
+
+    # cleanup uploaded file from Google servers
+    try: genai.delete_file(uploaded.name)
+    except Exception: pass
+
+    return result
+
+
 @app.post("/api/review")
-def ai_review(scenario: str = Form(...), notes: str = Form(""), project: str = Form("")):
+def ai_review(scenario: str = Form(...), notes: str = Form(""), project: str = Form(""),
+              video_path: str = Form("")):
     """AI-ревьюер: критикует сценарий по чеклисту и возвращает вердикт + исправленный сценарий."""
     try:
         sc = json.loads(scenario)
     except Exception:
         raise HTTPException(400, "invalid scenario json")
-    if not OR_KEY:
-        raise HTTPException(503, "OPENROUTER_API_KEY not set")
+    if not OR_KEY and not GEMINI_KEY:
+        raise HTTPException(503, "OPENROUTER_API_KEY or GEMINI_API_KEY required")
 
     proj = {}
     if project:
         try: proj = _load_project(project)
         except Exception: pass
+
+    channel_ctx = ""
+    if proj:
+        channel_ctx = f"Канал: {proj.get('name','')}. Стиль: {proj.get('style','')}. Системный промпт: {proj.get('system_prompt','')}"
+
+    # ── video review via Gemini (if video_path provided and GEMINI_KEY present) ──
+    if video_path and GEMINI_KEY:
+        # resolve /outputs/{jid}.mp4 → filesystem path
+        if video_path.startswith("/outputs/"):
+            fs_path = str(OUT / video_path[len("/outputs/"):])
+        elif video_path.startswith("/media/"):
+            fs_path = str(MEDIA / video_path[len("/media/"):])
+        else:
+            fs_path = video_path
+        if not os.path.exists(fs_path):
+            raise HTTPException(404, f"video file not found: {fs_path}")
+        try:
+            result = _gemini_video_review(fs_path, sc, notes, channel_ctx)
+        except Exception as e:
+            raise HTTPException(500, f"Gemini video review error: {str(e)[:300]}")
+        improved_scenario = None
+        if result.get("verdict") == "needs_work" and result.get("improved_scenes"):
+            improved_scenario = dict(sc)
+            improved_scenario["scenes"] = result["improved_scenes"]
+        return {
+            "verdict": result.get("verdict", "pass"),
+            "score": result.get("score", 7),
+            "visual_score": result.get("visual_score"),
+            "issues": result.get("issues", []),
+            "summary": result.get("summary", ""),
+            "improved_scenario": improved_scenario,
+            "method": "gemini-video",
+        }
+
+    # ── fallback: text-only review via OpenRouter ──
+    if not OR_KEY:
+        raise HTTPException(503, "OPENROUTER_API_KEY not set (no video path given for Gemini)")
 
     # build scene summary for the critic
     scenes_txt = "\n".join(
@@ -511,9 +617,6 @@ def ai_review(scenario: str = Form(...), notes: str = Form(""), project: str = F
         for i, s in enumerate(sc.get("scenes", []))
     )
     endcard = sc.get("endcard", {})
-    channel_ctx = ""
-    if proj:
-        channel_ctx = f"Канал: {proj.get('name','')}. Стиль: {proj.get('style','')}. Системный промпт: {proj.get('system_prompt','')}"
 
     critic_prompt = f"""Ты — строгий редактор вертикальных коротких видео (Reels/Shorts, 60 с).
 Проверь сценарий по чеклисту и верни JSON.
