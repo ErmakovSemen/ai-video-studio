@@ -118,6 +118,7 @@ function openCard(colId,cardId){
      <label>Заголовок</label><input id="m_title" value="${esc(card.title)}">
      <label>Стадия</label><select id="m_col">${opts}</select>
      <label>Описание</label><textarea id="m_desc">${esc(card.desc)}</textarea>
+     ${col.id==='ideas'?`<button class="mbtn sec" id="m_genidea" style="margin-top:4px;font-size:12px">✨ Сгенерировать описание</button><div id="m_genideast" style="font-size:12px;margin-top:6px"></div>`:''}
      <label>Заметки · что дальше</label><textarea id="m_notes" placeholder="напр.: отдать монтажёру; проверить субтитры…">${esc(card.notes)}</textarea>
      <label>Теги (через запятую)</label><input id="m_tags" value="${esc((card.tags||[]).join(', '))}">
      ${hasArt?'<label>Артефакты</label>'+vid+imgs+links:''}
@@ -270,6 +271,26 @@ function openCard(colId,cardId){
 
     }catch(e){st.innerHTML=`<span style="color:#e55">Ошибка: ${e.message}</span>`;}
     finally{revBtn.disabled=false;}
+  };
+
+  const genIdea=document.getElementById('m_genidea');
+  if(genIdea)genIdea.onclick=async()=>{
+    const st=document.getElementById('m_genideast');
+    const descEl=document.getElementById('m_desc');
+    st.innerHTML='<span style="color:var(--mut)">✨ Генерирую…</span>';
+    genIdea.disabled=true;
+    try{
+      const fd=new FormData();
+      fd.append('title',document.getElementById('m_title').value.trim()||card.title);
+      fd.append('desc',descEl.value.trim());
+      fd.append('project',NAME.replace(/_content$|_board$/,''));
+      const r=await fetch('/api/gen-idea',{method:'POST',body:fd});
+      const d=await r.json();
+      if(!r.ok)throw new Error(d.detail||'error');
+      descEl.value=d.desc;
+      st.innerHTML='<span style="color:#4caf50">✅ Готово — отредактируй если нужно и сохрани</span>';
+    }catch(e){st.innerHTML=`<span style="color:#e55">Ошибка: ${e.message}</span>`;}
+    finally{genIdea.disabled=false;}
   };
 
   const gen=document.getElementById('m_gen');

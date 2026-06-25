@@ -815,3 +815,51 @@ def post_tg(job_id: str = Form(...), caption: str = Form("")):
         return {"ok": d.get("ok"), "message_id": d.get("result", {}).get("message_id")}
     except Exception as e:
         raise HTTPException(500, f"tg: {e}")
+
+
+@app.post("/api/gen-idea")
+def gen_idea(title: str = Form(...), desc: str = Form(""), project: str = Form("")):
+    """LLM разворачивает короткую идею в полноценное описание/промт для сценария."""
+    if not OR_KEY:
+        raise HTTPException(503, "OPENROUTER_API_KEY not set")
+    proj = {}
+    if project:
+        try: proj = _load_project(project)
+        except Exception: pass
+    channel_ctx = ""
+    if proj:
+        channel_ctx = (f"Канал: «{proj.get('name','')}». "
+                       f"Стиль: {proj.get('style','')}. "
+                       f"Характер: {proj.get('system_prompt','')}")
+    prompt = f"""Ты — сценарист вертикальных коротких видео (Reels/Shorts, до 60 сек).
+{channel_ctx}
+
+Пользователь набросал идею для ролика:
+Название: «{title}»
+{('Заметки: ' + desc) if desc.strip() else ''}
+
+Разверни это в короткое, ёмкое описание (3–5 предложений):
+- Про что видео, какой угол / инсайт
+- Какой хук первые 3 секунды
+- Какое настроение и тон
+- Чем заканчивается (вывод / CTA)
+
+Только текст описания, без заголовков и bullet-points."""
+
+    body = {
+        "model": os.getenv("OPENROUTER_MODEL", "meta-llama/llama-3.3-70b-instruct"),
+        "messages": [{"role": "user", "content": prompt}],
+        "temperature": 0.7,
+        "max_tokens": 400,
+    }
+    req = urllib.request.Request(
+        "https://openrouter.ai/api/v1/chat/completions",
+        data=json.dumps(body).encode(),
+        headers={"Authorization": f"Bearer {OR_KEY}", "Content-Type": "application/json"},
+    )
+    try:
+        resp = json.load(urllib.request.urlopen(req, timeout=30))
+        text = resp["choices"][0]["message"]["content"].strip()
+    except Exception as e:
+        raise HTTPException(500, f"LLM error: {str(e)[:200]}")
+    return {"desc": text}
