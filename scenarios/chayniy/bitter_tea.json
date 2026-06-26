@@ -1,0 +1,57 @@
+{
+  "title": "Почему чай горчит — и как это исправить",
+  "hook": "Почему чай горчит?",
+  "world": "практика / наука о чае",
+  "voice": "ru-RU-SvetlanaNeural",
+  "hero": "panda",
+  "brand_image": "assets/chayniy/panda_standing.png",
+  "characters": {
+    "panda": "assets/chayniy/panda_ink.png",
+    "panda_face": "assets/chayniy/panda_face.png",
+    "teacup": "assets/chayniy/teacup_steam.png",
+    "tealeaf": "assets/chayniy/tealeaf.png"
+  },
+  "style": "Japanese sumi-e ink brush illustration, fine pen and ink linework with bold confident strokes and variable line weight, black ink only on white background, occasional diluted ink wash for depth (monochrome only, NO color), large empty white space, single clear focal subject, wabi-sabi, ukiyo-e inspired, hand-drawn spontaneous feel, vertical 9:16",
+  "scenes": [
+    {
+      "image": "a red panda winces slightly after sipping from a tea cup, one eye squinted, bold sumi-e ink strokes, lots of white space",
+      "refs": ["panda", "panda_face"],
+      "motion": "slow zoom in on the wincing face",
+      "vo": "Заварил зелёный чай — а он горчит и вяжет. Почему так?",
+      "caption": "Горький чай?"
+    },
+    {
+      "image": "a kettle pouring vigorously boiling water with steam and bubbles, dynamic sumi-e ink, white background",
+      "refs": [],
+      "motion": "steam rises, water churns",
+      "vo": "Чаще всего виноват кипяток. Слишком горячая вода обжигает лист.",
+      "caption": "Кипяток обжигает лист"
+    },
+    {
+      "image": "a single tea leaf in water releasing swirling ink tendrils outward, bold ink lines, white space",
+      "refs": ["tealeaf"],
+      "motion": "the ink tendrils swirl outward slowly",
+      "vo": "Из листа вырывается слишком много катехинов — это они дают горечь.",
+      "caption": "Катехины = горечь"
+    },
+    {
+      "image": "a red panda calmly pouring water from a kettle into a cup, gentle thin steam, serene, bold sumi-e ink, white space",
+      "refs": ["panda", "teacup"],
+      "motion": "gentle steam drifts, slow push in",
+      "vo": "Дай воде остыть до семидесяти-восьмидесяти градусов. И завари покороче.",
+      "caption": "70–80° и короче"
+    },
+    {
+      "image": "a red panda sips tea contentedly with a small calm smile, peaceful, bold sumi-e ink, white space",
+      "refs": ["panda", "panda_face"],
+      "motion": "slow zoom in on the content face",
+      "vo": "Тот же чай станет мягким и почти сладким. Один приём — другой вкус.",
+      "caption": "Мягкий и сладкий"
+    }
+  ],
+  "endcard": {
+    "title": "ЧАЙНЫЙ",
+    "sub": "Завари чашку. Почувствуй разницу.",
+    "vo": "Завари чашку — и почувствуй разницу."
+  }
+}

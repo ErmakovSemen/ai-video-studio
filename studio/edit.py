@@ -115,9 +115,22 @@ Style: Hi,{font},{fontsize},&H000FB4FF,&H000FB4FF,&H00101010,&H64000000,-1,0,0,0
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
 """
     lines = []
-    # chunk words into groups shown together; highlight the currently-spoken word
-    for i in range(0, len(words), group):
-        chunk = words[i:i + group]
+    # Build phrase-aware groups: break on a pause (scene cut / breath), on sentence
+    # punctuation, or when the group is full — so captions never spill across a cut
+    # and stay in sync with spoken phrases.
+    groups, cur = [], []
+    GAP = 0.35   # a gap this long means a scene cut or breath -> new caption group
+    for idx, (w, ws, we) in enumerate(words):
+        cur.append((w, ws, we))
+        nxt_start = words[idx + 1][1] if idx + 1 < len(words) else None
+        ends_sentence = w.rstrip()[-1:] in ".!?…:;" if w.strip() else False
+        pause = (nxt_start is not None and nxt_start - we > GAP)
+        if len(cur) >= group or ends_sentence or pause or nxt_start is None:
+            groups.append(cur); cur = []
+    if cur:
+        groups.append(cur)
+    # highlight the currently-spoken word within each group
+    for chunk in groups:
         c_start = chunk[0][1]
         c_end = chunk[-1][2]
         for j, (w, ws, we) in enumerate(chunk):

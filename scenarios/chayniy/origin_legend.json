@@ -1,0 +1,57 @@
+{
+  "title": "5000 лет назад чай открыли случайно",
+  "hook": "Открыли случайно",
+  "world": "легенда / история",
+  "voice": "ru-RU-SvetlanaNeural",
+  "hero": "panda",
+  "brand_image": "assets/chayniy/panda_standing.png",
+  "characters": {
+    "panda": "assets/chayniy/panda_ink.png",
+    "panda_face": "assets/chayniy/panda_face.png",
+    "teacup": "assets/chayniy/teacup_steam.png",
+    "tealeaf": "assets/chayniy/tealeaf.png"
+  },
+  "style": "Japanese sumi-e ink brush illustration, fine pen and ink linework with bold confident strokes and variable line weight, black ink only on white background, occasional diluted ink wash for depth (monochrome only, NO color), large empty white space, single clear focal subject, wabi-sabi, ukiyo-e inspired, hand-drawn spontaneous feel, vertical 9:16",
+  "scenes": [
+    {
+      "image": "a pot of water boiling over a small open fire under a tree, steam rising, ancient and simple, bold sumi-e ink, lots of white space",
+      "refs": [],
+      "motion": "steam rises, slow push in on the pot",
+      "vo": "По преданию, почти пять тысяч лет назад чая ещё не знал никто.",
+      "caption": "Почти 5000 лет назад"
+    },
+    {
+      "image": "a wise old red panda dressed as an ancient Chinese emperor sits in the shade of a tall tree beside a boiling pot, dignified, bold sumi-e ink, white space",
+      "refs": ["panda"],
+      "motion": "gentle hold, slow zoom in",
+      "vo": "Китайский правитель Шэнь Нун кипятил воду в тени дерева.",
+      "caption": "Шэнь Нун"
+    },
+    {
+      "image": "a few leaves torn loose by the wind drift down toward an open pot of water, motion of falling leaves, bold ink, white space",
+      "refs": ["tealeaf"],
+      "motion": "the leaves drift down slowly into the pot",
+      "vo": "Ветер сорвал несколько листьев — и они упали прямо в котёл.",
+      "caption": "Лист — в котёл"
+    },
+    {
+      "image": "the emperor red panda raises a cup and tastes the brew, eyebrows lifting in pleased surprise, bold sumi-e ink, white space",
+      "refs": ["panda", "panda_face"],
+      "motion": "slow zoom in on the surprised pleased face",
+      "vo": "Вода потемнела и запахла. Он попробовал — и не смог оторваться.",
+      "caption": "Первый глоток"
+    },
+    {
+      "image": "a red panda sits peacefully sipping tea under a great tree, serene, timeless, bold sumi-e ink, lots of white space",
+      "refs": ["panda", "teacup"],
+      "motion": "very slow zoom out revealing the tree",
+      "vo": "Так, если верить преданию, и родился чай. Из чистой случайности.",
+      "caption": "Так родился чай"
+    }
+  ],
+  "endcard": {
+    "title": "ЧАЙНЫЙ",
+    "sub": "Истории о чае и замедлении.",
+    "vo": "Завари чашку — и почувствуй разницу."
+  }
+}

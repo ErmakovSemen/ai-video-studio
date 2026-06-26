@@ -1,0 +1,57 @@
+{
+  "title": "Чай, который дороже золота",
+  "hook": "Дороже золота",
+  "world": "история / редкий чай",
+  "voice": "ru-RU-SvetlanaNeural",
+  "hero": "panda",
+  "brand_image": "assets/chayniy/panda_standing.png",
+  "characters": {
+    "panda": "assets/chayniy/panda_ink.png",
+    "panda_face": "assets/chayniy/panda_face.png",
+    "teacup": "assets/chayniy/teacup_steam.png",
+    "tealeaf": "assets/chayniy/tealeaf.png"
+  },
+  "style": "Japanese sumi-e ink brush illustration, fine pen and ink linework with bold confident strokes and variable line weight, black ink only on white background, occasional diluted ink wash for depth (monochrome only, NO color), large empty white space, single clear focal subject, wabi-sabi, ukiyo-e inspired, hand-drawn spontaneous feel, vertical 9:16",
+  "scenes": [
+    {
+      "image": "a tiny red panda stands at the foot of towering steep cliffs looking up, vast rock face, dramatic scale, bold sumi-e ink, lots of white space",
+      "refs": ["panda"],
+      "motion": "slow pan up the cliff",
+      "vo": "В горах Уъи, на отвесной скале, растёт всего несколько чайных кустов.",
+      "caption": "Скалы Уъи"
+    },
+    {
+      "image": "a few gnarled ancient tea bushes growing from a narrow rocky cliff ledge, twisted old branches, bold ink strokes, white space",
+      "refs": [],
+      "motion": "slow push in on the old bushes",
+      "vo": "Это Да Хун Пао. Тем кустам больше трёхсот лет.",
+      "caption": "Да Хун Пао"
+    },
+    {
+      "image": "a small pile of tea leaves on one side and a small metal ingot on the other, an old balance scale between them, ink illustration, white background",
+      "refs": [],
+      "motion": "the scale tips slightly toward the leaves",
+      "vo": "Грамм чая с этих кустов однажды ценился дороже грамма золота.",
+      "caption": "Дороже золота"
+    },
+    {
+      "image": "the ancient cliff tea bushes behind a rope barrier, a small guard post, protected and untouched, bold sumi-e ink, white space",
+      "refs": [],
+      "motion": "gentle hold, slight zoom in",
+      "vo": "С две тысячи шестого года их лист больше не собирают. Кусты под охраной.",
+      "caption": "Сбор остановлен"
+    },
+    {
+      "image": "a red panda bows respectfully with a tea cup toward the distant cliff, reverent posture, bold sumi-e ink, white space",
+      "refs": ["panda", "teacup"],
+      "motion": "slow zoom out",
+      "vo": "А почти весь сегодняшний Да Хун Пао — побеги от этих самых кустов.",
+      "caption": "Побеги тех кустов"
+    }
+  ],
+  "endcard": {
+    "title": "ЧАЙНЫЙ",
+    "sub": "Истории о чае и замедлении.",
+    "vo": "Завари чашку — и почувствуй разницу."
+  }
+}

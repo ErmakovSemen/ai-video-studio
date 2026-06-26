@@ -26,7 +26,7 @@ PAD = 0.35  # seconds of trailing silence per scene so cuts breathe
 def build(scenario: dict, out_path: str, workdir: str, base_dir: str = ".",
           draft: bool = False, polish: bool = False, music: str = None,
           gen_stills: bool = False, stills_dir: str | None = None,
-          model_path: str | None = None) -> dict:
+          model_path: str | None = None, captions: bool = True) -> dict:
     """Render a scenario into a cartoon.
 
     draft=True       → FREE: Ken-Burns on the reference art, for flow/timing.
@@ -119,14 +119,15 @@ def build(scenario: dict, out_path: str, workdir: str, base_dir: str = ".",
             t += ecsec
 
     if polish:
-        _assemble_polished(scene_videos, voice_segs, words_global, out_path, workdir, music)
+        _assemble_polished(scene_videos, voice_segs, words_global, out_path, workdir, music,
+                           captions=captions)
     else:
         compose.stitch(scene_videos, voice_segs, out_path, workdir)
     log["out"] = out_path
     return log
 
 
-def _assemble_polished(clips, voice_segs, words, out_path, workdir, music):
+def _assemble_polished(clips, voice_segs, words, out_path, workdir, music, captions=True):
     """Hard-cut concat (keeps A/V in sync) + karaoke captions + optional music."""
     import subprocess
     from studio import edit
@@ -147,9 +148,11 @@ def _assemble_polished(clips, voice_segs, words, out_path, workdir, music):
     acat = os.path.join(workdir, "pacat.m4a")
     subprocess.run([FF, "-y", *ins, "-filter_complex", fc, "-map", "[a]", acat],
                    capture_output=True)
-    # karaoke captions over the whole timeline
-    ass = os.path.join(workdir, "caps.ass")
-    edit.karaoke_ass(words, ass, group=3)
+    # karaoke captions over the whole timeline (optional — some cuts read better clean)
+    ass = None
+    if captions and words:
+        ass = os.path.join(workdir, "caps.ass")
+        edit.karaoke_ass(words, ass, group=3)
     edit.finalize(vcat, acat, out_path, ass=ass, music=music)
     return out_path
 

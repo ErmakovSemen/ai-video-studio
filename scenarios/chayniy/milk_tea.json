@@ -1,0 +1,56 @@
+{
+  "title": "Почему англичане льют молоко в чай",
+  "hook": "Молоко в чай — зачем?",
+  "world": "история / традиции",
+  "voice": "ru-RU-SvetlanaNeural",
+  "hero": "panda",
+  "brand_image": "assets/chayniy/panda_standing.png",
+  "characters": {
+    "panda": "assets/chayniy/panda_ink.png",
+    "panda_face": "assets/chayniy/panda_face.png",
+    "teacup": "assets/chayniy/teacup_steam.png"
+  },
+  "style": "Japanese sumi-e ink brush illustration, fine pen and ink linework with bold confident strokes and variable line weight, black ink only on white background, occasional diluted ink wash for depth (monochrome only, NO color), large empty white space, single clear focal subject, wabi-sabi, ukiyo-e inspired, hand-drawn spontaneous feel, vertical 9:16",
+  "scenes": [
+    {
+      "image": "a red panda holds a tea cup beside a small milk jug, curious tilt of the head, bold sumi-e ink, white space",
+      "refs": ["panda", "teacup"],
+      "motion": "slow zoom in",
+      "vo": "Англичане добавляют молоко в чёрный чай. А вот зачем — спорят до сих пор.",
+      "caption": "Зачем молоко?"
+    },
+    {
+      "image": "a delicate thin porcelain tea cup with a hairline crack spreading, fragile, bold ink lines, white background",
+      "refs": [],
+      "motion": "the crack slowly spreads",
+      "vo": "Одна версия: тонкий фарфор раньше мог треснуть от крутого кипятка.",
+      "caption": "Хрупкий фарфор"
+    },
+    {
+      "image": "milk being poured first into an empty tea cup, smooth pour, ink illustration, white space",
+      "refs": ["teacup"],
+      "motion": "the milk pours in smoothly",
+      "vo": "Молоко наливали первым — оно остужало чашку и берегло её.",
+      "caption": "Молоко — первым"
+    },
+    {
+      "image": "a cup of strong dark tea with milk swirling in and softening the darkness, gentle swirl, ink wash, white background",
+      "refs": [],
+      "motion": "the milk swirls and blends slowly",
+      "vo": "Причина попроще: молоко смягчает терпкость крепкого чёрного чая.",
+      "caption": "Смягчает терпкость"
+    },
+    {
+      "image": "a red panda sips milky tea contentedly, cozy and calm, bold sumi-e ink, white space",
+      "refs": ["panda"],
+      "motion": "slow zoom in on the content panda",
+      "vo": "Так привычка и осталась на века. А у каждой семьи — свой ритуал.",
+      "caption": "Свой ритуал"
+    }
+  ],
+  "endcard": {
+    "title": "ЧАЙНЫЙ",
+    "sub": "Истории о чае и замедлении.",
+    "vo": "Завари чашку — и почувствуй разницу."
+  }
+}

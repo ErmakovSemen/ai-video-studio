@@ -1,0 +1,57 @@
+{
+  "title": "Чай в пакетике: что там на самом деле",
+  "hook": "Что в пакетике?",
+  "world": "разоблачение / качество",
+  "voice": "ru-RU-SvetlanaNeural",
+  "hero": "panda",
+  "brand_image": "assets/chayniy/panda_standing.png",
+  "characters": {
+    "panda": "assets/chayniy/panda_ink.png",
+    "panda_face": "assets/chayniy/panda_face.png",
+    "teacup": "assets/chayniy/teacup_steam.png",
+    "tealeaf": "assets/chayniy/tealeaf.png"
+  },
+  "style": "Japanese sumi-e ink brush illustration, fine pen and ink linework with bold confident strokes and variable line weight, black ink only on white background, occasional diluted ink wash for depth (monochrome only, NO color), large empty white space, single clear focal subject, wabi-sabi, ukiyo-e inspired, hand-drawn spontaneous feel, vertical 9:16",
+  "scenes": [
+    {
+      "image": "a red panda curiously peers into a small tea bag held in its paws, inquisitive, bold sumi-e ink, white space",
+      "refs": ["panda", "panda_face"],
+      "motion": "slow zoom in on the curious face",
+      "vo": "А что на самом деле лежит внутри чайного пакетика?",
+      "caption": "Что внутри?"
+    },
+    {
+      "image": "fine tea dust and tiny crumbs pouring out of a torn tea bag into a small heap, bold ink, white background",
+      "refs": [],
+      "motion": "the dust pours and settles",
+      "vo": "Часто это фэннингс — мельчайшая крошка, что остаётся от крупного листа.",
+      "caption": "Фэннингс — крошка"
+    },
+    {
+      "image": "tea dust brewing very fast in water, dark ink swirl spreading quickly, white space",
+      "refs": [],
+      "motion": "the dark swirl spreads fast",
+      "vo": "Крошка заваривается быстро и крепко, но тонкий аромат уходит первым.",
+      "caption": "Крепко, но плоско"
+    },
+    {
+      "image": "a pyramid-shaped tea bag steeping in a cup of hot water with tiny specks dispersing around it, ink illustration, white background",
+      "refs": ["teacup"],
+      "motion": "tiny specks drift outward in the water",
+      "vo": "А немало пакетиков ещё и запаяны пластиком — в кипятке он отдаёт микрочастицы.",
+      "caption": "Часто — пластик"
+    },
+    {
+      "image": "a red panda calmly spoons loose leaf tea into a teapot, choosing whole leaves, serene, bold sumi-e ink, white space",
+      "refs": ["panda"],
+      "motion": "slow zoom in on the teapot",
+      "vo": "Поэтому крупный лист в чайнике — и вкуснее, и чище.",
+      "caption": "Лист — чище"
+    }
+  ],
+  "endcard": {
+    "title": "ЧАЙНЫЙ",
+    "sub": "Завари чашку. Почувствуй разницу.",
+    "vo": "Завари чашку — и почувствуй разницу."
+  }
+}
