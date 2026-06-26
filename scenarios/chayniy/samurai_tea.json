@@ -1,0 +1,56 @@
+{
+  "title": "Этот чай пили самураи перед боем",
+  "hook": "Чай самураев",
+  "world": "история / дзен / воины",
+  "voice": "ru-RU-SvetlanaNeural",
+  "hero": "panda",
+  "brand_image": "assets/chayniy/panda_standing.png",
+  "characters": {
+    "panda": "assets/chayniy/panda_ink.png",
+    "panda_face": "assets/chayniy/panda_face.png",
+    "teacup": "assets/chayniy/teacup_steam.png"
+  },
+  "style": "Japanese sumi-e ink brush illustration, fine pen and ink linework with bold confident strokes and variable line weight, black ink only on white background, occasional diluted ink wash for depth (monochrome only, NO color), large empty white space, single clear focal subject, wabi-sabi, ukiyo-e inspired, hand-drawn spontaneous feel, vertical 9:16",
+  "scenes": [
+    {
+      "image": "a red panda dressed as a samurai in layered armor over a kimono, kneeling in seiza, holding a tea bowl with both paws, calm intense focused gaze, bold sumi-e ink strokes, white space",
+      "refs": ["panda"],
+      "motion": "slow gentle zoom in on the calm intense face",
+      "vo": "Перед боем самураи пили не саке. А чай.",
+      "caption": "Не саке. Чай."
+    },
+    {
+      "image": "a tea bowl with bright frothy matcha being whisked by a bamboo whisk, energetic motion lines around the whisk, droplets, dynamic sumi-e ink, white background",
+      "refs": [],
+      "motion": "the whisk blurs with quick motion, froth rising",
+      "vo": "Маття — это целый лист чая, растёртый в пыль. Ты выпиваешь его целиком.",
+      "caption": "Целый лист — в пыль"
+    },
+    {
+      "image": "close-up of the red panda samurai drinking from a tea bowl, eyes sharp and focused above the rim, steam rising, intense calm, bold ink lines, white space",
+      "refs": ["panda", "panda_face"],
+      "motion": "very slow push in on the sharp focused eyes",
+      "vo": "Одна чаша — и ум становится ясным. Спокойная, собранная концентрация.",
+      "caption": "Ясный ум"
+    },
+    {
+      "image": "a red panda samurai standing ready and composed, one paw resting on a sheathed katana, calm upright posture, a few cherry blossom petals drifting, bold sumi-e ink, white space",
+      "refs": ["panda"],
+      "motion": "petals drift slowly, slow zoom out",
+      "vo": "Не ярость. Хладнокровие. Чай давал им контроль над собой.",
+      "caption": "Хладнокровие"
+    },
+    {
+      "image": "a single empty tea bowl resting on a tatami mat beside a sheathed samurai sword, still life, deep calm, minimal bold ink strokes, lots of white space",
+      "refs": [],
+      "motion": "slow gentle zoom in on the still life",
+      "vo": "Путь воина и путь чая — один путь. Уже тысячу лет.",
+      "caption": "Один путь"
+    }
+  ],
+  "endcard": {
+    "title": "ЧАЙНЫЙ",
+    "sub": "Завари чашку. Почувствуй разницу.",
+    "vo": "Завари чашку — и почувствуй разницу."
+  }
+}
