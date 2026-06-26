@@ -1,0 +1,64 @@
+{
+  "title": "Почему чай успокаивает, но не усыпляет",
+  "hook": "Успокаивает, но не усыпляет?",
+  "world": "научпоп о чае / дзен",
+  "voice": "ru-RU-SvetlanaNeural",
+  "hero": "panda",
+  "brand_image": "assets/chayniy/panda_standing.png",
+  "characters": {
+    "panda": "assets/chayniy/panda_ink.png",
+    "panda_face": "assets/chayniy/panda_face.png",
+    "teacup": "assets/chayniy/teacup_steam.png",
+    "tealeaf": "assets/chayniy/tealeaf.png"
+  },
+  "style": "Japanese ink brush illustration, fine pen and ink linework with variable line weight (thicker where pressed, thinner where lifted), black ink only on white background, occasional diluted ink wash for depth (monochrome only), large empty white space, single focal subject, wabi-sabi aesthetic, ukiyo-e inspired, hand-drawn spontaneous feel, vertical 9:16",
+  "scenes": [
+    {
+      "image": "a red panda in a dark kimono sits calmly holding a steaming tea cup with both paws, eyes open and serene yet alert, three curling wisps of steam rising, lots of white space",
+      "refs": ["panda", "teacup"],
+      "motion": "slow gentle zoom in on the calm alert face",
+      "vo": "Чай успокаивает. Почему же ты не засыпаешь?",
+      "caption": "Почему не засыпаешь?"
+    },
+    {
+      "image": "a single tea leaf floating in empty white space, delicate ink veins, one faint glowing line tracing through it like a hidden molecule, minimal and elegant",
+      "refs": ["tealeaf"],
+      "motion": "the leaf drifts slowly, the glowing line shimmers",
+      "vo": "Секрет — L-теанин. Его почти нет больше нигде в природе.",
+      "caption": "L-теанин"
+    },
+    {
+      "image": "abstract ink illustration of a calm brain in profile with smooth flowing wave lines rippling outward like water, serene, minimal ink strokes on white",
+      "refs": [],
+      "motion": "the wave lines pulse outward slowly and smoothly",
+      "vo": "Он запускает в мозге альфа-волны. Те же, что при медитации.",
+      "caption": "Альфа-волны"
+    },
+    {
+      "image": "two small tea cups side by side on white, the left with sharp energetic steam, the right with soft calm steam, balanced minimal ink composition, white space",
+      "refs": ["teacup"],
+      "motion": "slow push in centering between the two cups",
+      "vo": "Кофеин бодрит. Теанин убирает тревогу.",
+      "caption": "Бодрит и успокаивает"
+    },
+    {
+      "image": "a red panda in a kimono sits upright at a low table, focused and calm, a steaming cup beside it, a brush in paw, deep concentration, minimal ink lines, white space",
+      "refs": ["panda"],
+      "motion": "slow zoom in on the focused panda",
+      "vo": "Вместе — спокойная концентрация. Без дрожи в руках.",
+      "caption": "Спокойная концентрация"
+    },
+    {
+      "image": "a red panda in a kimono sits in meditation by a round window, a tea cup beside it, soft light, profile view, very minimal ink lines, deep stillness, white space",
+      "refs": ["panda"],
+      "motion": "very slow zoom out revealing the stillness",
+      "vo": "Дзен-монахи знали это тысячу лет назад.",
+      "caption": "Тысяча лет дзен"
+    }
+  ],
+  "endcard": {
+    "title": "ЧАЙНЫЙ",
+    "sub": "Завари чашку. Почувствуй разницу.",
+    "vo": "Завари чашку — и почувствуй разницу."
+  }
+}
