@@ -1,0 +1,63 @@
+{
+  "title": "Половина «чая» — вообще не чай",
+  "hook": "Это не чай",
+  "voice": "ru-RU-SvetlanaNeural",
+  "hero": "panda",
+  "brand_image": "assets/chayniy/panda_standing.png",
+  "characters": {
+    "panda": "assets/chayniy/panda_ink.png",
+    "panda_face": "assets/chayniy/panda_face.png",
+    "teacup": "assets/chayniy/teacup_steam.png",
+    "tealeaf": "assets/chayniy/tealeaf.png"
+  },
+  "style": "Japanese sumi-e ink brush illustration, fine pen and ink linework with bold confident strokes and variable line weight, black ink only on white background, occasional diluted ink wash for depth (monochrome only, NO color), large empty white space, single clear focal subject, wabi-sabi, ukiyo-e inspired, hand-drawn spontaneous feel, vertical 9:16",
+  "scenes": [
+    {
+      "image": "a red panda eyes a shelf of jars labelled with herbs and flowers, skeptical tilt, bold sumi-e ink, white space",
+      "refs": [
+        "panda",
+        "panda_face"
+      ],
+      "motion": "slow pan across the jars",
+      "vo": "Ромашка, мята, ройбуш, каркаде. Вот только это не чай.",
+      "caption": "Не чай"
+    },
+    {
+      "image": "a single elegant Camellia sinensis tea branch with leaves, bold sumi-e ink, white background",
+      "refs": [
+        "tealeaf"
+      ],
+      "motion": "slow push in on the branch",
+      "vo": "Настоящий чай — только с одного куста. Камелия китайская.",
+      "caption": "Камелия китайская"
+    },
+    {
+      "image": "one tea leaf in the center with small icons of green black oolong puerh cups around it, ink, white space",
+      "refs": [],
+      "motion": "gentle hold",
+      "vo": "Зелёный, чёрный, улун, пуэр — всё это её лист.",
+      "caption": "Один куст"
+    },
+    {
+      "image": "dried flowers and herbs in a separate bowl, clearly different from tea leaves, bold ink, white background",
+      "refs": [],
+      "motion": "slow zoom in",
+      "vo": "А травяные сборы — это настои. По-научному — тизаны.",
+      "caption": "Травы — тизаны"
+    },
+    {
+      "image": "a red panda calmly sips, content and unbothered, bold sumi-e ink, white space",
+      "refs": [
+        "panda"
+      ],
+      "motion": "slow zoom in",
+      "vo": "Не хуже. Просто, честно говоря, другое.",
+      "caption": "Просто другое"
+    }
+  ],
+  "endcard": {
+    "title": "ЧАЙНЫЙ",
+    "sub": "Истории о чае и замедлении.",
+    "vo": "Завари чашку — и почувствуй разницу."
+  }
+}

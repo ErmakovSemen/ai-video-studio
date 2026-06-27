@@ -1,0 +1,63 @@
+{
+  "title": "Самый нежный чай — из одних почек",
+  "hook": "Только почки",
+  "voice": "ru-RU-SvetlanaNeural",
+  "hero": "panda",
+  "brand_image": "assets/chayniy/panda_standing.png",
+  "characters": {
+    "panda": "assets/chayniy/panda_ink.png",
+    "panda_face": "assets/chayniy/panda_face.png",
+    "teacup": "assets/chayniy/teacup_steam.png",
+    "tealeaf": "assets/chayniy/tealeaf.png"
+  },
+  "style": "Japanese sumi-e ink brush illustration, fine pen and ink linework with bold confident strokes and variable line weight, black ink only on white background, occasional diluted ink wash for depth (monochrome only, NO color), large empty white space, single clear focal subject, wabi-sabi, ukiyo-e inspired, hand-drawn spontaneous feel, vertical 9:16",
+  "scenes": [
+    {
+      "image": "a red panda gently holds a single downy tea bud up to the light, delicate, bold sumi-e ink, white space",
+      "refs": [
+        "panda"
+      ],
+      "motion": "slow zoom in on the bud",
+      "vo": "Самый деликатный чай в мире делают из одних нераскрытых почек.",
+      "caption": "Нераскрытые почки"
+    },
+    {
+      "image": "extreme close-up of fuzzy silver tea buds with fine white down, bold ink, white background",
+      "refs": [],
+      "motion": "very slow push in",
+      "vo": "Их зовут серебряные иглы — за белый пушок на кончиках.",
+      "caption": "Серебряные иглы"
+    },
+    {
+      "image": "tea buds simply laid out drying under soft sun, minimal, bold ink, white space",
+      "refs": [],
+      "motion": "gentle light shifts",
+      "vo": "Почти без обработки: только подвялить и высушить. Ничего лишнего.",
+      "caption": "Почти без обработки"
+    },
+    {
+      "image": "a clear glass of very pale tea with buds standing upright, elegant, ink, white background",
+      "refs": [
+        "teacup"
+      ],
+      "motion": "buds slowly rise and sink",
+      "vo": "Настой светлый и сладкий, с ароматом свежего сена и цветов.",
+      "caption": "Светлый и сладкий"
+    },
+    {
+      "image": "a red panda sips gently with a soft expression, peaceful, bold sumi-e ink, white space",
+      "refs": [
+        "panda",
+        "panda_face"
+      ],
+      "motion": "slow zoom in",
+      "vo": "Самый тихий чай. И, может, самый честный.",
+      "caption": "Самый честный"
+    }
+  ],
+  "endcard": {
+    "title": "ЧАЙНЫЙ",
+    "sub": "Истории о чае и замедлении.",
+    "vo": "Завари чашку — и почувствуй разницу."
+  }
+}

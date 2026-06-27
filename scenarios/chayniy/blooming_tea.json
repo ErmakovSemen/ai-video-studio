@@ -1,0 +1,61 @@
+{
+  "title": "Этот чай расцветает в чашке",
+  "hook": "Расцветает в чашке",
+  "voice": "ru-RU-SvetlanaNeural",
+  "hero": "panda",
+  "brand_image": "assets/chayniy/panda_standing.png",
+  "characters": {
+    "panda": "assets/chayniy/panda_ink.png",
+    "panda_face": "assets/chayniy/panda_face.png",
+    "teacup": "assets/chayniy/teacup_steam.png",
+    "tealeaf": "assets/chayniy/tealeaf.png"
+  },
+  "style": "Japanese sumi-e ink brush illustration, fine pen and ink linework with bold confident strokes and variable line weight, black ink only on white background, occasional diluted ink wash for depth (monochrome only, NO color), large empty white space, single clear focal subject, wabi-sabi, ukiyo-e inspired, hand-drawn spontaneous feel, vertical 9:16",
+  "scenes": [
+    {
+      "image": "a red panda drops a small round bundle of tea leaves into a tall glass, curious, bold sumi-e ink, white space",
+      "refs": [
+        "panda"
+      ],
+      "motion": "slow zoom in on the glass",
+      "vo": "С виду — просто комок чайных листьев. Но подожди секунду.",
+      "caption": "Просто комок"
+    },
+    {
+      "image": "the tea bundle in hot water beginning to slowly unfurl, bold ink, white background",
+      "refs": [],
+      "motion": "the bundle slowly opens",
+      "vo": "В горячей воде он медленно раскрывается.",
+      "caption": "Раскрывается"
+    },
+    {
+      "image": "a delicate flower blooming inside the glass surrounded by opening tea leaves, elegant ink, white space",
+      "refs": [],
+      "motion": "petals spread outward slowly",
+      "vo": "Внутри спрятан цветок — его вшивают в лист вручную.",
+      "caption": "Цветок внутри"
+    },
+    {
+      "image": "a full bloom of flower and leaves spread inside a glass like a tiny garden, bold ink, white background",
+      "refs": [],
+      "motion": "gentle drift of petals",
+      "vo": "Это связанный чай. Он и напиток, и маленький спектакль.",
+      "caption": "Связанный чай"
+    },
+    {
+      "image": "a red panda watches the blooming glass with delight, soft smile, bold sumi-e ink, white space",
+      "refs": [
+        "panda",
+        "panda_face"
+      ],
+      "motion": "slow zoom in on the delighted face",
+      "vo": "Чай, который сначала смотрят, а потом пьют.",
+      "caption": "Сначала смотрят"
+    }
+  ],
+  "endcard": {
+    "title": "ЧАЙНЫЙ",
+    "sub": "Истории о чае и замедлении.",
+    "vo": "Завари чашку — и почувствуй разницу."
+  }
+}

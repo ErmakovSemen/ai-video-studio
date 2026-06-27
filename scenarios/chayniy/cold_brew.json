@@ -1,0 +1,65 @@
+{
+  "title": "Завари чай холодной водой",
+  "hook": "Чай на холодной воде",
+  "voice": "ru-RU-SvetlanaNeural",
+  "hero": "panda",
+  "brand_image": "assets/chayniy/panda_standing.png",
+  "characters": {
+    "panda": "assets/chayniy/panda_ink.png",
+    "panda_face": "assets/chayniy/panda_face.png",
+    "teacup": "assets/chayniy/teacup_steam.png",
+    "tealeaf": "assets/chayniy/tealeaf.png"
+  },
+  "style": "Japanese sumi-e ink brush illustration, fine pen and ink linework with bold confident strokes and variable line weight, black ink only on white background, occasional diluted ink wash for depth (monochrome only, NO color), large empty white space, single clear focal subject, wabi-sabi, ukiyo-e inspired, hand-drawn spontaneous feel, vertical 9:16",
+  "scenes": [
+    {
+      "image": "a red panda curiously looks at a glass jug of tea steeping in cold water with ice, bold sumi-e ink, white space",
+      "refs": [
+        "panda"
+      ],
+      "motion": "slow zoom in on the jug",
+      "vo": "Чай можно заварить вообще без кипятка. Холодной водой.",
+      "caption": "Без кипятка"
+    },
+    {
+      "image": "tea leaves slowly releasing pale ink trails in cold water inside a glass, bold ink, white background",
+      "refs": [
+        "tealeaf"
+      ],
+      "motion": "pale trails drift down slowly",
+      "vo": "Просто залей лист холодной водой и оставь на несколько часов.",
+      "caption": "Несколько часов"
+    },
+    {
+      "image": "split composition: left hot water fast dark swirl, right cold water slow pale swirl, ink, white space",
+      "refs": [],
+      "motion": "gentle reveal of both sides",
+      "vo": "Холодная вода тянет вкус медленно — и почти не достаёт горечь.",
+      "caption": "Без горечи"
+    },
+    {
+      "image": "a tall glass of clear pale cold-brew tea, calm, bold ink, white background",
+      "refs": [
+        "teacup"
+      ],
+      "motion": "slow push in",
+      "vo": "Кофеина выходит меньше, а вкус — мягкий и сладковатый.",
+      "caption": "Меньше кофеина"
+    },
+    {
+      "image": "a red panda refreshed, sipping cold tea through, content, bold sumi-e ink, white space",
+      "refs": [
+        "panda",
+        "panda_face"
+      ],
+      "motion": "slow zoom in",
+      "vo": "Идеально в жару. Поставь вечером — будет готово к утру.",
+      "caption": "Готово к утру"
+    }
+  ],
+  "endcard": {
+    "title": "ЧАЙНЫЙ",
+    "sub": "Истории о чае и замедлении.",
+    "vo": "Завари чашку — и почувствуй разницу."
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "title": "Чай, который стареет как вино",
+  "hook": "Стареет как вино",
+  "voice": "ru-RU-SvetlanaNeural",
+  "hero": "panda",
+  "brand_image": "assets/chayniy/panda_standing.png",
+  "characters": {
+    "panda": "assets/chayniy/panda_ink.png",
+    "panda_face": "assets/chayniy/panda_face.png",
+    "teacup": "assets/chayniy/teacup_steam.png",
+    "tealeaf": "assets/chayniy/tealeaf.png"
+  },
+  "style": "Japanese sumi-e ink brush illustration, fine pen and ink linework with bold confident strokes and variable line weight, black ink only on white background, occasional diluted ink wash for depth (monochrome only, NO color), large empty white space, single clear focal subject, wabi-sabi, ukiyo-e inspired, hand-drawn spontaneous feel, vertical 9:16",
+  "scenes": [
+    {
+      "image": "a red panda holds an old pressed round tea cake in both paws, looking at it with respect, bold sumi-e ink, white space",
+      "refs": [
+        "panda"
+      ],
+      "motion": "slow zoom in on the cake",
+      "vo": "Почти любой чай хотят пить свежим. Но не этот.",
+      "caption": "Не для свежести"
+    },
+    {
+      "image": "a round pressed tea cake on a wooden shelf beside other aged cakes, bold ink, white background",
+      "refs": [],
+      "motion": "slow pan across the shelf",
+      "vo": "Это пуэр — его прессуют в плотный диск и оставляют дозревать.",
+      "caption": "Пуэр — диск"
+    },
+    {
+      "image": "close-up of an old tea cake with a faint cobweb, marks of age, bold ink lines, white space",
+      "refs": [],
+      "motion": "very slow push in",
+      "vo": "Год за годом он медленно ферментируется и становится мягче и глубже.",
+      "caption": "Зреет годами"
+    },
+    {
+      "image": "a single small tea cake under a spotlight like an auction lot, bold sumi-e ink, white background",
+      "refs": [],
+      "motion": "gentle hold, slight zoom",
+      "vo": "Старые диски ценятся как вино — за редкие платят тысячи.",
+      "caption": "Как вино"
+    },
+    {
+      "image": "a red panda calmly sips dark aged tea, serene, bold sumi-e ink, white space",
+      "refs": [
+        "panda",
+        "teacup"
+      ],
+      "motion": "slow zoom in on the calm face",
+      "vo": "Время здесь — не враг. А главный мастер вкуса.",
+      "caption": "Время — мастер"
+    }
+  ],
+  "endcard": {
+    "title": "ЧАЙНЫЙ",
+    "sub": "Истории о чае и замедлении.",
+    "vo": "Завари чашку — и почувствуй разницу."
+  }
+}

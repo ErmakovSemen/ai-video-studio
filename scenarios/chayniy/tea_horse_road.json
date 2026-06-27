@@ -1,0 +1,65 @@
+{
+  "title": "Чай возили по дороге смертников",
+  "hook": "Дорога смертников",
+  "voice": "ru-RU-SvetlanaNeural",
+  "hero": "panda",
+  "brand_image": "assets/chayniy/panda_standing.png",
+  "characters": {
+    "panda": "assets/chayniy/panda_ink.png",
+    "panda_face": "assets/chayniy/panda_face.png",
+    "teacup": "assets/chayniy/teacup_steam.png",
+    "tealeaf": "assets/chayniy/tealeaf.png"
+  },
+  "style": "Japanese sumi-e ink brush illustration, fine pen and ink linework with bold confident strokes and variable line weight, black ink only on white background, occasional diluted ink wash for depth (monochrome only, NO color), large empty white space, single clear focal subject, wabi-sabi, ukiyo-e inspired, hand-drawn spontaneous feel, vertical 9:16",
+  "scenes": [
+    {
+      "image": "a tiny red panda with a load walks a narrow mountain ledge above a deep gorge, dramatic scale, bold sumi-e ink, white space",
+      "refs": [
+        "panda"
+      ],
+      "motion": "slow pan along the ledge",
+      "vo": "Тысячу лет назад чай несли через горы по тропам над пропастью.",
+      "caption": "Тропы над пропастью"
+    },
+    {
+      "image": "a winding path clinging to misty cliffs, vast mountains, bold ink wash, white background",
+      "refs": [],
+      "motion": "slow reveal of the winding path",
+      "vo": "Это Чайно-конная дорога — из Юньнани в Тибет.",
+      "caption": "Чайно-конная дорога"
+    },
+    {
+      "image": "a red panda trades a pressed brick of tea for a sturdy horse, bold sumi-e ink, white space",
+      "refs": [
+        "panda"
+      ],
+      "motion": "gentle hold",
+      "vo": "Спрессованный чай меняли на сильных тибетских лошадей.",
+      "caption": "Чай за коней"
+    },
+    {
+      "image": "a porter panda bent under a towering stack of tea bricks on its back, bold ink, white background",
+      "refs": [
+        "panda"
+      ],
+      "motion": "slow zoom in on the heavy load",
+      "vo": "Носильщики тащили на себе до ста килограммов чая.",
+      "caption": "100 кг на спине"
+    },
+    {
+      "image": "a red panda rests at a mountain pass with a cup of tea, vast view, serene, bold sumi-e ink, white space",
+      "refs": [
+        "panda",
+        "teacup"
+      ],
+      "motion": "slow zoom out",
+      "vo": "Чай был валютой, лекарством и смыслом всего пути.",
+      "caption": "Чай как валюта"
+    }
+  ],
+  "endcard": {
+    "title": "ЧАЙНЫЙ",
+    "sub": "Истории о чае и замедлении.",
+    "vo": "Завари чашку — и почувствуй разницу."
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "title": "Один лист — десять чашек",
+  "hook": "Десять чашек из горсти",
+  "voice": "ru-RU-SvetlanaNeural",
+  "hero": "panda",
+  "brand_image": "assets/chayniy/panda_standing.png",
+  "characters": {
+    "panda": "assets/chayniy/panda_ink.png",
+    "panda_face": "assets/chayniy/panda_face.png",
+    "teacup": "assets/chayniy/teacup_steam.png",
+    "tealeaf": "assets/chayniy/tealeaf.png"
+  },
+  "style": "Japanese sumi-e ink brush illustration, fine pen and ink linework with bold confident strokes and variable line weight, black ink only on white background, occasional diluted ink wash for depth (monochrome only, NO color), large empty white space, single clear focal subject, wabi-sabi, ukiyo-e inspired, hand-drawn spontaneous feel, vertical 9:16",
+  "scenes": [
+    {
+      "image": "a red panda with a small gaiwan and several tiny cups arranged in a row, bold sumi-e ink, white space",
+      "refs": [
+        "panda"
+      ],
+      "motion": "slow zoom in on the set",
+      "vo": "На западе чай заваривают один раз. В Китае — десять.",
+      "caption": "Не один раз"
+    },
+    {
+      "image": "a small gaiwan packed full with tea leaves, water being poured in, bold ink, white background",
+      "refs": [],
+      "motion": "water pours in, leaves swell",
+      "vo": "В маленькую гайвань кладут много листа и заливают на секунды.",
+      "caption": "Много листа"
+    },
+    {
+      "image": "tea being poured quickly from a gaiwan into tiny cups, dynamic ink, white space",
+      "refs": [
+        "teacup"
+      ],
+      "motion": "quick pour motion",
+      "vo": "Каждый пролив — новая чашка. И каждая на вкус другая.",
+      "caption": "Каждая — другая"
+    },
+    {
+      "image": "a row of small cups, the tea color fading from dark to pale left to right, ink wash, white background",
+      "refs": [],
+      "motion": "slow pan across the row",
+      "vo": "Первая — яркая, пятая — нежная, десятая — едва уловимая.",
+      "caption": "От яркой к нежной"
+    },
+    {
+      "image": "a red panda savours a tiny cup with closed eyes, serene, bold sumi-e ink, white space",
+      "refs": [
+        "panda",
+        "panda_face"
+      ],
+      "motion": "slow zoom in",
+      "vo": "Один лист раскрывается так, как одной чашкой не успеть.",
+      "caption": "Гунфу-ча"
+    }
+  ],
+  "endcard": {
+    "title": "ЧАЙНЫЙ",
+    "sub": "Истории о чае и замедлении.",
+    "vo": "Завари чашку — и почувствуй разницу."
+  }
+}

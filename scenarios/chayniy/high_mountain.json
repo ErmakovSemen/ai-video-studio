@@ -1,0 +1,63 @@
+{
+  "title": "Лучший улун растёт в облаках",
+  "hook": "Чай из облаков",
+  "voice": "ru-RU-SvetlanaNeural",
+  "hero": "panda",
+  "brand_image": "assets/chayniy/panda_standing.png",
+  "characters": {
+    "panda": "assets/chayniy/panda_ink.png",
+    "panda_face": "assets/chayniy/panda_face.png",
+    "teacup": "assets/chayniy/teacup_steam.png",
+    "tealeaf": "assets/chayniy/tealeaf.png"
+  },
+  "style": "Japanese sumi-e ink brush illustration, fine pen and ink linework with bold confident strokes and variable line weight, black ink only on white background, occasional diluted ink wash for depth (monochrome only, NO color), large empty white space, single clear focal subject, wabi-sabi, ukiyo-e inspired, hand-drawn spontaneous feel, vertical 9:16",
+  "scenes": [
+    {
+      "image": "a tiny red panda stands among misty high mountain tea terraces in the clouds, vast scale, bold sumi-e ink, white space",
+      "refs": [
+        "panda"
+      ],
+      "motion": "slow pan across the misty terraces",
+      "vo": "Самый ароматный улун растёт там, где живут облака.",
+      "caption": "Где облака"
+    },
+    {
+      "image": "tea bushes high on a foggy mountain slope, soft mist, bold ink wash, white background",
+      "refs": [],
+      "motion": "mist drifts slowly",
+      "vo": "Высоко в горах холоднее, и чай растёт медленно.",
+      "caption": "Растёт медленно"
+    },
+    {
+      "image": "close-up of a thick glossy oolong leaf, detailed veins, bold ink, white space",
+      "refs": [],
+      "motion": "very slow push in",
+      "vo": "Медленный рост копит в листе больше сахаров и аромата.",
+      "caption": "Больше аромата"
+    },
+    {
+      "image": "a cup of oolong with fragrant floral steam curling up, bold sumi-e ink, white background",
+      "refs": [
+        "teacup"
+      ],
+      "motion": "steam curls upward",
+      "vo": "Поэтому высокогорный улун такой сливочный и цветочный.",
+      "caption": "Сливочный, цветочный"
+    },
+    {
+      "image": "a red panda content with tea on a misty peak, serene, bold sumi-e ink, white space",
+      "refs": [
+        "panda",
+        "panda_face"
+      ],
+      "motion": "slow zoom out",
+      "vo": "Чем выше гора — тем тише и слаще чай.",
+      "caption": "Выше — слаще"
+    }
+  ],
+  "endcard": {
+    "title": "ЧАЙНЫЙ",
+    "sub": "Истории о чае и замедлении.",
+    "vo": "Завари чашку — и почувствуй разницу."
+  }
+}

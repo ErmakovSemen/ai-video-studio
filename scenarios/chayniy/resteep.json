@@ -1,0 +1,63 @@
+{
+  "title": "Не выбрасывай заварку после первой чашки",
+  "hook": "Не выбрасывай заварку",
+  "voice": "ru-RU-SvetlanaNeural",
+  "hero": "panda",
+  "brand_image": "assets/chayniy/panda_standing.png",
+  "characters": {
+    "panda": "assets/chayniy/panda_ink.png",
+    "panda_face": "assets/chayniy/panda_face.png",
+    "teacup": "assets/chayniy/teacup_steam.png",
+    "tealeaf": "assets/chayniy/tealeaf.png"
+  },
+  "style": "Japanese sumi-e ink brush illustration, fine pen and ink linework with bold confident strokes and variable line weight, black ink only on white background, occasional diluted ink wash for depth (monochrome only, NO color), large empty white space, single clear focal subject, wabi-sabi, ukiyo-e inspired, hand-drawn spontaneous feel, vertical 9:16",
+  "scenes": [
+    {
+      "image": "a red panda about to toss used tea leaves into a bin, stopping mid-motion, bold sumi-e ink, white space",
+      "refs": [
+        "panda",
+        "panda_face"
+      ],
+      "motion": "freeze on the stopping motion",
+      "vo": "Заварил лист один раз и выбросил? Зря.",
+      "caption": "Не выбрасывай"
+    },
+    {
+      "image": "good whole loose tea leaves resting in an open teapot, bold sumi-e ink, white background",
+      "refs": [],
+      "motion": "slow push in on the leaves",
+      "vo": "Хороший крупный лист заваривают не раз и не два.",
+      "caption": "Не один раз"
+    },
+    {
+      "image": "a second and third cup being poured, each slightly different shade, ink wash, white space",
+      "refs": [
+        "teacup"
+      ],
+      "motion": "successive pours",
+      "vo": "Вторая, третья заварка раскрывают новые оттенки вкуса.",
+      "caption": "Новые оттенки"
+    },
+    {
+      "image": "a row of cups showing many infusions in a line, bold ink, white background",
+      "refs": [],
+      "motion": "slow pan across the cups",
+      "vo": "Лист может отдавать вкус три, пять, а то и больше раз.",
+      "caption": "До 5+ заварок"
+    },
+    {
+      "image": "a red panda happily pours another cup from the same pot, content, bold sumi-e ink, white space",
+      "refs": [
+        "panda"
+      ],
+      "motion": "slow zoom in",
+      "vo": "А пыль из пакетика выдыхается за одну. Снова — про лист.",
+      "caption": "Лист побеждает"
+    }
+  ],
+  "endcard": {
+    "title": "ЧАЙНЫЙ",
+    "sub": "Истории о чае и замедлении.",
+    "vo": "Завари чашку — и почувствуй разницу."
+  }
+}

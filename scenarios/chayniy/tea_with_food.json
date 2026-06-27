@@ -1,0 +1,65 @@
+{
+  "title": "Не запивай еду чаем",
+  "hook": "Не запивай еду чаем",
+  "voice": "ru-RU-SvetlanaNeural",
+  "hero": "panda",
+  "brand_image": "assets/chayniy/panda_standing.png",
+  "characters": {
+    "panda": "assets/chayniy/panda_ink.png",
+    "panda_face": "assets/chayniy/panda_face.png",
+    "teacup": "assets/chayniy/teacup_steam.png",
+    "tealeaf": "assets/chayniy/tealeaf.png"
+  },
+  "style": "Japanese sumi-e ink brush illustration, fine pen and ink linework with bold confident strokes and variable line weight, black ink only on white background, occasional diluted ink wash for depth (monochrome only, NO color), large empty white space, single clear focal subject, wabi-sabi, ukiyo-e inspired, hand-drawn spontaneous feel, vertical 9:16",
+  "scenes": [
+    {
+      "image": "a red panda about to sip tea over a plate of food, pausing thoughtfully, bold sumi-e ink, white space",
+      "refs": [
+        "panda",
+        "panda_face"
+      ],
+      "motion": "slow zoom in on the pause",
+      "vo": "Любишь запивать обед чаем? Тут есть один нюанс.",
+      "caption": "Один нюанс"
+    },
+    {
+      "image": "a tea cup above a plate with a dark swirl reaching down, bold ink, white background",
+      "refs": [
+        "teacup"
+      ],
+      "motion": "the dark swirl descends",
+      "vo": "В чае есть танины — они мешают усваивать железо из еды.",
+      "caption": "Танины и железо"
+    },
+    {
+      "image": "ink illustration of plant foods (grains, beans, greens) with an iron symbol, bold ink, white space",
+      "refs": [],
+      "motion": "gentle hold",
+      "vo": "Особенно железо из растений: круп, бобов, зелени.",
+      "caption": "Железо из растений"
+    },
+    {
+      "image": "a clock beside a tea cup moved aside from a plate, bold sumi-e ink, white background",
+      "refs": [
+        "teacup"
+      ],
+      "motion": "the cup slides aside",
+      "vo": "Следишь за железом — пей чай между приёмами пищи.",
+      "caption": "Между приёмами"
+    },
+    {
+      "image": "a red panda calmly sips tea after a meal, relaxed, bold sumi-e ink, white space",
+      "refs": [
+        "panda"
+      ],
+      "motion": "slow zoom in",
+      "vo": "Через часик после еды — и чай в радость, и польза.",
+      "caption": "Через час — и польза"
+    }
+  ],
+  "endcard": {
+    "title": "ЧАЙНЫЙ",
+    "sub": "Истории о чае и замедлении.",
+    "vo": "Завари чашку — и почувствуй разницу."
+  }
+}
