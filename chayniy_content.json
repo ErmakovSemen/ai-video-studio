@@ -103,11 +103,11 @@
           ]
         },
         {
-          "id": "cli_teabag",
-          "title": "Чай в пакетике: что там на самом деле",
-          "desc": "https://youtu.be/GmqUZnBa0xc\nсубтитры: да",
-          "video": "https://youtu.be/GmqUZnBa0xc",
-          "scenario": "scenarios/chayniy/teabag.json",
+          "id": "cli_origin_legend",
+          "title": "5000 лет назад чай открыли случайно",
+          "desc": "https://youtu.be/Hi1jwtopUIk\nсубтитры: нет",
+          "video": "https://youtu.be/Hi1jwtopUIk",
+          "scenario": "scenarios/chayniy/origin_legend.json",
           "tags": [
             "published",
             "cli",
