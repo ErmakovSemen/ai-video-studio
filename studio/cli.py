@@ -18,6 +18,23 @@ def cmd_render(args):
     print(f"rendering '{sc.get('title')}' -> {out}")
     log = story.build(sc, out, wd, base_dir=ROOT)
     print(json.dumps(log, ensure_ascii=False, indent=2))
+    # Sync a card onto the project board so CLI work shows up on the Kanban.
+    # Best-effort: needs GH_TOKEN; degrades silently otherwise.
+    try:
+        from studio import boardsync
+        key = os.path.splitext(os.path.basename(args.scenario))[0]
+        project = sc.get("project") or "chayniy"
+        ok = boardsync.add_card(f"{project}_content", "review", {
+            "id": f"cli_{key}",
+            "title": sc.get("title", key),
+            "desc": f"Отрендерено через CLI · {os.path.basename(out)}",
+            "video": f"/outputs/{os.path.basename(out)}",
+            "scenario": args.scenario,
+            "tags": ["rendered", "cli"],
+        }, message=f"board: rendered {key}")
+        print(f"board sync: {'ok' if ok else 'skipped (set GH_TOKEN)'}")
+    except Exception as e:
+        print(f"board sync: error {e}")
 
 
 def cmd_image(args):

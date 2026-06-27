@@ -8,8 +8,10 @@ and abstract mush (the alpha-waves problem).
 import os, json, base64, urllib.request
 
 OPENROUTER_KEY = os.getenv("OPENROUTER_API_KEY")
+GEMINI_KEY = os.getenv("GEMINI_API_KEY")
 REVIEW_MODEL = os.getenv("QC_MODEL", "google/gemini-2.5-flash")
-THRESHOLD = int(os.getenv("QC_THRESHOLD", "7"))
+GEMINI_REVIEW_MODEL = os.getenv("QC_GEMINI_MODEL", "gemini-2.0-flash")
+THRESHOLD = int(os.getenv("QC_THRESHOLD", "5"))
 
 
 def _b64(path: str) -> str:
@@ -38,21 +40,34 @@ CHECKLIST = (
 def review(image_path: str, scene: str) -> dict:
     """Return a QC verdict dict for one frame."""
     prompt = CHECKLIST.format(scene=scene)
-    body = {
-        "model": REVIEW_MODEL,
-        "messages": [{"role": "user", "content": [
-            {"type": "text", "text": prompt},
-            {"type": "image_url", "image_url": {"url": "data:image/png;base64," + _b64(image_path)}},
-        ]}],
-        "temperature": 0,
-    }
-    req = urllib.request.Request(
-        "https://openrouter.ai/api/v1/chat/completions",
-        data=json.dumps(body).encode(),
-        headers={"Authorization": f"Bearer {OPENROUTER_KEY}", "Content-Type": "application/json"},
-    )
-    r = json.load(urllib.request.urlopen(req, timeout=90))
-    txt = r["choices"][0]["message"]["content"].strip()
+    # Prefer the free Gemini backend for review when a key is present; else OpenRouter.
+    if GEMINI_KEY:
+        body = {"contents": [{"parts": [
+            {"text": prompt},
+            {"inline_data": {"mime_type": "image/png", "data": _b64(image_path)}},
+        ]}], "generationConfig": {"temperature": 0}}
+        url = (f"https://generativelanguage.googleapis.com/v1beta/models/"
+               f"{GEMINI_REVIEW_MODEL}:generateContent?key={GEMINI_KEY}")
+        req = urllib.request.Request(url, data=json.dumps(body).encode(),
+                                     headers={"Content-Type": "application/json"})
+        r = json.load(urllib.request.urlopen(req, timeout=90))
+        txt = r["candidates"][0]["content"]["parts"][0]["text"].strip()
+    else:
+        body = {
+            "model": REVIEW_MODEL,
+            "messages": [{"role": "user", "content": [
+                {"type": "text", "text": prompt},
+                {"type": "image_url", "image_url": {"url": "data:image/png;base64," + _b64(image_path)}},
+            ]}],
+            "temperature": 0,
+        }
+        req = urllib.request.Request(
+            "https://openrouter.ai/api/v1/chat/completions",
+            data=json.dumps(body).encode(),
+            headers={"Authorization": f"Bearer {OPENROUTER_KEY}", "Content-Type": "application/json"},
+        )
+        r = json.load(urllib.request.urlopen(req, timeout=90))
+        txt = r["choices"][0]["message"]["content"].strip()
     if txt.startswith("```"):
         txt = txt.split("```")[1].lstrip("json").strip()
     try:

@@ -30,6 +30,39 @@ def _req(url, method="GET", body=None):
     return json.load(urllib.request.urlopen(req, timeout=30))
 
 
+def default_board(name: str) -> dict:
+    """Standard 6-column content pipeline board (matches the app's auto-init)."""
+    return {"title": name, "columns": [
+        {"id": "ideas",      "name": "💡 Идеи",             "cards": []},
+        {"id": "draft",      "name": "✏️ Черновик",          "cards": []},
+        {"id": "montage",    "name": "🎬 Монтаж",            "cards": []},
+        {"id": "review",     "name": "🔍 Ревью",              "cards": []},
+        {"id": "await_post", "name": "📤 Ожидание постинга",  "cards": []},
+        {"id": "posted",     "name": "✅ Опубликовано",       "cards": []},
+    ]}
+
+
+def add_card(name: str, column_id: str, card: dict,
+             message: str = "board: add card from CLI") -> bool:
+    """Pull the board (or init default), upsert `card` into `column_id`, push back.
+    Upsert is by card['id'] so re-runs update instead of duplicating. Best-effort."""
+    board = pull(name) or default_board(name)
+    cols = board.get("columns") or default_board(name)["columns"]
+    board["columns"] = cols
+    col = next((c for c in cols if c.get("id") == column_id), None)
+    if col is None:
+        col = {"id": column_id, "name": column_id, "cards": []}
+        cols.append(col)
+    col.setdefault("cards", [])
+    cid = card.get("id")
+    existing = next((c for c in col["cards"] if c.get("id") == cid), None)
+    if existing:
+        existing.update(card)
+    else:
+        col["cards"].append(card)
+    return push(name, board, message=message)
+
+
 def pull(name: str) -> dict | None:
     """Fetch <name>.json from the repo (raw). Returns dict or None on any failure."""
     url = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}/{name}.json"
