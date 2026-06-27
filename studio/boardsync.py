@@ -65,9 +65,13 @@ def add_card(name: str, column_id: str, card: dict,
 
 def pull(name: str) -> dict | None:
     """Fetch <name>.json from the repo (raw). Returns dict or None on any failure."""
-    url = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}/{name}.json"
+    # cache-bust: raw.githubusercontent has a ~5min CDN TTL; a unique query param +
+    # no-cache headers force a fresh read so board edits show up immediately.
+    import time as _t
+    url = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}/{name}.json?t={int(_t.time())}"
     try:
-        req = urllib.request.Request(url, headers={"User-Agent": "prometey-boardsync"})
+        req = urllib.request.Request(url, headers={
+            "User-Agent": "prometey-boardsync", "Cache-Control": "no-cache", "Pragma": "no-cache"})
         return json.loads(urllib.request.urlopen(req, timeout=20).read().decode())
     except Exception:
         return None
