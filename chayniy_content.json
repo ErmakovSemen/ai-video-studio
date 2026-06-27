@@ -214,6 +214,18 @@
             "cli",
             "youtube"
           ]
+        },
+        {
+          "id": "cli_teabag",
+          "title": "Чай в пакетике: что там на самом деле",
+          "desc": "https://youtu.be/GmqUZnBa0xc\nсубтитры: да",
+          "video": "https://youtu.be/GmqUZnBa0xc",
+          "scenario": "scenarios/chayniy/teabag.json",
+          "tags": [
+            "published",
+            "cli",
+            "youtube"
+          ]
         }
       ]
     }
