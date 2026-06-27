@@ -1,0 +1,108 @@
+{
+  "title": "chayniy_content",
+  "columns": [
+    {
+      "id": "ideas",
+      "name": "💡 Идеи",
+      "cards": []
+    },
+    {
+      "id": "draft",
+      "name": "✏️ Черновик",
+      "cards": []
+    },
+    {
+      "id": "montage",
+      "name": "🎬 Монтаж",
+      "cards": []
+    },
+    {
+      "id": "review",
+      "name": "🔍 Ревью",
+      "cards": []
+    },
+    {
+      "id": "await_post",
+      "name": "📤 Ожидание постинга",
+      "cards": []
+    },
+    {
+      "id": "posted",
+      "name": "✅ Опубликовано",
+      "cards": [
+        {
+          "id": "cli_calm_focus",
+          "title": "Почему чай успокаивает, но не усыпляет",
+          "desc": "https://youtu.be/WCyew_o9eyA\nсубтитры: да",
+          "video": "https://youtu.be/WCyew_o9eyA",
+          "scenario": "scenarios/chayniy/calm_focus.json",
+          "tags": [
+            "published",
+            "cli",
+            "youtube"
+          ]
+        },
+        {
+          "id": "cli_samurai_tea",
+          "title": "Этот чай пили самураи перед боем",
+          "desc": "https://youtu.be/x66EogU3sAE\nсубтитры: да",
+          "video": "https://youtu.be/x66EogU3sAE",
+          "scenario": "scenarios/chayniy/samurai_tea.json",
+          "tags": [
+            "published",
+            "cli",
+            "youtube"
+          ]
+        },
+        {
+          "id": "cli_bitter_tea",
+          "title": "Почему чай горчит — и как это исправить",
+          "desc": "https://youtu.be/ZshOhYpswyo\nсубтитры: да",
+          "video": "https://youtu.be/ZshOhYpswyo",
+          "scenario": "scenarios/chayniy/bitter_tea.json",
+          "tags": [
+            "published",
+            "cli",
+            "youtube"
+          ]
+        },
+        {
+          "id": "cli_golden_tea",
+          "title": "Чай, который дороже золота",
+          "desc": "https://youtu.be/eJ636uk9DFE\nсубтитры: нет",
+          "video": "https://youtu.be/eJ636uk9DFE",
+          "scenario": "scenarios/chayniy/golden_tea.json",
+          "tags": [
+            "published",
+            "cli",
+            "youtube"
+          ]
+        },
+        {
+          "id": "cli_milk_tea",
+          "title": "Почему англичане льют молоко в чай",
+          "desc": "https://youtu.be/tYJx8WF7RtA\nсубтитры: да",
+          "video": "https://youtu.be/tYJx8WF7RtA",
+          "scenario": "scenarios/chayniy/milk_tea.json",
+          "tags": [
+            "published",
+            "cli",
+            "youtube"
+          ]
+        },
+        {
+          "id": "cli_caffeine_myth",
+          "title": "В чае больше кофеина, чем в кофе?",
+          "desc": "https://youtu.be/SNFJLr8Qdo8\nсубтитры: да",
+          "video": "https://youtu.be/SNFJLr8Qdo8",
+          "scenario": "scenarios/chayniy/caffeine_myth.json",
+          "tags": [
+            "published",
+            "cli",
+            "youtube"
+          ]
+        }
+      ]
+    }
+  ]
+}
