@@ -22,6 +22,21 @@ def tts_timed(text: str, out_mp3: str, voice: str = None, rate: str = "+8%"):
     """Synthesize narration AND capture per-word timings via edge-tts WordBoundary.
     Returns (duration_seconds, [(word, start_s, end_s), ...]). Falls back to even
     spacing if no boundaries are emitted."""
+    # Pluggable backend: Yandex SpeechKit (no word boundaries -> proportional timing).
+    if os.getenv("TTS_BACKEND", "edge").lower() == "yandex":
+        from studio import tts_yandex
+        tts_yandex.synth(text, out_mp3, voice=os.getenv("YANDEX_VOICE", "alena"),
+                         emotion=os.getenv("YANDEX_EMOTION", "neutral"),
+                         speed=float(os.getenv("YANDEX_SPEED", "1.05")))
+        dur = _duration(out_mp3)
+        toks = text.split()
+        weights = [len(t) + 1 for t in toks]
+        tot = sum(weights) or 1
+        acc, words = 0.0, []
+        for tok, wgt in zip(toks, weights):
+            end = acc + dur * wgt / tot
+            words.append([tok, acc, end]); acc = end
+        return dur, words
     import edge_tts
     voice = voice or os.getenv("TTS_VOICE", "ru-RU-DmitryNeural")
     word_b, sent_b = [], []

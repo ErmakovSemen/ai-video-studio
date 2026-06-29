@@ -1,0 +1,56 @@
+{
+  "title": "Зачем чай наливают с высоты вытянутой руки",
+  "hook": "Зачем так высоко?",
+  "world": "уличный чай / зрелище",
+  "voice": "ru-RU-SvetlanaNeural",
+  "hero": "panda",
+  "brand_image": "assets/chayniy/panda_standing.png",
+  "characters": {
+    "panda": "assets/chayniy/panda_ink.png",
+    "panda_face": "assets/chayniy/panda_face.png",
+    "teacup": "assets/chayniy/teacup_steam.png"
+  },
+  "style": "Japanese sumi-e ink brush illustration, fine pen and ink linework with bold confident strokes and variable line weight, black ink only on white background, occasional diluted ink wash for depth (monochrome only, NO color), large empty white space, single clear focal subject, wabi-sabi, ukiyo-e inspired, hand-drawn spontaneous feel, vertical 9:16",
+  "scenes": [
+    {
+      "image": "a red panda street vendor pours tea in a long dramatic arc from a cup held high above its head down to a cup held low, a thin streaming ribbon of tea, frothy, dynamic bold sumi-e ink, white space",
+      "refs": ["panda"],
+      "motion": "the tea streams down in a long arc",
+      "vo": "Зачем переливать чай с высоты вытянутой руки?",
+      "caption": "Зачем так высоко?"
+    },
+    {
+      "image": "close-up of a long thin arc of tea pouring between two metal cups, foam and tiny droplets forming, energetic ink lines, white background",
+      "refs": [],
+      "motion": "the pouring stream and rising foam",
+      "vo": "Это тех-тарик — тянутый чай из Малайзии.",
+      "caption": "Тех-тарик"
+    },
+    {
+      "image": "a red panda pulling tea back and forth between two tall metal cups, arms wide apart, motion lines showing the stretch, dynamic bold sumi-e ink, white space",
+      "refs": ["panda"],
+      "motion": "arms stretch wide, tea flies between cups",
+      "vo": "Чёрный чай со сгущёнкой переливают туда-сюда снова и снова.",
+      "caption": "Туда-сюда, снова и снова"
+    },
+    {
+      "image": "a finished cup of tea topped with a thick cap of delicate frothy foam, steam, elegant minimal ink, white background",
+      "refs": ["teacup"],
+      "motion": "gentle slow zoom in on the foam cap",
+      "vo": "Струя насыщает чай воздухом — сверху рождается шапка нежной пены.",
+      "caption": "Шапка пены"
+    },
+    {
+      "image": "a red panda happily sips the frothy tea with a tiny crowd of small figures watching in the background, joyful, bold sumi-e ink, white space",
+      "refs": ["panda", "panda_face"],
+      "motion": "slow zoom out revealing the small crowd",
+      "vo": "А ещё так его остужают. И превращают в настоящее уличное шоу.",
+      "caption": "Уличное шоу"
+    }
+  ],
+  "endcard": {
+    "title": "ЧАЙНЫЙ",
+    "sub": "Истории о чае и замедлении.",
+    "vo": "Завари чашку — и почувствуй разницу."
+  }
+}
