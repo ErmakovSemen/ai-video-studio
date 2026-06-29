@@ -226,6 +226,19 @@
             "cli",
             "youtube"
           ]
+        },
+        {
+          "id": "cli_teh_tarik",
+          "title": "Зачем чай наливают с высоты вытянутой руки",
+          "desc": "https://youtu.be/KqbCNp8Kkc0\nголос: Yandex alena · субтитры: да",
+          "video": "https://youtu.be/KqbCNp8Kkc0",
+          "scenario": "scenarios/chayniy/teh_tarik.json",
+          "tags": [
+            "published",
+            "cli",
+            "youtube",
+            "yandex-voice"
+          ]
         }
       ]
     }
