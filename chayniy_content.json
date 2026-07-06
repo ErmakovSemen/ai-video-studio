@@ -56,16 +56,6 @@
           ]
         },
         {
-          "id": "idea_not_real_tea",
-          "title": "Половина «чая» — вообще не чай",
-          "desc": "🪝 Хук: Это не чай\nЧай — только лист Camellia sinensis; ромашка, мята, ройбуш, каркаде — это тизаны, не чай.\n\nБиты: 1) Не чай · 2) Камелия китайская · 3) Один куст · 4) Травы — тизаны · 5) Просто другое\n\n✅ Сценарий готов: scenarios/chayniy/not_real_tea.json — осталось сгенерировать.",
-          "scenario": "scenarios/chayniy/not_real_tea.json",
-          "tags": [
-            "idea",
-            "ready"
-          ]
-        },
-        {
           "id": "idea_high_mountain",
           "title": "Лучший улун растёт в облаках",
           "desc": "🪝 Хук: Чай из облаков\nВысокогорный улун (гаошань) растёт медленно в холоде и тумане, копит сахара и аромат — сливочный и цветочный.\n\nБиты: 1) Где облака · 2) Растёт медленно · 3) Больше аромата · 4) Сливочный, цветочный · 5) Выше — слаще\n\n✅ Сценарий готов: scenarios/chayniy/high_mountain.json — осталось сгенерировать.",
@@ -121,6 +111,19 @@
       "id": "posted",
       "name": "✅ Опубликовано",
       "cards": [
+        {
+          "id": "cli_not_real_tea",
+          "title": "Половина «чая» — вообще не чай",
+          "desc": "https://youtu.be/53_4g0yXE54\nголос: alena · субтитры: да",
+          "video": "https://youtu.be/53_4g0yXE54",
+          "scenario": "scenarios/chayniy/not_real_tea.json",
+          "tags": [
+            "published",
+            "cli",
+            "youtube",
+            "yandex-voice"
+          ]
+        },
         {
           "id": "cli_tea_horse_road",
           "title": "Чай возили по дороге смертников",
