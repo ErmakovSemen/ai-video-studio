@@ -110,6 +110,32 @@ def _esc(s: str) -> str:
     return s.replace("\\", "\\\\").replace("{", "(").replace("}", ")").replace("\n", " ")
 
 
+def static_ass(items: list, out_ass: str, font: str = "DejaVu Sans", fontsize: int = 52):
+    """One caption line per scene (no word highlight). items = [(text, start_s, end_s)]."""
+    head = f"""[Script Info]
+ScriptType: v4.00+
+PlayResX: {W}
+PlayResY: {H}
+WrapStyle: 0
+ScaledBorderAndShadow: yes
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Base,{font},{fontsize},&H00FFFFFF,&H000FB4FF,&H00101010,&H64000000,-1,0,0,0,100,100,0,0,1,4,2,2,80,80,260,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+"""
+    lines = []
+    for text, s, e in items:
+        if e <= s:
+            e = s + 0.5
+        lines.append(f"Dialogue: 0,{_ass_time(s)},{_ass_time(e)},Base,,0,0,0,,{_esc(text).upper()}")
+    with open(out_ass, "w", encoding="utf-8") as f:
+        f.write(head + "\n".join(lines) + "\n")
+    return out_ass
+
+
 def karaoke_ass(words: list, out_ass: str, group: int = 3,
                 font: str = "DejaVu Sans", fontsize: int = 58):
     """Write an ASS file that pops words in groups, highlighting the active word.

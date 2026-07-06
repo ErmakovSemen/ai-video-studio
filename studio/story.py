@@ -124,6 +124,7 @@ def build(scenario: dict, out_path: str, workdir: str, base_dir: str = ".",
     else:
         compose.stitch(scene_videos, voice_segs, out_path, workdir)
     log["out"] = out_path
+    log["words"] = words_global          # whole-timeline word timings (for caption variants)
     return log
 
 
