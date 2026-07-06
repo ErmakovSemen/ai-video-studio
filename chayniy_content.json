@@ -44,16 +44,6 @@
             "idea",
             "ready"
           ]
-        },
-        {
-          "id": "idea_oriental_beauty",
-          "title": "Этот чай вкусный, потому что его покусали жучки",
-          "desc": "🪝 Хук: Спасибо жучкам\nВосточная красавица — тайваньский улун; цикадки кусают лист, и он вырабатывает медово-фруктовый аромат.\n\nБиты: 1) Спасибо жучкам · 2) Цикадка кусает лист · 3) Мёд и фрукты · 4) Больше укусов — слаще · 5) Восточная красавица\n\n✅ Сценарий готов: scenarios/chayniy/oriental_beauty.json",
-          "scenario": "scenarios/chayniy/oriental_beauty.json",
-          "tags": [
-            "idea",
-            "ready"
-          ]
         }
       ]
     },
@@ -81,6 +71,19 @@
       "id": "posted",
       "name": "✅ Опубликовано",
       "cards": [
+        {
+          "id": "cli_oriental_beauty",
+          "title": "Этот чай вкусный, потому что его покусали жучки",
+          "desc": "https://youtu.be/D6G6o3eHT5E\nголос: alena · субтитры: караоке",
+          "video": "https://youtu.be/D6G6o3eHT5E",
+          "scenario": "scenarios/chayniy/oriental_beauty.json",
+          "tags": [
+            "published",
+            "cli",
+            "youtube",
+            "yandex-voice"
+          ]
+        },
         {
           "id": "cli_high_mountain",
           "title": "Лучший улун растёт в облаках",
