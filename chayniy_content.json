@@ -112,6 +112,19 @@
       "name": "✅ Опубликовано",
       "cards": [
         {
+          "id": "cli_brew_wrong",
+          "title": "Ты завариваешь чай неправильно",
+          "desc": "https://youtu.be/rE0jihuP4d0\nголос: alena · субтитры: да",
+          "video": "https://youtu.be/rE0jihuP4d0",
+          "scenario": "scenarios/chayniy/brew_wrong.json",
+          "tags": [
+            "published",
+            "cli",
+            "youtube",
+            "yandex-voice"
+          ]
+        },
+        {
           "id": "cli_not_real_tea",
           "title": "Половина «чая» — вообще не чай",
           "desc": "https://youtu.be/53_4g0yXE54\nголос: alena · субтитры: да",
