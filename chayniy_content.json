@@ -6,6 +6,16 @@
       "name": "💡 Идеи",
       "cards": [
         {
+          "id": "idea_puerh_wine",
+          "title": "Чай, который стареет как вино",
+          "desc": "🪝 Хук: Стареет как вино\nПуэр прессуют в диск и оставляют дозревать годами — он ферментируется, мягчает и дорожает, как вино.\n\nБиты: 1) Не для свежести · 2) Пуэр — диск · 3) Зреет годами · 4) Как вино · 5) Время — мастер\n\n✅ Сценарий готов: scenarios/chayniy/puerh_wine.json — осталось сгенерировать.",
+          "scenario": "scenarios/chayniy/puerh_wine.json",
+          "tags": [
+            "idea",
+            "ready"
+          ]
+        },
+        {
           "id": "idea_cold_brew",
           "title": "Завари чай холодной водой",
           "desc": "🪝 Хук: Чай на холодной воде\nХолодная заварка за несколько часов даёт мягкий сладковатый чай почти без горечи и с меньшим кофеином.\n\nБиты: 1) Без кипятка · 2) Несколько часов · 3) Без горечи · 4) Меньше кофеина · 5) Готово к утру\n\n✅ Сценарий готов: scenarios/chayniy/cold_brew.json — осталось сгенерировать.",
@@ -30,16 +40,6 @@
           "title": "Самый нежный чай — из одних почек",
           "desc": "🪝 Хук: Только почки\nСеребряные иглы (Бай Хао Иньчжэнь) — белый чай из нераскрытых пушистых почек, почти без обработки.\n\nБиты: 1) Нераскрытые почки · 2) Серебряные иглы · 3) Почти без обработки · 4) Светлый и сладкий · 5) Самый честный\n\n✅ Сценарий готов: scenarios/chayniy/silver_needle.json — осталось сгенерировать.",
           "scenario": "scenarios/chayniy/silver_needle.json",
-          "tags": [
-            "idea",
-            "ready"
-          ]
-        },
-        {
-          "id": "idea_tea_horse_road",
-          "title": "Чай возили по дороге смертников",
-          "desc": "🪝 Хук: Дорога смертников\nЧайно-конная дорога: тысячу лет чай несли через гималайские тропы из Юньнани в Тибет, меняя на лошадей.\n\nБиты: 1) Тропы над пропастью · 2) Чайно-конная дорога · 3) Чай за коней · 4) 100 кг на спине · 5) Чай как валюта\n\n✅ Сценарий готов: scenarios/chayniy/tea_horse_road.json — осталось сгенерировать.",
-          "scenario": "scenarios/chayniy/tea_horse_road.json",
           "tags": [
             "idea",
             "ready"
@@ -122,11 +122,11 @@
       "name": "✅ Опубликовано",
       "cards": [
         {
-          "id": "cli_puerh_wine",
-          "title": "Чай, который стареет как вино",
-          "desc": "https://youtu.be/pNhGGc5Kfzw\nголос: alena · субтитры: да",
-          "video": "https://youtu.be/pNhGGc5Kfzw",
-          "scenario": "scenarios/chayniy/puerh_wine.json",
+          "id": "cli_tea_horse_road",
+          "title": "Чай возили по дороге смертников",
+          "desc": "https://youtu.be/2EQmFZc9S0o\nголос: alena · субтитры: да",
+          "video": "https://youtu.be/2EQmFZc9S0o",
+          "scenario": "scenarios/chayniy/tea_horse_road.json",
           "tags": [
             "published",
             "cli",
