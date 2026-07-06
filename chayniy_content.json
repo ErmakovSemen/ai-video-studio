@@ -239,6 +239,19 @@
             "youtube",
             "yandex-voice"
           ]
+        },
+        {
+          "id": "cli_tea_drunk",
+          "title": "От чая можно опьянеть — без капли алкоголя",
+          "desc": "https://youtu.be/uIgQ29-rmn0\nголос: Yandex alena · субтитры: да",
+          "video": "https://youtu.be/uIgQ29-rmn0",
+          "scenario": "scenarios/chayniy/tea_drunk.json",
+          "tags": [
+            "published",
+            "cli",
+            "youtube",
+            "yandex-voice"
+          ]
         }
       ]
     }
