@@ -24,16 +24,6 @@
             "idea",
             "ready"
           ]
-        },
-        {
-          "id": "idea_resteep",
-          "title": "Не выбрасывай заварку после первой чашки",
-          "desc": "🪝 Хук: Не выбрасывай заварку\nХороший крупный лист отдаёт вкус 3–5+ заварок, каждая раскрывает новые оттенки; пыль из пакетика — на одну.\n\nБиты: 1) Не выбрасывай · 2) Не один раз · 3) Новые оттенки · 4) До 5+ заварок · 5) Лист побеждает\n\n✅ Сценарий готов: scenarios/chayniy/resteep.json — осталось сгенерировать.",
-          "scenario": "scenarios/chayniy/resteep.json",
-          "tags": [
-            "idea",
-            "ready"
-          ]
         }
       ]
     },
@@ -61,6 +51,19 @@
       "id": "posted",
       "name": "✅ Опубликовано",
       "cards": [
+        {
+          "id": "cli_resteep",
+          "title": "Не выбрасывай заварку после первой чашки",
+          "desc": "https://youtu.be/h8OpyrNVZI0\nголос: alena · субтитры: да",
+          "video": "https://youtu.be/h8OpyrNVZI0",
+          "scenario": "scenarios/chayniy/resteep.json",
+          "tags": [
+            "published",
+            "cli",
+            "youtube",
+            "yandex-voice"
+          ]
+        },
         {
           "id": "cli_cold_brew",
           "title": "Завари чай холодной водой",
