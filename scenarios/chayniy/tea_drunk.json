@@ -1,0 +1,56 @@
+{
+  "title": "От чая можно опьянеть — без капли алкоголя",
+  "hook": "Опьянеть от чая?",
+  "world": "наука / необычное о чае",
+  "voice": "ru-RU-SvetlanaNeural",
+  "hero": "panda",
+  "brand_image": "assets/chayniy/panda_standing.png",
+  "characters": {
+    "panda": "assets/chayniy/panda_ink.png",
+    "panda_face": "assets/chayniy/panda_face.png",
+    "teacup": "assets/chayniy/teacup_steam.png"
+  },
+  "style": "Japanese sumi-e ink brush illustration, fine pen and ink linework with bold confident strokes and variable line weight, black ink only on white background, occasional diluted ink wash for depth (monochrome only, NO color), large empty white space, single clear focal subject, wabi-sabi, ukiyo-e inspired, hand-drawn spontaneous feel, vertical 9:16",
+  "scenes": [
+    {
+      "image": "a red panda sways gently with a dreamy blissful dizzy expression, eyes half-closed and a tiny spiral floating above its head, holding a tea cup, bold sumi-e ink, white space",
+      "refs": ["panda", "panda_face"],
+      "motion": "slow gentle sway, the spiral drifts",
+      "vo": "От чая правда можно опьянеть. Без единой капли алкоголя.",
+      "caption": "Опьянеть от чая?"
+    },
+    {
+      "image": "a single small cup of very strong dark tea, dense ink wash showing its strength, steam rising, minimal, white background",
+      "refs": ["teacup"],
+      "motion": "slow zoom in on the dark cup",
+      "vo": "Выпей крепкий чай на пустой желудок — и накроет лёгкое головокружение.",
+      "caption": "Крепкий, натощак"
+    },
+    {
+      "image": "abstract ink drawing of a head in profile with two intertwining swirling lines inside it, one sharp and energetic, one soft and calm, minimal bold ink, white space",
+      "refs": [],
+      "motion": "the two swirls intertwine slowly",
+      "vo": "Кофеин разгоняет, а L-теанин расслабляет. Пустой желудок только усиливает эффект.",
+      "caption": "Кофеин + L-теанин"
+    },
+    {
+      "image": "a red panda floating slightly off the ground in blissful warmth, soft radiating lines around it, serene heightened senses, bold sumi-e ink, white space",
+      "refs": ["panda"],
+      "motion": "the panda drifts upward gently",
+      "vo": "Китайцы зовут это ча-цзуй — чайное опьянение. Тепло, лёгкость, обострённые чувства.",
+      "caption": "Ча-цзуй · 茶醉"
+    },
+    {
+      "image": "a red panda calmly eating a small snack beside a cup of tea and a glass of water, grounded and content, bold sumi-e ink, white space",
+      "refs": ["panda", "panda_face"],
+      "motion": "slow zoom in, calm and grounded",
+      "vo": "Не любишь такое? Просто поешь перед чаем и пей помедленнее.",
+      "caption": "Поешь перед чаем"
+    }
+  ],
+  "endcard": {
+    "title": "ЧАЙНЫЙ",
+    "sub": "Истории о чае и замедлении.",
+    "vo": "Завари чашку — и почувствуй разницу."
+  }
+}

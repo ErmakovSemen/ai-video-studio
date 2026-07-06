@@ -5,7 +5,7 @@ on failure (up to `tries`), keeping the best-scoring frame. Catches the classic
 failure modes: stray text/watermark, deformed anatomy, off-style/color, off-topic,
 and abstract mush (the alpha-waves problem).
 """
-import os, json, base64, urllib.request
+import os, json, base64, time, urllib.request
 
 OPENROUTER_KEY = os.getenv("OPENROUTER_API_KEY")
 GEMINI_KEY = os.getenv("GEMINI_API_KEY")
@@ -98,9 +98,20 @@ def generate_checked(orig_generate, prompt: str, out_path: str, scene: str,
         " STRICT: absolutely no text/letters/watermark anywhere, correct anatomy, "
         "bold confident sumi-e ink strokes, a single clear readable subject — no abstract blobs."
     )
-    for i in range(tries):
+    gen_errors = 0
+    for i in range(tries + 2):                 # a couple extra slots to absorb transient gen failures
         p = prompt if i == 0 else prompt + corrective
-        orig_generate(p, tmp, refs)
+        try:
+            orig_generate(p, tmp, refs)        # transient provider/network hiccups shouldn't kill the run
+        except Exception as e:
+            gen_errors += 1
+            print(f"    QC try {i+1}: gen error ({e}); retrying", flush=True)
+            time.sleep(2 * gen_errors)
+            if best_path is None and gen_errors <= tries:
+                continue
+            if best_path is not None:
+                break
+            continue
         _desaturate(tmp)                       # guarantee monochrome before review
         try:
             v = review(tmp, scene)
@@ -118,5 +129,7 @@ def generate_checked(orig_generate, prompt: str, out_path: str, scene: str,
         print(f"    QC try {i+1}: score={raw} ok={v.get('ok')} — {v.get('reason')}", flush=True)
         if v.get("ok"):
             break
+    if best_path is None:
+        raise RuntimeError(f"image generation failed after {gen_errors} attempts")
     os.replace(best_path, out_path)
     return best or {"score": 0, "reason": "no candidate"}
