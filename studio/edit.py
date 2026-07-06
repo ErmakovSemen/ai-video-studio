@@ -29,6 +29,15 @@ def tts_timed(text: str, out_mp3: str, voice: str = None, rate: str = "+8%"):
                          emotion=os.getenv("YANDEX_EMOTION", "neutral"),
                          speed=float(os.getenv("YANDEX_SPEED", "1.05")))
         dur = _duration(out_mp3)
+        # precise word timings via forced alignment (whisper); fall back to proportional
+        if os.getenv("FORCE_ALIGN", "1") != "0":
+            try:
+                from studio import align
+                aligned = align.align_known(out_mp3, text)
+                if aligned:
+                    return dur, aligned
+            except Exception:
+                pass
         toks = text.split()
         weights = [len(t) + 1 for t in toks]
         tot = sum(weights) or 1
