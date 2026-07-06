@@ -1,0 +1,57 @@
+{
+  "title": "Этот чай вкусный, потому что его покусали жучки",
+  "hook": "Спасибо жучкам",
+  "world": "необычное о чае / природа",
+  "voice": "ru-RU-SvetlanaNeural",
+  "hero": "panda",
+  "brand_image": "assets/chayniy/panda_standing.png",
+  "characters": {
+    "panda": "assets/chayniy/panda_ink.png",
+    "panda_face": "assets/chayniy/panda_face.png",
+    "teacup": "assets/chayniy/teacup_steam.png",
+    "tealeaf": "assets/chayniy/tealeaf.png"
+  },
+  "style": "Japanese sumi-e ink brush illustration, fine pen and ink linework with bold confident strokes and variable line weight, black ink only on white background, occasional diluted ink wash for depth (monochrome only, NO color), large empty white space, single clear focal subject, wabi-sabi, ukiyo-e inspired, hand-drawn spontaneous feel, vertical 9:16",
+  "scenes": [
+    {
+      "image": "a red panda curiously examines a single tea leaf dotted with tiny bite marks, puzzled and delighted, bold sumi-e ink, white space",
+      "refs": ["panda", "panda_face"],
+      "motion": "slow zoom in on the nibbled leaf",
+      "vo": "Этот чай стал знаменитым благодаря насекомым.",
+      "caption": "Спасибо жучкам"
+    },
+    {
+      "image": "extreme close-up of a tiny leafhopper insect biting the edge of a young tea leaf, delicate ink lines, white background",
+      "refs": ["tealeaf"],
+      "motion": "the little insect nibbles the leaf",
+      "vo": "Крошечная цикадка кусает молодые листья чайного куста.",
+      "caption": "Цикадка кусает лист"
+    },
+    {
+      "image": "a tea leaf with small bite marks releasing delicate aromatic swirls rising upward, honey-like wisps, bold ink, white space",
+      "refs": ["tealeaf"],
+      "motion": "aromatic swirls drift up from the bitten leaf",
+      "vo": "В ответ лист начинает вырабатывать особые ароматы — мёда и спелых фруктов.",
+      "caption": "Аромат мёда и фруктов"
+    },
+    {
+      "image": "a tea plantation on a hillside teeming with tiny insects, no sprayers, bugs welcome, calm ink landscape, white space",
+      "refs": [],
+      "motion": "slow pan across the lively plantation",
+      "vo": "Поэтому здесь не травят вредителей. Чем больше укусов — тем слаще чай.",
+      "caption": "Больше укусов — слаще"
+    },
+    {
+      "image": "a red panda blissfully sips from an elegant cup, serene and refined, bold sumi-e ink, white space",
+      "refs": ["panda", "teacup"],
+      "motion": "slow zoom in on the blissful face",
+      "vo": "Его зовут Восточная красавица. Улун, который создают не только люди.",
+      "caption": "Восточная красавица"
+    }
+  ],
+  "endcard": {
+    "title": "ЧАЙНЫЙ",
+    "sub": "Истории о чае и замедлении.",
+    "vo": "Завари чашку — и почувствуй разницу."
+  }
+}

@@ -64,9 +64,17 @@ def add_card(name: str, column_id: str, card: dict,
 
 
 def pull(name: str) -> dict | None:
-    """Fetch <name>.json from the repo (raw). Returns dict or None on any failure."""
-    # cache-bust: raw.githubusercontent has a ~5min CDN TTL; a unique query param +
-    # no-cache headers force a fresh read so board edits show up immediately.
+    """Fetch <name>.json from the repo. Returns dict or None on any failure.
+
+    With a token, use the authenticated contents API — it is always fresh (no CDN),
+    which prevents lost-update races when several writes happen in quick succession.
+    Without a token, fall back to raw.githubusercontent (cache-busted)."""
+    if TOKEN:
+        try:
+            cur = _req(f"{API}/repos/{REPO}/contents/{name}.json?ref={BRANCH}")
+            return json.loads(base64.b64decode(cur["content"]).decode())
+        except Exception:
+            pass
     import time as _t
     url = f"https://raw.githubusercontent.com/{REPO}/{BRANCH}/{name}.json?t={int(_t.time())}"
     try:
