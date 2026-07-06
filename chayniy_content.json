@@ -6,16 +6,6 @@
       "name": "💡 Идеи",
       "cards": [
         {
-          "id": "idea_cold_brew",
-          "title": "Завари чай холодной водой",
-          "desc": "🪝 Хук: Чай на холодной воде\nХолодная заварка за несколько часов даёт мягкий сладковатый чай почти без горечи и с меньшим кофеином.\n\nБиты: 1) Без кипятка · 2) Несколько часов · 3) Без горечи · 4) Меньше кофеина · 5) Готово к утру\n\n✅ Сценарий готов: scenarios/chayniy/cold_brew.json — осталось сгенерировать.",
-          "scenario": "scenarios/chayniy/cold_brew.json",
-          "tags": [
-            "idea",
-            "ready"
-          ]
-        },
-        {
           "id": "idea_silver_needle",
           "title": "Самый нежный чай — из одних почек",
           "desc": "🪝 Хук: Только почки\nСеребряные иглы (Бай Хао Иньчжэнь) — белый чай из нераскрытых пушистых почек, почти без обработки.\n\nБиты: 1) Нераскрытые почки · 2) Серебряные иглы · 3) Почти без обработки · 4) Светлый и сладкий · 5) Самый честный\n\n✅ Сценарий готов: scenarios/chayniy/silver_needle.json — осталось сгенерировать.",
@@ -71,6 +61,19 @@
       "id": "posted",
       "name": "✅ Опубликовано",
       "cards": [
+        {
+          "id": "cli_cold_brew",
+          "title": "Завари чай холодной водой",
+          "desc": "https://youtu.be/Kq2W6FmAXog\nголос: alena · субтитры: да",
+          "video": "https://youtu.be/Kq2W6FmAXog",
+          "scenario": "scenarios/chayniy/cold_brew.json",
+          "tags": [
+            "published",
+            "cli",
+            "youtube",
+            "yandex-voice"
+          ]
+        },
         {
           "id": "cli_oriental_beauty",
           "title": "Этот чай вкусный, потому что его покусали жучки",
