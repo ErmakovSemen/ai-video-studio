@@ -26,16 +26,6 @@
           ]
         },
         {
-          "id": "idea_high_mountain",
-          "title": "Лучший улун растёт в облаках",
-          "desc": "🪝 Хук: Чай из облаков\nВысокогорный улун (гаошань) растёт медленно в холоде и тумане, копит сахара и аромат — сливочный и цветочный.\n\nБиты: 1) Где облака · 2) Растёт медленно · 3) Больше аромата · 4) Сливочный, цветочный · 5) Выше — слаще\n\n✅ Сценарий готов: scenarios/chayniy/high_mountain.json — осталось сгенерировать.",
-          "scenario": "scenarios/chayniy/high_mountain.json",
-          "tags": [
-            "idea",
-            "ready"
-          ]
-        },
-        {
           "id": "idea_tea_with_food",
           "title": "Не запивай еду чаем",
           "desc": "🪝 Хук: Не запивай еду чаем\nТанины чая мешают усвоению негемового железа из растительной еды — лучше пить чай между приёмами пищи.\n\nБиты: 1) Один нюанс · 2) Танины и железо · 3) Железо из растений · 4) Между приёмами · 5) Через час — и польза\n\n✅ Сценарий готов: scenarios/chayniy/tea_with_food.json — осталось сгенерировать.",
@@ -81,6 +71,19 @@
       "id": "posted",
       "name": "✅ Опубликовано",
       "cards": [
+        {
+          "id": "cli_high_mountain",
+          "title": "Лучший улун растёт в облаках",
+          "desc": "https://youtu.be/RNh9uwfoVOo\nголос: alena · субтитры: да",
+          "video": "https://youtu.be/RNh9uwfoVOo",
+          "scenario": "scenarios/chayniy/high_mountain.json",
+          "tags": [
+            "published",
+            "cli",
+            "youtube",
+            "yandex-voice"
+          ]
+        },
         {
           "id": "cli_gongfu",
           "title": "Один лист — десять чашек",
