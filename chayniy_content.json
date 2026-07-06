@@ -6,16 +6,6 @@
       "name": "💡 Идеи",
       "cards": [
         {
-          "id": "idea_puerh_wine",
-          "title": "Чай, который стареет как вино",
-          "desc": "🪝 Хук: Стареет как вино\nПуэр прессуют в диск и оставляют дозревать годами — он ферментируется, мягчает и дорожает, как вино.\n\nБиты: 1) Не для свежести · 2) Пуэр — диск · 3) Зреет годами · 4) Как вино · 5) Время — мастер\n\n✅ Сценарий готов: scenarios/chayniy/puerh_wine.json — осталось сгенерировать.",
-          "scenario": "scenarios/chayniy/puerh_wine.json",
-          "tags": [
-            "idea",
-            "ready"
-          ]
-        },
-        {
           "id": "idea_cold_brew",
           "title": "Завари чай холодной водой",
           "desc": "🪝 Хук: Чай на холодной воде\nХолодная заварка за несколько часов даёт мягкий сладковатый чай почти без горечи и с меньшим кофеином.\n\nБиты: 1) Без кипятка · 2) Несколько часов · 3) Без горечи · 4) Меньше кофеина · 5) Готово к утру\n\n✅ Сценарий готов: scenarios/chayniy/cold_brew.json — осталось сгенерировать.",
@@ -131,6 +121,19 @@
       "id": "posted",
       "name": "✅ Опубликовано",
       "cards": [
+        {
+          "id": "cli_puerh_wine",
+          "title": "Чай, который стареет как вино",
+          "desc": "https://youtu.be/pNhGGc5Kfzw\nголос: alena · субтитры: да",
+          "video": "https://youtu.be/pNhGGc5Kfzw",
+          "scenario": "scenarios/chayniy/puerh_wine.json",
+          "tags": [
+            "published",
+            "cli",
+            "youtube",
+            "yandex-voice"
+          ]
+        },
         {
           "id": "cli_calm_focus",
           "title": "Почему чай успокаивает, но не усыпляет",
