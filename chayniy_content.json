@@ -52,6 +52,19 @@
       "name": "✅ Опубликовано",
       "cards": [
         {
+          "id": "cli_self_respect",
+          "title": "Ты пьёшь нормальный кофе, а чай — как будто себя не уважаешь",
+          "desc": "https://youtu.be/Yh26TLbmPO4\nголос: alena · караоке (форс-алайнмент)",
+          "video": "https://youtu.be/Yh26TLbmPO4",
+          "scenario": "scenarios/chayniy/self_respect.json",
+          "tags": [
+            "published",
+            "cli",
+            "youtube",
+            "yandex-voice"
+          ]
+        },
+        {
           "id": "cli_resteep",
           "title": "Не выбрасывай заварку после первой чашки",
           "desc": "https://youtu.be/h8OpyrNVZI0\nголос: alena · субтитры: да",
