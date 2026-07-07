@@ -1,0 +1,56 @@
+{
+  "title": "Ты пьёшь нормальный кофе, а чай — как будто себя не уважаешь",
+  "hook": "Себя не уважаешь?",
+  "world": "психология / забота о себе",
+  "voice": "ru-RU-SvetlanaNeural",
+  "hero": "panda",
+  "brand_image": "assets/chayniy/panda_standing.png",
+  "characters": {
+    "panda": "assets/chayniy/panda_ink.png",
+    "panda_face": "assets/chayniy/panda_face.png",
+    "teacup": "assets/chayniy/teacup_steam.png"
+  },
+  "style": "Japanese sumi-e ink brush illustration, fine pen and ink linework with bold confident strokes and variable line weight, black ink only on white background, occasional diluted ink wash for depth (monochrome only, NO color), large empty white space, single clear focal subject, wabi-sabi, ukiyo-e inspired, hand-drawn spontaneous feel, vertical 9:16",
+  "scenes": [
+    {
+      "image": "a red panda sits looking slightly ashamed, holding a plain mug with a sad limp tea bag string hanging out, an elegant refined coffee cup sits proudly nearby, contrast, bold sumi-e ink, white space",
+      "refs": ["panda", "panda_face"],
+      "motion": "slow zoom in on the ashamed face",
+      "vo": "Ты берёшь нормальный кофе. А чай пьёшь так, будто себя не уважаешь.",
+      "caption": "Себя не уважаешь?"
+    },
+    {
+      "image": "a torn open tea bag with fine grey dust spilling out into a small sad heap, grim and unappetizing, bold ink, white background",
+      "refs": [],
+      "motion": "the dust spills and settles",
+      "vo": "Дешёвый пакетик — это пыль от чужого чая. Самый низкий сорт листа.",
+      "caption": "Чай из пыли"
+    },
+    {
+      "image": "split composition: on the left a red panda lovingly turns a hand coffee grinder with care, on the right the same panda carelessly flicks a tea bag over a shoulder, contrast, bold sumi-e ink, white space",
+      "refs": ["panda"],
+      "motion": "gentle contrast between the two halves",
+      "vo": "Ради кофе ты и зёрна мелешь, и ждёшь. А чай — кинул пакетик и забыл.",
+      "caption": "Кофе — с любовью"
+    },
+    {
+      "image": "a red panda holds a proper cup of loose-leaf tea with both paws, dignified and warm, steam rising gently, a little self-respect, bold sumi-e ink, white space",
+      "refs": ["panda", "teacup"],
+      "motion": "slow warm zoom in on the cup",
+      "vo": "Хороший рассыпной лист стоит копейки. И ты точно заслужил не пыль.",
+      "caption": "Ты заслужил больше"
+    },
+    {
+      "image": "a red panda sits calmly and content with a cup of tea, at peace and self-respecting, serene, bold sumi-e ink, lots of white space",
+      "refs": ["panda", "panda_face"],
+      "motion": "slow gentle zoom out, calm",
+      "vo": "Относись к себе как к тому, кого любишь. Начни с чашки.",
+      "caption": "Начни с чашки"
+    }
+  ],
+  "endcard": {
+    "title": "ЧАЙНЫЙ",
+    "sub": "Истории о чае и замедлении.",
+    "vo": "Завари чашку — и почувствуй разницу."
+  }
+}

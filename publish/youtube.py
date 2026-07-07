@@ -43,9 +43,11 @@ class YouTubePublisher(Publisher):
     def _service(self):
         from google.oauth2.credentials import Credentials
         from googleapiclient.discovery import build
+        # scopes=None: refresh without restricting to a specific scope, so the token's
+        # own granted scopes are used (works whether it has youtube.upload or force-ssl)
         creds = Credentials(
             token=None, refresh_token=self.refresh_token, token_uri=TOKEN_URI,
-            client_id=self.client_id, client_secret=self.client_secret, scopes=SCOPES)
+            client_id=self.client_id, client_secret=self.client_secret, scopes=None)
         return build("youtube", "v3", credentials=creds, cache_discovery=False)
 
     def publish(self, video_path: str, meta: VideoMeta) -> dict:
