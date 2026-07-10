@@ -52,6 +52,19 @@
       "name": "✅ Опубликовано",
       "cards": [
         {
+          "id": "cli_go_strategy",
+          "title": "В этой игре ходов больше, чем атомов во Вселенной",
+          "desc": "https://youtu.be/ERl7hQ-CIPw\nголос: alena · субтитры: да",
+          "video": "https://youtu.be/ERl7hQ-CIPw",
+          "scenario": "scenarios/chayniy/go_strategy.json",
+          "tags": [
+            "published",
+            "cli",
+            "youtube",
+            "yandex-voice"
+          ]
+        },
+        {
           "id": "cli_self_respect",
           "title": "Ты пьёшь нормальный кофе, а чай — как будто себя не уважаешь",
           "desc": "https://youtu.be/Yh26TLbmPO4\nголос: alena · караоке (форс-алайнмент)",
