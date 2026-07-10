@@ -1,0 +1,56 @@
+{
+  "title": "В этой игре ходов больше, чем атомов во Вселенной",
+  "hook": "Больше, чем атомов",
+  "world": "стратегия / восточная мудрость",
+  "voice": "ru-RU-SvetlanaNeural",
+  "hero": "panda",
+  "brand_image": "assets/chayniy/panda_standing.png",
+  "characters": {
+    "panda": "assets/chayniy/panda_ink.png",
+    "panda_face": "assets/chayniy/panda_face.png",
+    "teacup": "assets/chayniy/teacup_steam.png"
+  },
+  "style": "Japanese sumi-e ink brush illustration, fine pen and ink linework with bold confident strokes and variable line weight, black ink only on white background, occasional diluted ink wash for depth (monochrome only, NO color), large empty white space, single clear focal subject, wabi-sabi, ukiyo-e inspired, hand-drawn spontaneous feel, vertical 9:16",
+  "scenes": [
+    {
+      "image": "a red panda in a kimono sits at a wooden Go board, placing a single round stone on the grid with its paw, close view of the lined board and a few black and white stones, bold sumi-e ink, white space",
+      "refs": ["panda"],
+      "motion": "slow zoom in as the stone is placed",
+      "vo": "В этой игре комбинаций больше, чем атомов во всей Вселенной.",
+      "caption": "Больше, чем атомов"
+    },
+    {
+      "image": "overhead view of a Go board with just a handful of black and white stones on the fine grid, minimal and clean, a single paw placing one stone, bold ink, white background",
+      "refs": [],
+      "motion": "gentle push in on the grid",
+      "vo": "Это го. Правила учат за минуту — просто ставь камни. А постигают всю жизнь.",
+      "caption": "Минута правил — жизнь пути"
+    },
+    {
+      "image": "a red panda leans back thoughtfully, viewing the whole Go board from above, the entire grid and scattered stones visible, contemplative, bold sumi-e ink, white space",
+      "refs": ["panda", "panda_face"],
+      "motion": "slow zoom out revealing the full board",
+      "vo": "Го наказывает жадность. Выигрывает не тот, кто хватает, а кто видит всю доску.",
+      "caption": "Видь всю доску"
+    },
+    {
+      "image": "a Go board where black and white stones form several clear separate territories across the grid, like domains of influence, balanced composition, bold ink, white background",
+      "refs": [],
+      "motion": "slow pan across the territories",
+      "vo": "Поэтому в го играют стратеги: тут думают не про один бой, а про влияние на всём поле.",
+      "caption": "Влияние, а не один бой"
+    },
+    {
+      "image": "a red panda pauses over the Go board holding a small tea cup with both paws, steam rising, looking at the board with calm focus, serene, bold sumi-e ink, white space",
+      "refs": ["panda", "teacup"],
+      "motion": "gentle steam, slow calm zoom in",
+      "vo": "Иногда лучший ход — замедлиться. Посмотреть шире. И только потом поставить камень.",
+      "caption": "Замедлись. Посмотри шире."
+    }
+  ],
+  "endcard": {
+    "title": "ЧАЙНЫЙ",
+    "sub": "Истории о чае и замедлении.",
+    "vo": "Завари чашку — и почувствуй разницу."
+  }
+}
