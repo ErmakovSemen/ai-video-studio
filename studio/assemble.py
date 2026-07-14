@@ -134,31 +134,96 @@ def _composite(stitched, plan, out_path, captions, words, wd):
     return out_path
 
 
-def assemble(video_paths, prompt, out_path, workdir, progress=None, captions=False):
+def _spoken(words, it):
+    s = " ".join(w for w, ws, we in words if ws < it["end"] and we > it["start"])
+    return s.strip() or "(без слов)"
+
+
+def assemble(video_paths, prompt, out_path, workdir, progress=None, captions=False,
+             style="minimalist Asian ink wash on parchment", max_tries=3):
+    from studio import mvalidate
+    LOG, regens = [], 0
+
     def p(m, pct):
         if progress:
             progress(m, pct)
+
+    def logline(**kw):
+        LOG.append(kw)
+        print("ORCH " + json.dumps(kw, ensure_ascii=False), flush=True)
+
+    def gen(prompt_txt, i, tag):
+        img = os.path.join(workdir, f"broll{i}_{tag}.png")
+        imagegen.generate_image(f"{prompt_txt}, {BROLL_STYLE}", img)
+        return img
+
     os.makedirs(workdir, exist_ok=True)
     p("Нормализую клипы", 6)
     normed = [_normalize(v, workdir, i) for i, v in enumerate(video_paths)]
-    p("Сшиваю с переходами", 22)
+    p("Сшиваю с переходами", 20)
     stitched = _stitch(normed, workdir)
     total = _dur(stitched)
-    p("Распознаю речь", 38)
+    p("Распознаю речь", 32)
     words, transcript, lang = _transcribe(stitched, workdir)
-    p("ИИ планирует вставки", 56)
+    p("ИИ планирует вставки", 44)
     plan = _plan_broll(transcript, prompt, total)
-    p("Генерирую визуал", 70)
+
+    # --- ЦИКЛ 1: генерация каждой вставки с валидацией смысла+стиля ---
     for i, it in enumerate(plan):
-        img = os.path.join(workdir, f"broll{i}.png")
-        try:
-            imagegen.generate_image(f"{it['prompt']}, {BROLL_STYLE}", img)
-            it["img"] = img
-        except Exception:
-            it["img"] = None
+        p(f"Вставка {i+1}/{len(plan)}: генерация+проверка", 44 + int(30 * i / max(1, len(plan))))
+        spoken = _spoken(words, it)
+        cur_prompt = it["prompt"]
+        best_img, best_score = None, -1
+        for attempt in range(1, max_tries + 1):
+            try:
+                img = gen(cur_prompt, i, f"a{attempt}")
+            except Exception as e:
+                logline(insert=i, attempt=attempt, gen_error=str(e)[:80]); continue
+            v = mvalidate.review_image(img, spoken, style)
+            sc = int(v.get("score", 0))
+            logline(insert=i, t=round(it["start"], 1), spoken=spoken[:70], attempt=attempt,
+                    score=sc, ok=bool(v.get("ok")), reason=v.get("reason"), prompt=cur_prompt[:90])
+            if sc > best_score:
+                best_score, best_img = sc, img
+            if v.get("ok"):
+                break
+            if attempt < max_tries:
+                regens += 1
+                cur_prompt = v.get("better_prompt") or cur_prompt
+        it["img"] = best_img
     plan = [it for it in plan if it.get("img")]
-    p("Собираю монтаж", 88)
+
+    p("Собираю монтаж", 78)
     _composite(stitched, plan, out_path, captions, words, workdir)
+
+    # --- ЦИКЛ 2: холистическая проверка склеек (картинки+таймлайны+текст) ---
+    p("Проверяю склейки", 86)
+    items = [{"i": i, "start": it["start"], "end": it["end"], "spoken": _spoken(words, it), "img": it["img"]}
+             for i, it in enumerate(plan)]
+    review = mvalidate.review_cuts(items, style)
+    issues = review.get("issues", []) or []
+    logline(phase="holistic_review", flagged=[{"index": x.get("index"), "reason": x.get("reason")} for x in issues])
+    fixed = False
+    for x in issues:
+        i = x.get("index")
+        if not isinstance(i, int) or i >= len(plan):
+            continue
+        it = plan[i]
+        cur_prompt = x.get("better_prompt") or it["prompt"]
+        try:
+            img = gen(cur_prompt, i, "fix")
+            v = mvalidate.review_image(img, _spoken(words, it), style)
+            regens += 1
+            logline(insert=i, phase="holistic_regen", score=int(v.get("score", 0)),
+                    ok=bool(v.get("ok")), reason=v.get("reason"))
+            it["img"] = img; fixed = True
+        except Exception as e:
+            logline(insert=i, phase="holistic_regen", gen_error=str(e)[:80])
+    if fixed:
+        p("Пересобираю монтаж", 94)
+        _composite(stitched, plan, out_path, captions, words, workdir)
+
     p("Готово", 100)
     return {"duration": round(total, 1), "clips": len(video_paths), "inserts": len(plan),
-            "lang": lang, "plan": [{"t": it["start"], "prompt": it["prompt"]} for it in plan]}
+            "lang": lang, "regens": regens, "log": LOG,
+            "plan": [{"t": it["start"], "prompt": it["prompt"]} for it in plan]}
