@@ -13,8 +13,7 @@ W, H, FPS = 720, 1280, 30
 XF = 0.5                       # длительность перехода между клипами
 OR_KEY = os.getenv("OPENROUTER_API_KEY", "")
 PLAN_MODEL = os.getenv("MONTAGE_LLM", "meta-llama/llama-3.3-70b-instruct")
-BROLL_STYLE = ("clean modern editorial illustration, soft muted colors, minimal, tasteful, "
-               "NO text no letters no words no captions, vertical 9:16 composition")
+BROLL_STYLE = "NO text no letters no words no captions, vertical 9:16 composition, high quality"
 
 
 def _dur(path):
@@ -76,7 +75,10 @@ def _plan_broll(transcript, user_prompt, total):
             "иллюстрацию (B-roll), усиливающую сказанное. Верни ТОЛЬКО JSON-массив объектов "
             "{\"start\": сек, \"end\": сек, \"prompt\": \"короткое ОПИСАНИЕ КАРТИНКИ на английском, "
             "без текста\"}. Правила: 4-7 вставок, каждая 2.5-3.5с, не пересекаются, покрывают "
-            "разные части, start>=1. Учитывай инструкцию пользователя про плотность/стиль/тон.")
+            "разные части, start>=1. Учитывай инструкцию пользователя про плотность/тон. "
+            "ВАЖНО: если пользователь указал визуальный стиль вставок (например «тушь на "
+            "пергаменте», «минимализм», «акварель»), обязательно впиши этот стиль в КАЖДЫЙ "
+            "prompt на английском (напр. 'ink wash on parchment, minimalist').")
         usr = f"ИНСТРУКЦИЯ: {user_prompt or 'сделай живее, добавь уместные вставки'}\n\nТРАНСКРИПТ:\n{transcript}"
         body = {"model": PLAN_MODEL, "messages": [{"role": "system", "content": sys_p},
                                                   {"role": "user", "content": usr}], "temperature": 0.4}
