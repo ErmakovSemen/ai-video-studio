@@ -58,8 +58,10 @@ def _dur(path):
                                  "-of", "default=nk=1:nw=1", path], capture_output=True, text=True).stdout.strip() or 0)
 
 
-def _scene_cuts(path, thr=0.32):
-    """Таймкоды, где в основном видео меняется кадр (склейки/врезки)."""
+def _scene_cuts(path, thr=None):
+    """Таймкоды, где в основном видео меняется кадр (склейки/врезки).
+    Порог чувствительности ниже = ловит больше обрывов (env MONTAGE_SCENE_THR)."""
+    thr = thr if thr is not None else float(os.getenv("MONTAGE_SCENE_THR", "0.12"))
     err = subprocess.run([FF, "-i", path, "-filter:v", f"select='gt(scene,{thr})',metadata=print",
                           "-an", "-f", "null", "-"], capture_output=True, text=True).stderr
     cuts = sorted({round(float(m.group(1)), 2) for m in re.finditer(r"pts_time:([\d.]+)", err)})
@@ -165,7 +167,7 @@ def _plan_broll(transcript, user_prompt, total, cuts=None):
              "prompt": "abstract calm concept illustration"} for i in range(n)]
 
 
-def _composite(stitched, plan, out_path, captions, words, wd, W, H):
+def _composite(stitched, plan, out_path, captions, words, wd, W, H, mode="fullscreen"):
     if not plan:                               # нет безопасных вставок -> отдаём сшитое видео как есть
         if captions and words:
             ass = os.path.join(wd, "caps.ass"); edit.karaoke_ass(words, ass, group=3)
@@ -181,13 +183,18 @@ def _composite(stitched, plan, out_path, captions, words, wd, W, H):
     inputs = ["-i", stitched]
     for it in plan:
         inputs += ["-loop", "1", "-i", it["img"]]
+    if mode == "lower":                        # карточка снизу, спикер сверху виден
+        cw, ch = int(W * 0.92), int(H * 0.40)
+        ox, oy = (W - cw) // 2, H - ch - int(H * 0.05)
+    else:                                      # полноэкранная врезка
+        cw, ch, ox, oy = W, H, 0, 0
     fc, prev = [], "0:v"
     for i, it in enumerate(plan):
         s, e = it["start"], it["end"]
-        fc.append(f"[{i+1}:v]scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},"
+        fc.append(f"[{i+1}:v]scale={cw}:{ch}:force_original_aspect_ratio=increase,crop={cw}:{ch},"
                   f"format=rgba,fade=t=in:st={s:.2f}:d=0.3:alpha=1,fade=t=out:st={e-0.3:.2f}:d=0.3:alpha=1[b{i}]")
     for i, it in enumerate(plan):
-        fc.append(f"[{prev}][b{i}]overlay=0:0:enable='between(t,{it['start']:.2f},{it['end']:.2f})'[v{i}]")
+        fc.append(f"[{prev}][b{i}]overlay={ox}:{oy}:enable='between(t,{it['start']:.2f},{it['end']:.2f})'[v{i}]")
         prev = f"v{i}"
     stage = out_path if not captions else os.path.join(wd, "nocap.mp4")
     subprocess.run([FF, "-y", *inputs, "-filter_complex", ";".join(fc), "-map", f"[{prev}]",
@@ -209,7 +216,8 @@ def _spoken(words, it):
 
 
 def assemble(video_paths, prompt, out_path, workdir, progress=None, captions=False,
-             style="minimalist Asian ink wash on parchment", max_tries=3, aspect="source"):
+             style="minimalist Asian ink wash on parchment", max_tries=3, aspect="source",
+             insert_mode="fullscreen"):
     from studio import mvalidate
     LOG, regens = [], 0
 
@@ -276,7 +284,7 @@ def assemble(video_paths, prompt, out_path, workdir, progress=None, captions=Fal
     plan = [it for it in plan if it.get("img")]
 
     p("Собираю монтаж", 78)
-    _composite(stitched, plan, out_path, captions, words, workdir, W, H)
+    _composite(stitched, plan, out_path, captions, words, workdir, W, H, insert_mode)
 
     # --- ЦИКЛ 2: холистическая проверка склеек (картинки+таймлайны+текст) ---
     p("Проверяю склейки", 86)
@@ -303,7 +311,7 @@ def assemble(video_paths, prompt, out_path, workdir, progress=None, captions=Fal
             logline(insert=i, phase="holistic_regen", gen_error=str(e)[:80])
     if fixed:
         p("Пересобираю монтаж", 94)
-        _composite(stitched, plan, out_path, captions, words, workdir, W, H)
+        _composite(stitched, plan, out_path, captions, words, workdir, W, H, insert_mode)
 
     p("Готово", 100)
     return {"duration": round(total, 1), "clips": len(video_paths), "inserts": len(plan),
