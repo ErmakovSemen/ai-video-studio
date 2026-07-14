@@ -85,6 +85,48 @@ def _filter_plan(plan, cuts, total, min_gap_cut=1.0, min_spacing=4.0):
     return kept
 
 
+def _clean_windows(cuts, total, margin=1.0, minlen=2.2):
+    """Спокойные окна между склейками исходника (с отступом от них)."""
+    pts = [0.0] + list(cuts) + [total]
+    wins = []
+    for a, b in zip(pts, pts[1:]):
+        s, e = a + margin, b - margin
+        if e - s >= minlen:
+            wins.append((round(s, 2), round(e, 2)))
+    return wins
+
+
+def _place_even(plan, windows, total, dur=3.0, target=5):
+    """Разместить вставки в чистых окнах РАВНОМЕРНО по таймлайну (начало/середина/конец).
+    Концепт берётся у ближайшей LLM-вставки (визуал под смысл этого места)."""
+    if not windows:
+        return []
+    n = min(target, len(windows))
+    targets = [total * (i + 1) / (n + 1) for i in range(n)]     # равные точки по всему видео
+    used, out = set(), []
+    for tt in targets:
+        best, bd = None, 1e9
+        for idx, (ws, we) in enumerate(windows):
+            if idx in used:
+                continue
+            d = 0 if ws <= tt <= we else min(abs(tt - ws), abs(tt - we))
+            if d < bd:
+                bd, best = d, idx
+        if best is None:
+            continue
+        used.add(best)
+        ws, we = windows[best]
+        s = min(max(ws, tt - dur / 2), max(ws, we - dur))
+        e = min(s + dur, we)
+        mid = (s + e) / 2
+        near = min(plan, key=lambda it: abs(it["start"] - mid)) if plan else None
+        out.append({"start": round(s, 2), "end": round(e, 2),
+                    "prompt": (near or {}).get("prompt", "minimalist concept illustration"),
+                    "concept": (near or {}).get("concept", "")})
+    out.sort(key=lambda x: x["start"])
+    return out
+
+
 def _normalize(src, wd, i, W, H):
     out = os.path.join(wd, f"norm{i}.mp4")
     # fill+crop по центру -> заполняем холст без чёрных полос (в т.ч. 16:9 -> 9:16)
@@ -251,12 +293,13 @@ def assemble(video_paths, prompt, out_path, workdir, progress=None, captions=Fal
     p("Распознаю речь", 32)
     words, transcript, lang = _transcribe(stitched, workdir)
     cuts = _scene_cuts(stitched)
-    logline(scene_cuts=cuts)
+    windows = _clean_windows(cuts, total)
+    logline(scene_cuts=cuts, clean_windows=windows)
     p("ИИ планирует вставки", 44)
     plan = _plan_broll(transcript, prompt, total, cuts)
-    plan = _filter_plan(plan, cuts, total)
-    logline(plan_after_filter=[{"t": round(it["start"], 1),
-                                "concept": it.get("concept") or it["prompt"][:30]} for it in plan])
+    plan = _place_even(plan, windows, total)          # равномерно по таймлайну, только в чистых окнах
+    logline(plan_placed=[{"t": round(it["start"], 1),
+                          "concept": it.get("concept") or it["prompt"][:30]} for it in plan])
 
     # --- ЦИКЛ 1: генерация каждой вставки с валидацией смысла+стиля ---
     for i, it in enumerate(plan):
