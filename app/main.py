@@ -163,6 +163,11 @@ def connect_page(platform: str):
     return (Path(__file__).parent / "static" / "connect.html").read_text(encoding="utf-8")
 
 
+@app.get("/montage", response_class=HTMLResponse)
+def montage_page():
+    return (Path(__file__).parent / "static" / "montage.html").read_text(encoding="utf-8")
+
+
 @app.get("/board", response_class=HTMLResponse)
 def board_page():
     return _board_html()
@@ -468,6 +473,38 @@ def api_ai_montage(assets: str = Form(...), prompt: str = Form(...)):
             JOBS[jid].update(status="error", error=str(e)[:300])
     threading.Thread(target=_run, args=(), daemon=True).start()
     return {"job_id": jid}
+
+
+@app.post("/api/montage/enrich")
+async def api_montage_enrich(files: list[UploadFile] = File(...),
+                             prompt: str = Form(""), captions: str = Form("0")):
+    """Нейромонтаж: несколько видео + промт -> сшивка + B-roll. Возвращает job_id."""
+    if not files:
+        raise HTTPException(400, "нет файлов")
+    jid = uuid.uuid4().hex[:12]
+    wd = WORK / f"montage_{jid}"; wd.mkdir(parents=True, exist_ok=True)
+    paths = []
+    for i, f in enumerate(files):
+        ext = (os.path.splitext(f.filename or "")[1] or ".mp4")[:8]
+        p = wd / f"in{i}{ext}"
+        p.write_bytes(await f.read())
+        paths.append(str(p))
+    cap = str(captions).lower() in ("1", "true", "on", "yes")
+    JOBS[jid] = {"status": "running", "stage": "старт", "progress": 0}
+
+    def _run():
+        try:
+            from studio import assemble
+            def prog(msg, pct):
+                JOBS[jid].update(stage=msg, progress=pct)
+            out = str(OUT / f"{jid}.mp4")
+            res = assemble.assemble(paths, prompt, out, str(wd), progress=prog, captions=cap)
+            JOBS[jid].update(status="done", info=res, video=f"/outputs/{jid}.mp4", progress=100)
+        except Exception as e:
+            import traceback; traceback.print_exc()
+            JOBS[jid].update(status="error", error=str(e)[:300])
+    threading.Thread(target=_run, daemon=True).start()
+    return {"job_id": jid, "clips": len(paths)}
 
 
 @app.post("/api/publish_file")

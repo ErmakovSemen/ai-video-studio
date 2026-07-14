@@ -1,0 +1,104 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Нейромонтаж</title>
+<style>
+:root{--bg:#0e0e12;--pan:#16161c;--pan2:#1c1c24;--bd:#262630;--txt:#e8e8ee;--mut:#8b8b99;--acc:#ff7a45;--ok:#5dca8a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:-apple-system,Segoe UI,Roboto,sans-serif;padding:22px;max-width:760px;margin:0 auto}
+h1{font-size:20px;margin:0 0 4px}.sub{color:var(--mut);font-size:13px;margin:0 0 20px}
+.card{background:var(--pan);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:16px}
+.drop{border:1.5px dashed #3a3a48;border-radius:12px;padding:26px;text-align:center;color:var(--mut);cursor:pointer;transition:.15s}
+.drop:hover,.drop.over{border-color:var(--acc);color:var(--txt);background:var(--pan2)}
+.files{list-style:none;padding:0;margin:12px 0 0}
+.files li{display:flex;align-items:center;gap:10px;background:var(--pan2);border:1px solid var(--bd);border-radius:9px;padding:8px 11px;margin-bottom:7px;font-size:13px}
+.files .idx{width:22px;height:22px;border-radius:6px;background:#2a2a34;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--mut);flex-shrink:0}
+.files .nm{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.files .rm{color:var(--mut);cursor:pointer;font-size:16px}.files .rm:hover{color:#e2554a}
+label{display:block;font-size:13px;color:var(--mut);margin:0 0 6px}
+textarea{width:100%;min-height:74px;background:var(--pan2);border:1px solid var(--bd);border-radius:10px;color:var(--txt);padding:11px;font:inherit;font-size:14px;resize:vertical}
+.row{display:flex;align-items:center;gap:9px;margin-top:12px;font-size:13px;color:var(--mut)}
+input[type=checkbox]{width:17px;height:17px;accent-color:var(--acc)}
+button{width:100%;margin-top:16px;background:var(--acc);color:#1a0e08;border:0;border-radius:11px;padding:14px;font-size:15px;font-weight:600;cursor:pointer}
+button:disabled{opacity:.5;cursor:default}
+.prog{margin-top:14px;display:none}.prog.on{display:block}
+.bar{height:8px;background:var(--pan2);border-radius:6px;overflow:hidden}.bar>i{display:block;height:100%;width:0;background:var(--acc);transition:.4s}
+.stage{font-size:13px;color:var(--mut);margin-top:8px}
+.res{display:none;margin-top:6px}.res.on{display:block}
+video{width:100%;border-radius:12px;background:#000;margin-top:6px}
+.plan{font-size:12px;color:var(--mut);margin-top:10px;line-height:1.6}
+.dl{display:inline-block;margin-top:10px;color:var(--acc);text-decoration:none;font-size:14px}
+.err{color:#e2554a;font-size:13px;margin-top:10px}
+.hint{font-size:12px;color:#6b6b78;margin-top:4px}
+</style></head><body>
+<h1>✂️ Нейромонтаж</h1>
+<p class="sub">Загрузи несколько кусочков видео → ИИ сошьёт их, распознает речь и добавит уместные B-roll вставки под сказанное.</p>
+
+<div class="card">
+  <div class="drop" id="drop">📎 Перетащи видео сюда или нажми, чтобы выбрать<div class="hint">mp4 / mov / webm · порядок = порядок склейки</div></div>
+  <input type="file" id="file" accept="video/*" multiple style="display:none">
+  <ul class="files" id="list"></ul>
+</div>
+
+<div class="card">
+  <label>Инструкция для монтажа (промт)</label>
+  <textarea id="prompt" placeholder="Напр.: сделай динамичнее, добавь визуальные вставки под ключевые мысли; тон спокойный, вставки не частые"></textarea>
+  <div class="row"><input type="checkbox" id="caps"><label for="caps" style="margin:0">Добавить субтитры (караоке) — выключи, если у видео уже есть свои</label></div>
+  <button id="go" disabled>🎬 Нейромонтаж</button>
+  <div class="prog" id="prog"><div class="bar"><i id="fill"></i></div><div class="stage" id="stage">…</div></div>
+  <div class="err" id="err"></div>
+</div>
+
+<div class="card res" id="res">
+  <label>Результат</label>
+  <video id="vid" controls playsinline></video>
+  <a class="dl" id="dl" download>⬇ Скачать</a>
+  <div class="plan" id="planbox"></div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+let files=[];
+const drop=$('#drop'),input=$('#file'),list=$('#list'),go=$('#go');
+drop.onclick=()=>input.click();
+['dragover','dragenter'].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.add('over')}));
+['dragleave','drop'].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.remove('over')}));
+drop.addEventListener('drop',ev=>addFiles(ev.dataTransfer.files));
+input.onchange=()=>addFiles(input.files);
+function addFiles(fl){for(const f of fl){if(f.type.startsWith('video')||/\.(mp4|mov|webm|mkv|avi)$/i.test(f.name))files.push(f)}render()}
+function render(){
+  list.innerHTML=files.map((f,i)=>`<li><span class="idx">${i+1}</span><span class="nm">${f.name}</span><span class="rm" data-i="${i}">✕</span></li>`).join('');
+  list.querySelectorAll('.rm').forEach(x=>x.onclick=()=>{files.splice(+x.dataset.i,1);render()});
+  go.disabled=files.length===0;
+}
+go.onclick=async()=>{
+  if(!files.length)return;
+  go.disabled=true;$('#err').textContent='';$('#res').classList.remove('on');
+  $('#prog').classList.add('on');setBar('старт',3);
+  const fd=new FormData();
+  files.forEach(f=>fd.append('files',f));
+  fd.append('prompt',$('#prompt').value);
+  fd.append('captions',$('#caps').checked?'1':'0');
+  let jid;
+  try{const r=await fetch('/api/montage/enrich',{method:'POST',body:fd});const j=await r.json();
+    if(!r.ok){throw new Error(j.detail||'ошибка загрузки')}jid=j.job_id;}
+  catch(e){return fail(e.message)}
+  poll(jid);
+};
+function setBar(msg,pct){$('#fill').style.width=(pct||0)+'%';$('#stage').textContent=msg+' · '+(pct||0)+'%';}
+function fail(m){$('#err').textContent='Ошибка: '+m;go.disabled=false;$('#prog').classList.remove('on');}
+async function poll(jid){
+  try{const r=await fetch('/api/jobs/'+jid);const j=await r.json();
+    if(j.status==='running'){setBar(j.stage||'обработка',j.progress||0);return setTimeout(()=>poll(jid),1500);}
+    if(j.status==='error')return fail(j.error||'сбой монтажа');
+    if(j.status==='done'){
+      setBar('готово',100);
+      $('#vid').src=j.video+'?t='+Date.now();$('#dl').href=j.video;
+      const p=(j.info&&j.info.plan)||[];
+      $('#planbox').innerHTML=`Клипов: ${j.info.clips} · Длина: ${j.info.duration}с · Вставок: ${j.info.inserts}`+
+        (p.length?'<br>'+p.map(x=>`• ${x.t}с — ${x.prompt}`).join('<br>'):'');
+      $('#res').classList.add('on');go.disabled=false;
+      setTimeout(()=>$('#prog').classList.remove('on'),1200);
+    }
+  }catch(e){setTimeout(()=>poll(jid),2000);}
+}
+</script></body></html>
