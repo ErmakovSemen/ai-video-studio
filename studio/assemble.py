@@ -173,6 +173,26 @@ def _transcribe(path, wd):
     return words, "\n".join(lines), (info.language or "ru")
 
 
+def _concept_for(spoken, style, user_prompt):
+    """Точный концепт картинки под то, что говорится в окне вставки (для максимального качества)."""
+    if not OR_KEY or not spoken or spoken == "(без слов)":
+        return None
+    sysp = ("Дай ОДНО короткое английское описание картинки-иллюстрации (B-roll) под фразу. "
+            f"Строго в стиле: {style}. Без текста/букв на картинке. Учитывай правильные термины "
+            "(исправляй ослышки ASR). Верни ТОЛЬКО строку-промт, без кавычек.")
+    usr = f"Фраза из видео: «{spoken}». Инструкция: {user_prompt or ''}"
+    body = {"model": PLAN_MODEL, "temperature": 0.3, "messages": [
+        {"role": "system", "content": sysp}, {"role": "user", "content": usr}]}
+    try:
+        req = urllib.request.Request("https://openrouter.ai/api/v1/chat/completions",
+                                     data=json.dumps(body).encode(),
+                                     headers={"Authorization": f"Bearer {OR_KEY}", "Content-Type": "application/json"})
+        t = json.load(urllib.request.urlopen(req, timeout=60))["choices"][0]["message"]["content"].strip()
+        return t.strip().strip('"')[:200] or None
+    except Exception:
+        return None
+
+
 def _plan_broll(transcript, user_prompt, total, cuts=None):
     """LLM chooses B-roll insertion points. Falls back to even spacing if unavailable."""
     if OR_KEY:
@@ -304,8 +324,11 @@ def assemble(video_paths, prompt, out_path, workdir, progress=None, captions=Fal
     p("ИИ планирует вставки", 44)
     plan = _plan_broll(transcript, prompt, total, cuts)
     plan = _place_even(plan, windows, total)          # равномерно по таймлайну, только в чистых окнах
-    logline(plan_placed=[{"t": round(it["start"], 1),
-                          "concept": it.get("concept") or it["prompt"][:30]} for it in plan])
+    for it in plan:                                   # концепт точно под речь в окне вставки
+        c = _concept_for(_spoken(words, it), style, prompt)
+        if c:
+            it["prompt"], it["concept"] = c, c
+    logline(plan_refined=[{"t": round(it["start"], 1), "prompt": it["prompt"][:60]} for it in plan])
 
     # --- ЦИКЛ 1: генерация каждой вставки с валидацией смысла+стиля ---
     for i, it in enumerate(plan):
