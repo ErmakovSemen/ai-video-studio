@@ -5,7 +5,7 @@
 Собрано целиком на нашем стеке (ffmpeg + faster-whisper + imagegen) + один LLM-вызов
 (OpenRouter) для плана вставок. progress(msg, pct) — колбэк для UI.
 """
-import os, json, subprocess, urllib.request
+import os, re, json, subprocess, urllib.request
 from studio import edit, imagegen
 
 FF = edit.FF
@@ -58,10 +58,36 @@ def _dur(path):
                                  "-of", "default=nk=1:nw=1", path], capture_output=True, text=True).stdout.strip() or 0)
 
 
+def _scene_cuts(path, thr=0.32):
+    """Таймкоды, где в основном видео меняется кадр (склейки/врезки)."""
+    err = subprocess.run([FF, "-i", path, "-filter:v", f"select='gt(scene,{thr})',metadata=print",
+                          "-an", "-f", "null", "-"], capture_output=True, text=True).stderr
+    cuts = sorted({round(float(m.group(1)), 2) for m in re.finditer(r"pts_time:([\d.]+)", err)})
+    return cuts
+
+
+def _filter_plan(plan, cuts, total, min_gap_cut=1.0, min_spacing=4.0):
+    """Убрать вставки вплотную к склейкам исходника и слишком частые; обрезать по склейкам."""
+    plan = sorted(plan, key=lambda x: x["start"])
+    kept = []
+    for it in plan:
+        s, e = it["start"], it["end"]
+        if any(s - min_gap_cut < c < e + min_gap_cut for c in cuts):   # рядом со склейкой/поверх неё
+            continue
+        if kept and s - kept[-1]["start"] < min_spacing:               # слишком часто
+            continue
+        nxt = min([c for c in cuts if c > s] + [total])                # не заходить за следующую склейку
+        it["end"] = min(e, nxt - 0.3, total - 0.1)
+        if it["end"] - s >= 1.5:
+            kept.append(it)
+    return kept
+
+
 def _normalize(src, wd, i, W, H):
     out = os.path.join(wd, f"norm{i}.mp4")
-    vf = (f"scale={W}:{H}:force_original_aspect_ratio=decrease,"
-          f"pad={W}:{H}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps={FPS}")
+    # fill+crop по центру -> заполняем холст без чёрных полос (в т.ч. 16:9 -> 9:16)
+    vf = (f"scale={W}:{H}:force_original_aspect_ratio=increase,"
+          f"crop={W}:{H},setsar=1,fps={FPS}")
     subprocess.run([FF, "-y", "-i", src, "-vf", vf, "-c:v", "libx264", "-preset", "medium",
                     "-pix_fmt", "yuv420p", "-c:a", "aac", "-ar", "48000", "-ac", "2", out],
                    capture_output=True)
@@ -103,11 +129,14 @@ def _transcribe(path, wd):
     return words, "\n".join(lines), (info.language or "ru")
 
 
-def _plan_broll(transcript, user_prompt, total):
+def _plan_broll(transcript, user_prompt, total, cuts=None):
     """LLM chooses B-roll insertion points. Falls back to even spacing if unavailable."""
     if OR_KEY:
         sys_p = _load_sys()
-        usr = f"ИНСТРУКЦИЯ: {user_prompt or 'сделай живее, добавь уместные вставки'}\n\nТРАНСКРИПТ:\n{transcript}"
+        cuts_s = ", ".join(f"{c:.1f}" for c in (cuts or [])) or "нет"
+        usr = (f"ИНСТРУКЦИЯ: {user_prompt or 'сделай живее, добавь уместные вставки'}\n\n"
+               f"СКЛЕЙКИ ОСНОВНОГО ВИДЕО (сек, не ставь вставки вплотную к ним и не поверх): {cuts_s}\n\n"
+               f"ТРАНСКРИПТ:\n{transcript}")
         body = {"model": PLAN_MODEL, "messages": [{"role": "system", "content": sys_p},
                                                   {"role": "user", "content": usr}], "temperature": 0.4}
         try:
@@ -137,6 +166,18 @@ def _plan_broll(transcript, user_prompt, total):
 
 
 def _composite(stitched, plan, out_path, captions, words, wd, W, H):
+    if not plan:                               # нет безопасных вставок -> отдаём сшитое видео как есть
+        if captions and words:
+            ass = os.path.join(wd, "caps.ass"); edit.karaoke_ass(words, ass, group=3)
+            ass_p = ass.replace("\\", "/").replace(":", "\\:")
+            fonts = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "assets", "fonts")
+            subprocess.run([FF, "-y", "-i", stitched, "-vf", f"ass={ass_p}:fontsdir='{fonts}'",
+                            "-c:a", "copy", "-c:v", "libx264", "-preset", "medium", "-pix_fmt", "yuv420p", out_path],
+                           capture_output=True)
+        else:
+            subprocess.run([FF, "-y", "-i", stitched, "-c:v", "libx264", "-preset", "medium",
+                            "-pix_fmt", "yuv420p", "-c:a", "aac", out_path], capture_output=True)
+        return out_path
     inputs = ["-i", stitched]
     for it in plan:
         inputs += ["-loop", "1", "-i", it["img"]]
@@ -168,7 +209,7 @@ def _spoken(words, it):
 
 
 def assemble(video_paths, prompt, out_path, workdir, progress=None, captions=False,
-             style="minimalist Asian ink wash on parchment", max_tries=3):
+             style="minimalist Asian ink wash on parchment", max_tries=3, aspect="source"):
     from studio import mvalidate
     LOG, regens = [], 0
 
@@ -186,7 +227,12 @@ def assemble(video_paths, prompt, out_path, workdir, progress=None, captions=Fal
         return img
 
     os.makedirs(workdir, exist_ok=True)
-    W, H = _canvas(video_paths[0])          # аспект как у оригинала — без леттербокса
+    if aspect == "9:16":
+        W, H = 720, 1280
+    elif aspect == "16:9":
+        W, H = 1280, 720
+    else:
+        W, H = _canvas(video_paths[0])      # аспект как у оригинала
     bstyle = _broll_style(W, H)
     logline(canvas=f"{W}x{H}", style=style)
     p("Нормализую клипы", 6)
@@ -196,8 +242,13 @@ def assemble(video_paths, prompt, out_path, workdir, progress=None, captions=Fal
     total = _dur(stitched)
     p("Распознаю речь", 32)
     words, transcript, lang = _transcribe(stitched, workdir)
+    cuts = _scene_cuts(stitched)
+    logline(scene_cuts=cuts)
     p("ИИ планирует вставки", 44)
-    plan = _plan_broll(transcript, prompt, total)
+    plan = _plan_broll(transcript, prompt, total, cuts)
+    plan = _filter_plan(plan, cuts, total)
+    logline(plan_after_filter=[{"t": round(it["start"], 1),
+                                "concept": it.get("concept") or it["prompt"][:30]} for it in plan])
 
     # --- ЦИКЛ 1: генерация каждой вставки с валидацией смысла+стиля ---
     for i, it in enumerate(plan):
