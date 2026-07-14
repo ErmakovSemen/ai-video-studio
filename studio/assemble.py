@@ -9,11 +9,48 @@ import os, json, subprocess, urllib.request
 from studio import edit, imagegen
 
 FF = edit.FF
-W, H, FPS = 720, 1280, 30
+FPS = 30
 XF = 0.5                       # длительность перехода между клипами
 OR_KEY = os.getenv("OPENROUTER_API_KEY", "")
 PLAN_MODEL = os.getenv("MONTAGE_LLM", "meta-llama/llama-3.3-70b-instruct")
-BROLL_STYLE = "NO text no letters no words no captions, vertical 9:16 composition, high quality"
+_DOC = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                    "docs", "montage_system_prompt.md")
+
+
+def _broll_style(W, H):
+    orient = "horizontal 16:9" if W > H else "vertical 9:16"
+    return f"NO text no letters no words no captions, {orient} composition, high quality"
+
+
+def _canvas(src):
+    """Холст = аспект первого клипа (с учётом поворота), длинная сторона <= 1280. Без леттербокса."""
+    out = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0",
+                          "-show_entries", "stream=width,height:stream_side_data=rotation",
+                          "-of", "json", src], capture_output=True, text=True).stdout
+    st = json.loads(out)["streams"][0]
+    w, h = int(st["width"]), int(st["height"])
+    for sd in st.get("side_data_list", []):
+        if abs(int(sd.get("rotation", 0))) % 180 == 90:
+            w, h = h, w
+    sc = min(1.0, 1280 / max(w, h))
+    return max(2, int(round(w * sc / 2)) * 2), max(2, int(round(h * sc / 2)) * 2)
+
+
+def _load_sys():
+    """Системный промт планировщика — из живого документа docs/montage_system_prompt.md."""
+    try:
+        txt = open(_DOC, encoding="utf-8").read()
+        a = txt.index("## SYSTEM PROMPT")
+        a = txt.index("\n", a) + 1
+        b = txt.index("## VALIDATOR PROMPT")
+        seg = txt[a:b].strip()
+        if len(seg) > 100:
+            return seg
+    except Exception:
+        pass
+    return ("Ты — ИИ-режиссёр монтажа. Выбери 4-7 моментов для B-roll под сказанное. Исправляй "
+            "ошибки терминов из ASR. Не ставь вставки поверх существующей графики. Верни ТОЛЬКО "
+            "JSON-массив [{\"start\":сек,\"end\":сек,\"prompt\":\"english image prompt in the style\"}].")
 
 
 def _dur(path):
@@ -21,7 +58,7 @@ def _dur(path):
                                  "-of", "default=nk=1:nw=1", path], capture_output=True, text=True).stdout.strip() or 0)
 
 
-def _normalize(src, wd, i):
+def _normalize(src, wd, i, W, H):
     out = os.path.join(wd, f"norm{i}.mp4")
     vf = (f"scale={W}:{H}:force_original_aspect_ratio=decrease,"
           f"pad={W}:{H}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps={FPS}")
@@ -69,16 +106,7 @@ def _transcribe(path, wd):
 def _plan_broll(transcript, user_prompt, total):
     """LLM chooses B-roll insertion points. Falls back to even spacing if unavailable."""
     if OR_KEY:
-        sys_p = (
-            "Ты — ассистент видеомонтажёра. На вход — транскрипт с таймкодами (в секундах) и "
-            "инструкция пользователя. Выбери моменты, где полезно вставить полноэкранную "
-            "иллюстрацию (B-roll), усиливающую сказанное. Верни ТОЛЬКО JSON-массив объектов "
-            "{\"start\": сек, \"end\": сек, \"prompt\": \"короткое ОПИСАНИЕ КАРТИНКИ на английском, "
-            "без текста\"}. Правила: 4-7 вставок, каждая 2.5-3.5с, не пересекаются, покрывают "
-            "разные части, start>=1. Учитывай инструкцию пользователя про плотность/тон. "
-            "ВАЖНО: если пользователь указал визуальный стиль вставок (например «тушь на "
-            "пергаменте», «минимализм», «акварель»), обязательно впиши этот стиль в КАЖДЫЙ "
-            "prompt на английском (напр. 'ink wash on parchment, minimalist').")
+        sys_p = _load_sys()
         usr = f"ИНСТРУКЦИЯ: {user_prompt or 'сделай живее, добавь уместные вставки'}\n\nТРАНСКРИПТ:\n{transcript}"
         body = {"model": PLAN_MODEL, "messages": [{"role": "system", "content": sys_p},
                                                   {"role": "user", "content": usr}], "temperature": 0.4}
@@ -108,7 +136,7 @@ def _plan_broll(transcript, user_prompt, total):
              "prompt": "abstract calm concept illustration"} for i in range(n)]
 
 
-def _composite(stitched, plan, out_path, captions, words, wd):
+def _composite(stitched, plan, out_path, captions, words, wd, W, H):
     inputs = ["-i", stitched]
     for it in plan:
         inputs += ["-loop", "1", "-i", it["img"]]
@@ -154,12 +182,15 @@ def assemble(video_paths, prompt, out_path, workdir, progress=None, captions=Fal
 
     def gen(prompt_txt, i, tag):
         img = os.path.join(workdir, f"broll{i}_{tag}.png")
-        imagegen.generate_image(f"{prompt_txt}, {BROLL_STYLE}", img)
+        imagegen.generate_image(f"{prompt_txt}, {bstyle}", img)
         return img
 
     os.makedirs(workdir, exist_ok=True)
+    W, H = _canvas(video_paths[0])          # аспект как у оригинала — без леттербокса
+    bstyle = _broll_style(W, H)
+    logline(canvas=f"{W}x{H}", style=style)
     p("Нормализую клипы", 6)
-    normed = [_normalize(v, workdir, i) for i, v in enumerate(video_paths)]
+    normed = [_normalize(v, workdir, i, W, H) for i, v in enumerate(video_paths)]
     p("Сшиваю с переходами", 20)
     stitched = _stitch(normed, workdir)
     total = _dur(stitched)
@@ -194,7 +225,7 @@ def assemble(video_paths, prompt, out_path, workdir, progress=None, captions=Fal
     plan = [it for it in plan if it.get("img")]
 
     p("Собираю монтаж", 78)
-    _composite(stitched, plan, out_path, captions, words, workdir)
+    _composite(stitched, plan, out_path, captions, words, workdir, W, H)
 
     # --- ЦИКЛ 2: холистическая проверка склеек (картинки+таймлайны+текст) ---
     p("Проверяю склейки", 86)
@@ -221,7 +252,7 @@ def assemble(video_paths, prompt, out_path, workdir, progress=None, captions=Fal
             logline(insert=i, phase="holistic_regen", gen_error=str(e)[:80])
     if fixed:
         p("Пересобираю монтаж", 94)
-        _composite(stitched, plan, out_path, captions, words, workdir)
+        _composite(stitched, plan, out_path, captions, words, workdir, W, H)
 
     p("Готово", 100)
     return {"duration": round(total, 1), "clips": len(video_paths), "inserts": len(plan),
