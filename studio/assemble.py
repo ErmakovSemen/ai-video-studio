@@ -209,7 +209,7 @@ def _plan_broll(transcript, user_prompt, total, cuts=None):
              "prompt": "abstract calm concept illustration"} for i in range(n)]
 
 
-def _composite(stitched, plan, out_path, captions, words, wd, W, H, mode="fullscreen"):
+def _composite(stitched, plan, out_path, captions, words, wd, W, H, mode="fullscreen", avoid_bands=None):
     if not plan:                               # нет безопасных вставок -> отдаём сшитое видео как есть
         if captions and words:
             ass = os.path.join(wd, "caps.ass"); edit.karaoke_ass(words, ass, group=3)
@@ -225,17 +225,23 @@ def _composite(stitched, plan, out_path, captions, words, wd, W, H, mode="fullsc
     inputs = ["-i", stitched]
     for it in plan:
         inputs += ["-loop", "1", "-i", it["img"]]
-    if mode == "lower":                        # карточка снизу, спикер сверху виден
-        cw, ch = int(W * 0.92), int(H * 0.40)
-        ox, oy = (W - cw) // 2, H - ch - int(H * 0.05)
-    else:                                      # полноэкранная врезка
-        cw, ch, ox, oy = W, H, 0, 0
+    def _pos(it):                              # позиция карточки для КОНКРЕТНОЙ вставки
+        if mode != "lower":
+            return W, H, 0, 0
+        occ = set(it.get("avoid") or avoid_bands or [])
+        ch, cw = int(H * 0.33), int(W * 0.92)
+        ox = (W - cw) // 2
+        ymap = {"bottom": H - ch - int(H * 0.04), "middle": (H - ch) // 2, "top": int(H * 0.04)}
+        band = next((b for b in ("bottom", "middle", "top") if b not in occ), None)
+        return (W, H, 0, 0) if band is None else (cw, ch, ox, ymap[band])   # всё занято -> полноэкранно
     fc, prev = [], "0:v"
     for i, it in enumerate(plan):
         s, e = it["start"], it["end"]
+        cw, ch, ox, oy = _pos(it); it["_pos"] = (cw, ch, ox, oy)
         fc.append(f"[{i+1}:v]scale={cw}:{ch}:force_original_aspect_ratio=increase,crop={cw}:{ch},"
                   f"format=rgba,fade=t=in:st={s:.2f}:d=0.3:alpha=1,fade=t=out:st={e-0.3:.2f}:d=0.3:alpha=1[b{i}]")
     for i, it in enumerate(plan):
+        cw, ch, ox, oy = it["_pos"]
         fc.append(f"[{prev}][b{i}]overlay={ox}:{oy}:enable='between(t,{it['start']:.2f},{it['end']:.2f})'[v{i}]")
         prev = f"v{i}"
     stage = out_path if not captions else os.path.join(wd, "nocap.mp4")
@@ -326,6 +332,15 @@ def assemble(video_paths, prompt, out_path, workdir, progress=None, captions=Fal
         it["img"] = best_img
     plan = [it for it in plan if it.get("img")]
 
+    if insert_mode == "lower":
+        p("Vision: графика в кадре", 76)
+        try:
+            from studio import vgraphics
+            for it in plan:
+                it["avoid"] = vgraphics.detect_at(stitched, (it["start"] + it["end"]) / 2, workdir)
+            logline(insert_avoid=[{"t": it["start"], "avoid": it.get("avoid")} for it in plan])
+        except Exception as e:
+            logline(graphics_error=str(e)[:80])
     p("Собираю монтаж", 78)
     _composite(stitched, plan, out_path, captions, words, workdir, W, H, insert_mode)
 
