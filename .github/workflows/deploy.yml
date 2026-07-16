@@ -28,4 +28,4 @@ jobs:
         run: |
           code=$(curl -sS -o /dev/null -w "%{http_code}" "${{ secrets.RENDER_DEPLOY_HOOK }}")
           echo "Render deploy hook responded: $code"
-          [ "$code" = "200" ] || [ "$code" = "201" ] || { echo "deploy trigger failed"; exit 1; }
+          [ "$code" = "200" ] || [ "$code" = "201" ] || [ "$code" = "202" ] || { echo "deploy trigger failed"; exit 1; }
