@@ -1,0 +1,52 @@
+name: Deploy to VPS
+
+# Deploys to the Timeweb (Amsterdam) VPS instead of Render.
+# Pulls latest master on the server, rebuilds the Docker image, restarts the container.
+# Secrets/data live in /opt/prometey/data and /opt/prometey/.env.prod on the server
+# (not in this repo) and are left untouched by the deploy.
+
+on:
+  push:
+    branches: [master]
+    paths-ignore:
+      - "content.json"
+      - "board.json"
+      - "scripts/autopost_state.json"
+      - "**.md"
+      - "venture-agt/**"
+  workflow_dispatch:
+
+concurrency:
+  group: vps-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy over SSH
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+
+          # Ship a fresh source tree (excluding secrets/data, which live only on the server)
+          tar -czf /tmp/app.tar.gz --exclude='.git' --exclude='data' .
+          scp -i ~/.ssh/deploy_key /tmp/app.tar.gz "root@${VPS_HOST}:/opt/prometey/app.tar.gz"
+
+          ssh -i ~/.ssh/deploy_key "root@${VPS_HOST}" '
+            set -e
+            cd /opt/prometey
+            mkdir -p /tmp/deploy_x
+            tar -xzf app.tar.gz -C /tmp/deploy_x
+            rsync -a --delete --exclude="data" --exclude=".env.prod" /tmp/deploy_x/ /opt/prometey/
+            rm -rf /tmp/deploy_x app.tar.gz
+            docker compose build
+            docker compose up -d
+            docker image prune -f
+          '

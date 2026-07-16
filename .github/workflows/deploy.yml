@@ -1,19 +1,11 @@
 name: Deploy to Render
 
-# Reliable auto-deploy: Render's own GitHub webhook ("On Commit") was flaky, so we
-# disabled it and trigger the deploy from a GitHub Action instead — fires on every code
-# push to master and curls Render's Deploy Hook (stored as the RENDER_DEPLOY_HOOK secret).
-# Board/state/docs commits are ignored so board-sync and autopost don't redeploy the app.
+# SUPERSEDED (2026-07-17): moved off Render to a Timeweb VPS (Amsterdam) — see
+# deploy-vps.yml. Render blocked OpenRouter from its own network in some tests and
+# the free tier couldn't handle whisper/ffmpeg montage jobs. Kept as workflow_dispatch
+# only (no auto-trigger) in case we ever need to fail back to Render manually.
 
 on:
-  push:
-    branches: [master]
-    paths-ignore:
-      - "content.json"
-      - "board.json"
-      - "scripts/autopost_state.json"
-      - "**.md"
-      - "venture-agt/**"
   workflow_dispatch:
 
 concurrency:
