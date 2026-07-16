@@ -119,6 +119,7 @@ app.mount("/outputs", StaticFiles(directory=str(OUT)), name="outputs")
 MEDIA = ROOT / "media"; MEDIA.mkdir(exist_ok=True)
 app.mount("/media", StaticFiles(directory=str(MEDIA)), name="media")
 JOBS: dict[str, dict] = {}
+HEAVY_JOB_LOCK = threading.Semaphore(int(os.getenv("HEAVY_JOB_CONCURRENCY", "1")))
 
 
 def _credits():
@@ -351,16 +352,19 @@ def _run(jid: str, scenario: dict, draft: bool, polish: bool = True, music: str 
     wd = str(WORK / jid)
     if image_model:
         imagegen.IMAGE_MODEL = image_model
-    try:
-        log = story.build(scenario, out, wd, base_dir=str(ROOT), draft=draft,
-                          polish=polish, music=music, gen_stills=gen_stills,
-                          stills_dir=stills_dir, model_path=hf_model_path)
-        from studio.host import upload_best_effort
-        url = upload_best_effort(out)          # durable mirror so the agent can fetch it
-        JOBS[jid].update(status="done", info=log, video=f"/outputs/{jid}.mp4", url=url)
-    except Exception as e:
-        import traceback; traceback.print_exc()
-        JOBS[jid].update(status="error", error=str(e)[:300])
+    JOBS[jid]["status"] = "queued"
+    with HEAVY_JOB_LOCK:
+        JOBS[jid]["status"] = "running"
+        try:
+            log = story.build(scenario, out, wd, base_dir=str(ROOT), draft=draft,
+                              polish=polish, music=music, gen_stills=gen_stills,
+                              stills_dir=stills_dir, model_path=hf_model_path)
+            from studio.host import upload_best_effort
+            url = upload_best_effort(out)          # durable mirror so the agent can fetch it
+            JOBS[jid].update(status="done", info=log, video=f"/outputs/{jid}.mp4", url=url)
+        except Exception as e:
+            import traceback; traceback.print_exc()
+            JOBS[jid].update(status="error", error=str(e)[:300])
 
 
 @app.get("/api/image-models")
@@ -462,15 +466,18 @@ def api_ai_montage(assets: str = Form(...), prompt: str = Form(...)):
     JOBS[jid] = {"status": "running"}
 
     def _run():
-        try:
-            from studio import ai_montage
-            res = ai_montage.ai_montage(fs, prompt, str(OUT / f"{jid}.mp4"), str(WORK / jid))
-            from studio.host import upload_best_effort
-            url = upload_best_effort(str(OUT / f"{jid}.mp4"))
-            JOBS[jid].update(status="done", info={"segments": res["segments"], "duration": res["duration"], "plan": res["plan"]}, video=f"/outputs/{jid}.mp4", url=url)
-        except Exception as e:
-            import traceback; traceback.print_exc()
-            JOBS[jid].update(status="error", error=str(e)[:300])
+        JOBS[jid]["status"] = "queued"
+        with HEAVY_JOB_LOCK:
+            JOBS[jid]["status"] = "running"
+            try:
+                from studio import ai_montage
+                res = ai_montage.ai_montage(fs, prompt, str(OUT / f"{jid}.mp4"), str(WORK / jid))
+                from studio.host import upload_best_effort
+                url = upload_best_effort(str(OUT / f"{jid}.mp4"))
+                JOBS[jid].update(status="done", info={"segments": res["segments"], "duration": res["duration"], "plan": res["plan"]}, video=f"/outputs/{jid}.mp4", url=url)
+            except Exception as e:
+                import traceback; traceback.print_exc()
+                JOBS[jid].update(status="error", error=str(e)[:300])
     threading.Thread(target=_run, args=(), daemon=True).start()
     return {"job_id": jid}
 
@@ -493,16 +500,19 @@ async def api_montage_enrich(files: list[UploadFile] = File(...),
     JOBS[jid] = {"status": "running", "stage": "старт", "progress": 0}
 
     def _run():
-        try:
-            from studio import assemble
-            def prog(msg, pct):
-                JOBS[jid].update(stage=msg, progress=pct)
-            out = str(OUT / f"{jid}.mp4")
-            res = assemble.assemble(paths, prompt, out, str(wd), progress=prog, captions=cap)
-            JOBS[jid].update(status="done", info=res, video=f"/outputs/{jid}.mp4", progress=100)
-        except Exception as e:
-            import traceback; traceback.print_exc()
-            JOBS[jid].update(status="error", error=str(e)[:300])
+        JOBS[jid].update(stage="в очереди", status="queued")
+        with HEAVY_JOB_LOCK:
+            JOBS[jid]["status"] = "running"
+            try:
+                from studio import assemble
+                def prog(msg, pct):
+                    JOBS[jid].update(stage=msg, progress=pct)
+                out = str(OUT / f"{jid}.mp4")
+                res = assemble.assemble(paths, prompt, out, str(wd), progress=prog, captions=cap)
+                JOBS[jid].update(status="done", info=res, video=f"/outputs/{jid}.mp4", progress=100)
+            except Exception as e:
+                import traceback; traceback.print_exc()
+                JOBS[jid].update(status="error", error=str(e)[:300])
     threading.Thread(target=_run, daemon=True).start()
     return {"job_id": jid, "clips": len(paths)}
 
