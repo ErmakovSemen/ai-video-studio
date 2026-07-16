@@ -4,18 +4,25 @@ from studio.factory import common as C
 
 
 def _two_pass_loudnorm(src, dst, I=-14.0, TP=-1.5, LRA=11.0):
+    if not os.path.exists(src) or os.path.getsize(src) < 1000:
+        raise RuntimeError(f"loudnorm: источник отсутствует/пуст: {src}")
     p1 = subprocess.run(["ffmpeg", "-i", src, "-af",
                          f"loudnorm=I={I}:TP={TP}:LRA={LRA}:print_format=json", "-f", "null", "-"],
                         capture_output=True, text=True).stderr
     m = re.search(r"\{[^{}]*\"input_i\"[^{}]*\}", p1, re.S)
     if not m:
-        subprocess.run(["ffmpeg", "-y", "-i", src, "-c", "copy", dst], capture_output=True)
+        r = subprocess.run(["ffmpeg", "-y", "-i", src, "-c", "copy", dst], capture_output=True, text=True)
+        if r.returncode != 0 or not os.path.exists(dst):
+            raise RuntimeError(f"loudnorm: анализ громкости не сработал и fallback-копия не удалась: "
+                               f"{r.stderr[-500:]}")
         return
     d = json.loads(m.group(0))
     af = (f"loudnorm=I={I}:TP={TP}:LRA={LRA}:measured_I={d['input_i']}:measured_TP={d['input_tp']}:"
           f"measured_LRA={d['input_lra']}:measured_thresh={d['input_thresh']}:offset={d['target_offset']}:linear=true")
-    subprocess.run(["ffmpeg", "-y", "-i", src, "-af", af, "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", dst],
-                   capture_output=True)
+    r = subprocess.run(["ffmpeg", "-y", "-i", src, "-af", af, "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", dst],
+                       capture_output=True, text=True)
+    if r.returncode != 0 or not os.path.exists(dst):
+        raise RuntimeError(f"loudnorm: финальный проход ffmpeg не сработал: {r.stderr[-500:]}")
 
 
 def _load_scenario(card: dict) -> dict | None:
@@ -61,7 +68,11 @@ def maybe_produce(project: dict, board: dict) -> bool:
         story.build(scenario, raw, wd, base_dir=str(C.ROOT), draft=True,
                     gen_stills=True, polish=True, music=music if os.path.exists(music) else None,
                     captions=True)
+        if not os.path.exists(raw) or os.path.getsize(raw) < 1000:
+            raise RuntimeError(f"story.build не создал итоговый файл: {raw}")
         _two_pass_loudnorm(raw, out)
+        if not os.path.exists(out) or os.path.getsize(out) < 1000:
+            raise RuntimeError(f"после loudnorm итоговый файл отсутствует: {out}")
         if os.path.exists(raw):
             os.remove(raw)
     except Exception as e:
