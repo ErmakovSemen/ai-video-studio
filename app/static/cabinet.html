@@ -121,6 +121,13 @@
 
   <!-- Дашборд -->
   <div class="pad" id="dash">
+    <div class="pf" id="creditsCard" style="margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:16px">
+      <div>
+        <div class="hint" style="margin-bottom:2px">Баланс OpenRouter</div>
+        <div id="creditsVal" style="font-size:24px;font-weight:700">…</div>
+      </div>
+      <a class="btn" href="https://openrouter.ai/settings/credits" target="_blank" rel="noopener">💳 Пополнить</a>
+    </div>
     <h2>Быстрый доступ</h2>
     <div class="conn" style="margin-bottom:24px">
       <a class="pf" style="text-decoration:none;color:inherit" id="goContent"><b>📋 Контент-доска</b><div class="hint">видео по стадиям</div></a>
@@ -321,6 +328,17 @@ document.addEventListener('click', e => {
   if (ob) { const p = projects.find(x => x.id === ob.dataset.openBoard); if (p) { applyProject(p); renderRail(); show({src: boardUrl(p)}); } return; }
 });
 
+// ── credits ──
+async function loadCredits() {
+  const el = document.getElementById('creditsVal');
+  try {
+    const h = await (await fetch('/api/health')).json();
+    if (h.credits === null || h.credits === undefined) { el.textContent = '—'; return; }
+    el.textContent = `$${h.credits}`;
+    if (h.credits < 2) el.style.color = '#e55';
+  } catch (e) { el.textContent = '—'; }
+}
+
 // ── connections ──
 async function loadConn() {
   const ps = await (await fetch('/api/settings')).json();
@@ -422,6 +440,7 @@ async function init() {
   if (p) applyProject(p);
   renderRail();
   loadConn();
+  loadCredits();
   show({view:'dash'});
 }
 
