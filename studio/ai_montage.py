@@ -11,10 +11,10 @@ import os
 import json
 import subprocess
 import urllib.request
-import imageio_ffmpeg
+from studio import ffbin
 from studio import compose, edit
 
-FF = imageio_ffmpeg.get_ffmpeg_exe()
+FF = ffbin.resolve()
 W, H = 720, 1280
 OPENROUTER_KEY_ENV = "OPENROUTER_API_KEY"
 EDIT_MODEL = os.getenv("OR_EDIT_MODEL", "meta-llama/llama-3.3-70b-instruct")

@@ -137,9 +137,9 @@ def _assemble_polished(clips, voice_segs, words, out_path, workdir, music, capti
     vlst = os.path.join(workdir, "pv.txt")
     open(vlst, "w").write("".join(f"file '{os.path.abspath(p)}'\n" for p in clips))
     vcat = os.path.join(workdir, "pvcat.mp4")
-    subprocess.run([FF, "-y", "-f", "concat", "-safe", "0", "-i", vlst,
-                    "-c:v", "libx264", "-pix_fmt", "yuv420p", "-r", "30", vcat],
-                   capture_output=True)
+    from studio import ffbin
+    ffbin.run_checked([FF, "-y", "-f", "concat", "-safe", "0", "-i", vlst,
+                       "-c:v", "libx264", "-pix_fmt", "yuv420p", "-r", "30", vcat], out_path=vcat)
     # concat narration (vo + silence segments)
     ins = []
     for v in voice_segs:
@@ -147,8 +147,7 @@ def _assemble_polished(clips, voice_segs, words, out_path, workdir, music, capti
     fc = "".join(f"[{i}:a]" for i in range(len(voice_segs))) + \
          f"concat=n={len(voice_segs)}:v=0:a=1[a]"
     acat = os.path.join(workdir, "pacat.m4a")
-    subprocess.run([FF, "-y", *ins, "-filter_complex", fc, "-map", "[a]", acat],
-                   capture_output=True)
+    ffbin.run_checked([FF, "-y", *ins, "-filter_complex", fc, "-map", "[a]", acat], out_path=acat)
     # karaoke captions over the whole timeline (optional — some cuts read better clean)
     ass = None
     if captions and words:

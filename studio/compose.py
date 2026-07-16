@@ -7,9 +7,9 @@ Recipe fixes from the Icarus pilot:
   not the clip's own audio).
 """
 import os, re, subprocess, asyncio, sys
-import imageio_ffmpeg
+from studio import ffbin
 
-FF = imageio_ffmpeg.get_ffmpeg_exe()
+FF = ffbin.resolve()
 
 
 def _resolve_font() -> str:
@@ -115,16 +115,16 @@ def burn_hook(clip: str, hook: str, out: str):
     Big yellow text on a translucent dark box, upper third, persistent for the clip.
     """
     if not hook.strip():
-        subprocess.run([FF, "-y", "-i", clip, "-c", "copy", out], capture_output=True)
+        ffbin.run_checked([FF, "-y", "-i", clip, "-c", "copy", out], out_path=out)
         return out
     hf = out + ".hook.txt"
     open(hf, "w", encoding="utf-8").write(_wrap(hook.strip().upper()))
     vf = (f"drawtext=textfile='{hf}':fontfile='{FONT}':fontsize=54:fontcolor=0x0AD6FF:"
           f"borderw=6:bordercolor=black:box=1:boxcolor=black@0.45:boxborderw=24:"
           f"line_spacing=12:x=(w-tw)/2:y=170")
-    subprocess.run([FF, "-y", "-i", clip, "-vf", vf, "-an", "-r", "30",
-                    "-c:v", "libx264", "-threads", "1", "-preset", "ultrafast",
-                    "-pix_fmt", "yuv420p", out], capture_output=True)
+    ffbin.run_checked([FF, "-y", "-i", clip, "-vf", vf, "-an", "-r", "30",
+                       "-c:v", "libx264", "-threads", "1", "-preset", "ultrafast",
+                       "-pix_fmt", "yuv420p", out], out_path=out)
     return out
 
 
@@ -135,9 +135,9 @@ def scene_clip(raw_clip: str, caption: str, seconds: float, out: str):
     vf = (f"scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},"
           f"drawtext=textfile='{capf}':fontfile='{FONT}':fontsize=44:fontcolor=white:"
           f"borderw=3:bordercolor=black:line_spacing=8:x=(w-tw)/2:y=h-320")
-    subprocess.run([FF, "-y", "-i", raw_clip, "-t", f"{seconds:.2f}", "-vf", vf,
-                    "-an", "-r", "30", "-c:v", "libx264", "-threads", "1", "-preset", "ultrafast", "-pix_fmt", "yuv420p", out],
-                   capture_output=True)
+    ffbin.run_checked([FF, "-y", "-i", raw_clip, "-t", f"{seconds:.2f}", "-vf", vf,
+                       "-an", "-r", "30", "-c:v", "libx264", "-threads", "1", "-preset", "ultrafast",
+                       "-pix_fmt", "yuv420p", out], out_path=out)
 
 
 def endcard(brand_img: str, title: str, sub: str, seconds: float, out: str):

@@ -10,9 +10,9 @@ Everything uses the bundled imageio-ffmpeg binary (libass + xfade verified), so 
 runs the same locally and on the server. Functions degrade gracefully.
 """
 import os, re, asyncio, subprocess
-import imageio_ffmpeg
+from studio import ffbin
 
-FF = imageio_ffmpeg.get_ffmpeg_exe()
+FF = ffbin.resolve()
 W, H = 720, 1280
 
 
@@ -262,5 +262,5 @@ def finalize(video_noaudio: str, narration: str, out: str, ass: str = None,
         args += ["-vf", vf]
     args += [*amap, "-c:v", "libx264", "-threads", "1", "-preset", "ultrafast", "-pix_fmt", "yuv420p", "-c:a", "aac",
              "-shortest", out]
-    subprocess.run(args, capture_output=True)
+    ffbin.run_checked(args, out_path=out)
     return out
