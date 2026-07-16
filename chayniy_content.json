@@ -13,7 +13,9 @@
           "tags": [
             "idea",
             "ready"
-          ]
+          ],
+          "rendering_failed": true,
+          "retries": 1
         },
         {
           "id": "idea_silver_needle",
