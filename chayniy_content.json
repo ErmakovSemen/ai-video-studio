@@ -14,23 +14,7 @@
             "idea",
             "ready"
           ]
-        }
-      ]
-    },
-    {
-      "id": "draft",
-      "name": "✏️ Черновик",
-      "cards": []
-    },
-    {
-      "id": "montage",
-      "name": "🎬 Монтаж",
-      "cards": []
-    },
-    {
-      "id": "review",
-      "name": "🔍 Ревью",
-      "cards": [
+        },
         {
           "id": "idea_silver_needle",
           "title": "Самый нежный чай — из одних почек",
@@ -101,10 +85,24 @@
           "tags": [
             "idea",
             "ready"
-          ],
-          "video_path": "outputs/idea_silver_needle.mp4"
+          ]
         }
       ]
+    },
+    {
+      "id": "draft",
+      "name": "✏️ Черновик",
+      "cards": []
+    },
+    {
+      "id": "montage",
+      "name": "🎬 Монтаж",
+      "cards": []
+    },
+    {
+      "id": "review",
+      "name": "🔍 Ревью",
+      "cards": []
     },
     {
       "id": "await_post",
