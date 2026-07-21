@@ -62,22 +62,26 @@ def get_server(server_id):
     return _req(f"/servers/{server_id}")["server"]
 
 
-def server_ipv4(server_id):
+def server_ip(server_id, prefer="ipv6"):
+    """IP сервера. Воркеры IPv6-only, поэтому по умолчанию берём IPv6 (для SSH с веб-узла);
+    если его нет — падаем на IPv4."""
     s = get_server(server_id)
-    for n in s.get("networks", []):
-        for ip in n.get("ips", []):
-            if ip.get("type") == "ipv4":
-                return ip["ip"]
+    order = [prefer, "ipv4" if prefer == "ipv6" else "ipv6"]
+    for want in order:
+        for n in s.get("networks", []):
+            for ip in n.get("ips", []):
+                if ip.get("type") == want:
+                    return ip["ip"]
     return None
 
 
 def wait_ready(server_id, timeout=600, poll=10):
-    """Ждём status=on и наличие IPv4. Возвращает IP."""
+    """Ждём status=on и наличие IP (IPv6 для наших воркеров). Возвращает IP."""
     deadline = time.time() + timeout
     while time.time() < deadline:
         s = get_server(server_id)
         if s.get("status") == "on":
-            ip = server_ipv4(server_id)
+            ip = server_ip(server_id)
             if ip:
                 return ip
         time.sleep(poll)
