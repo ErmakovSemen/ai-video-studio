@@ -528,6 +528,51 @@ async def api_montage_enrich(files: list[UploadFile] = File(...),
     return {"job_id": jid, "clips": len(paths), "worker": use_worker}
 
 
+@app.post("/api/clip")
+async def api_clip(file: UploadFile = File(...), n: str = Form("5"),
+                   captions: str = Form("1"), min_s: str = Form("20"), max_s: str = Form("60")):
+    """Нарезка длинного видео на вертикальные Shorts. Возвращает job_id; результат — список роликов."""
+    jid = uuid.uuid4().hex[:12]
+    wd = WORK / f"clip_{jid}"; wd.mkdir(parents=True, exist_ok=True)
+    src = wd / f"src{(os.path.splitext(file.filename or '')[1] or '.mp4')[:8]}"
+    # стримом на диск, чтобы не держать большой файл в памяти
+    with open(src, "wb") as fh:
+        while chunk := await file.read(1 << 20):
+            fh.write(chunk)
+    out_dir = OUT / f"clip_{jid}"
+    cap = str(captions).lower() in ("1", "true", "on", "yes")
+    JOBS[jid] = {"status": "running", "stage": "старт", "progress": 0}
+
+    def prog(msg, pct):
+        JOBS[jid].update(stage=msg, progress=pct)
+
+    use_worker = bool(os.getenv("TW_WORKER_IMAGE_ID"))
+
+    def _run():
+        try:
+            if use_worker:
+                from studio.worker import pool
+                res = pool.run_clip_job(str(src), str(out_dir), progress=prog,
+                                        n=int(n), captions=cap, min_s=int(min_s), max_s=int(max_s))
+            else:
+                JOBS[jid].update(stage="в очереди", status="queued")
+                with HEAVY_JOB_LOCK:
+                    JOBS[jid]["status"] = "running"
+                    from studio import clipper
+                    res = clipper.clip_to_shorts(str(src), str(out_dir), str(wd), n=int(n),
+                                                 captions=cap, min_s=int(min_s), max_s=int(max_s),
+                                                 progress=prog)
+            shorts = [{"url": f"/outputs/clip_{jid}/{os.path.basename(s.get('local') or s['path'])}",
+                       "title": s.get("title", ""), "start": s.get("start"), "end": s.get("end")}
+                      for s in res.get("shorts", [])]
+            JOBS[jid].update(status="done", info={"count": len(shorts)}, shorts=shorts, progress=100)
+        except Exception as e:
+            import traceback; traceback.print_exc()
+            JOBS[jid].update(status="error", error=str(e)[:300])
+    threading.Thread(target=_run, daemon=True).start()
+    return {"job_id": jid, "worker": use_worker}
+
+
 @app.post("/api/publish_file")
 def publish_file(video: str = Form(...), title: str = Form(...), description: str = Form("")):
     """Залить файл (из /outputs, /media или durable URL) во все подключённые соцсети."""
