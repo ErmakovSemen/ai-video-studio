@@ -38,6 +38,18 @@ def _b(ip):
     return f"[{ip}]" if ":" in ip else ip
 
 
+def _ship_verified(ip, local, remote, timeout=600, tries=4):
+    """scp файла на воркер с проверкой, что он реально долетел (IPv6-scp иногда рвётся)."""
+    want = os.path.getsize(local)
+    for attempt in range(tries):
+        _scp(local, f"root@{_b(ip)}:{remote}", timeout=timeout)
+        got = _ssh(ip, f"stat -c%s {remote} 2>/dev/null || echo 0").stdout.strip()
+        if got.isdigit() and int(got) == want:
+            return
+        time.sleep(5)
+    raise RuntimeError(f"не удалось доставить {os.path.basename(local)} на воркер ({want} байт)")
+
+
 def _wait_ssh(ip, timeout=180, poll=6):
     deadline = time.time() + timeout
     while time.time() < deadline:
@@ -90,23 +102,30 @@ def run_montage_job(input_paths, prompt, out_path, progress=None, captions=False
         _wait_ssh(ip)
         prog("воркер готов, заливаю задачу", 10)
 
-        # свежий код (перекрывает запечённый в образе) + окружение
-        subprocess.run(["rsync", "-a", "-e", f"ssh {' '.join(SSH_OPTS)}",
-                        "--exclude", "data", "--exclude", ".git", "--exclude", "work",
-                        "--exclude", "outputs", f"{CODE_DIR}/", f"root@{_b(ip)}:/opt/prometey/"],
-                       check=True, timeout=300)
+        # свежий код (перекрывает запечённый в образе) + окружение. rsync докачивает,
+        # поэтому ретрай при обрыве IPv6 просто продолжает с места.
+        for attempt in range(3):
+            rr = subprocess.run(["rsync", "-a", "--timeout=60", "-e", f"ssh {' '.join(SSH_OPTS)}",
+                                 "--exclude", "data", "--exclude", ".git", "--exclude", "work",
+                                 "--exclude", "outputs", f"{CODE_DIR}/", f"root@{_b(ip)}:/opt/prometey/"],
+                                capture_output=True, text=True, timeout=400)
+            if rr.returncode == 0:
+                break
+            if attempt == 2:
+                raise RuntimeError(f"rsync кода на воркер не удался: {rr.stderr[-300:]}")
+            time.sleep(5)
         _ssh(ip, "mkdir -p /opt/job/inputs")
         job = {"inputs": [], "prompt": prompt, "captions": captions, "style": style,
                "insert_mode": insert_mode, "aspect": aspect, "max_tries": max_tries}
         for i, p in enumerate(input_paths):
             ext = os.path.splitext(p)[1] or ".mp4"
             rp = f"/opt/job/inputs/in{i}{ext}"
-            _scp(p, f"root@{_b(ip)}:{rp}", timeout=1200)
+            _ship_verified(ip, p, rp, timeout=1200)   # IPv6-scp флапает — заливаем с проверкой
             job["inputs"].append(rp.replace("/opt/job", "/job"))
         # job.json
         jf = f"/tmp/job_{sid}.json"
         json.dump(job, open(jf, "w"))
-        _scp(jf, f"root@{_b(ip)}:/opt/job/job.json")
+        _ship_verified(ip, jf, "/opt/job/job.json")
         os.remove(jf)
 
         prog("монтирую (это самый долгий этап)", 15)
