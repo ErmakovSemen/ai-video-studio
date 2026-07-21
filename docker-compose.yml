@@ -2,8 +2,9 @@ services:
   app:
     build: .
     restart: unless-stopped
-    ports:
-      - "8000:8000"
+    # host-сеть: контейнеру нужен IPv6 хоста, чтобы драйвить on-demand рендер-воркеры
+    # по SSH/rsync. uvicorn слушает 8000 на хосте, Caddy проксирует localhost:8000.
+    network_mode: host
     env_file:
       - .env.prod
     volumes:
@@ -12,3 +13,6 @@ services:
       - ./data/config:/app/config
       - ./data/outputs:/app/outputs
       - ./data/media:/app/media
+      # драйв воркеров: приватный SSH-ключ + окружение (для rsync кода и --env-file на воркере)
+      - /root/.ssh/prometey_worker:/root/.ssh/prometey_worker:ro
+      - ./.env.prod:/app/.env.prod:ro

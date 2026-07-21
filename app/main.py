@@ -499,22 +499,33 @@ async def api_montage_enrich(files: list[UploadFile] = File(...),
     cap = str(captions).lower() in ("1", "true", "on", "yes")
     JOBS[jid] = {"status": "running", "stage": "старт", "progress": 0}
 
+    out = str(OUT / f"{jid}.mp4")
+
+    def prog(msg, pct):
+        JOBS[jid].update(stage=msg, progress=pct)
+
+    use_worker = bool(os.getenv("TW_WORKER_IMAGE_ID"))
+
     def _run():
-        JOBS[jid].update(stage="в очереди", status="queued")
-        with HEAVY_JOB_LOCK:
-            JOBS[jid]["status"] = "running"
-            try:
+        try:
+            if use_worker:
+                # тяжёлый монтаж — на эфемерном on-demand воркере (не грузим веб-узел)
+                from studio.worker import pool
+                res = pool.run_montage_job(paths, prompt, out, progress=prog, captions=cap)
+                JOBS[jid].update(status="done", info=res, video=f"/outputs/{jid}.mp4", progress=100)
+                return
+            # локальный фолбэк (dev / если воркер не сконфигурен) — под общим лимитом
+            JOBS[jid].update(stage="в очереди", status="queued")
+            with HEAVY_JOB_LOCK:
+                JOBS[jid]["status"] = "running"
                 from studio import assemble
-                def prog(msg, pct):
-                    JOBS[jid].update(stage=msg, progress=pct)
-                out = str(OUT / f"{jid}.mp4")
                 res = assemble.assemble(paths, prompt, out, str(wd), progress=prog, captions=cap)
                 JOBS[jid].update(status="done", info=res, video=f"/outputs/{jid}.mp4", progress=100)
-            except Exception as e:
-                import traceback; traceback.print_exc()
-                JOBS[jid].update(status="error", error=str(e)[:300])
+        except Exception as e:
+            import traceback; traceback.print_exc()
+            JOBS[jid].update(status="error", error=str(e)[:300])
     threading.Thread(target=_run, daemon=True).start()
-    return {"job_id": jid, "clips": len(paths)}
+    return {"job_id": jid, "clips": len(paths), "worker": use_worker}
 
 
 @app.post("/api/publish_file")

@@ -1,8 +1,8 @@
 FROM python:3.12-slim
 
-# ffmpeg — required by studio/edit.py, assemble.py, align.py (video/audio processing)
+# ffmpeg — video/audio processing; openssh-client+rsync — драйвят on-demand рендер-воркеры
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ffmpeg \
+    ffmpeg openssh-client rsync \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
