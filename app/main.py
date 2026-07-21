@@ -169,6 +169,11 @@ def montage_page():
     return (Path(__file__).parent / "static" / "montage.html").read_text(encoding="utf-8")
 
 
+@app.get("/clip", response_class=HTMLResponse)
+def clip_page():
+    return (Path(__file__).parent / "static" / "clip.html").read_text(encoding="utf-8")
+
+
 @app.get("/board", response_class=HTMLResponse)
 def board_page():
     return _board_html()

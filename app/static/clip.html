@@ -1,0 +1,109 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Нарезка на Shorts</title>
+<style>
+:root{--bg:#0e0e12;--pan:#16161c;--pan2:#1c1c24;--bd:#262630;--txt:#e8e8ee;--mut:#8b8b99;--acc:#ff7a45;--ok:#5dca8a}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:-apple-system,Segoe UI,Roboto,sans-serif;padding:22px;max-width:820px;margin:0 auto}
+h1{font-size:20px;margin:0 0 4px}.sub{color:var(--mut);font-size:13px;margin:0 0 20px}
+.card{background:var(--pan);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:16px}
+.drop{border:1.5px dashed #3a3a48;border-radius:12px;padding:26px;text-align:center;color:var(--mut);cursor:pointer;transition:.15s}
+.drop:hover,.drop.over{border-color:var(--acc);color:var(--txt);background:var(--pan2)}
+.picked{display:none;align-items:center;gap:10px;background:var(--pan2);border:1px solid var(--bd);border-radius:9px;padding:9px 12px;margin-top:12px;font-size:13px}
+.picked.on{display:flex}.picked .rm{color:var(--mut);cursor:pointer;font-size:16px;margin-left:auto}
+label{display:block;font-size:13px;color:var(--mut);margin:0 0 6px}
+.opts{display:flex;gap:14px;flex-wrap:wrap}
+.opt{flex:1;min-width:120px}
+input[type=number]{width:100%;background:var(--pan2);border:1px solid var(--bd);border-radius:9px;color:var(--txt);padding:10px;font:inherit;font-size:14px}
+.row{display:flex;align-items:center;gap:9px;margin-top:14px;font-size:13px;color:var(--mut)}
+input[type=checkbox]{width:17px;height:17px;accent-color:var(--acc)}
+button{width:100%;margin-top:16px;background:var(--acc);color:#1a0e08;border:0;border-radius:11px;padding:14px;font-size:15px;font-weight:600;cursor:pointer}
+button:disabled{opacity:.5;cursor:default}
+.prog{margin-top:14px;display:none}.prog.on{display:block}
+.bar{height:8px;background:var(--pan2);border-radius:6px;overflow:hidden}.bar>i{display:block;height:100%;width:0;background:var(--acc);transition:.4s}
+.stage{font-size:13px;color:var(--mut);margin-top:8px}
+.note{font-size:12px;color:#6b6b78;margin-top:8px}
+.err{color:#e2554a;font-size:13px;margin-top:10px}
+.hint{font-size:12px;color:#6b6b78;margin-top:4px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:6px}
+.short{background:var(--pan);border:1px solid var(--bd);border-radius:12px;padding:10px}
+.short video{width:100%;border-radius:9px;background:#000;aspect-ratio:9/16;object-fit:cover}
+.short .t{font-size:13px;font-weight:600;margin:8px 0 3px;line-height:1.3}
+.short .m{font-size:11px;color:var(--mut)}
+.short .dl{display:inline-block;margin-top:7px;color:var(--acc);text-decoration:none;font-size:13px}
+</style></head><body>
+<h1>✂️ Нарезка на Shorts</h1>
+<p class="sub">Загрузи длинное видео (подкаст, лекция, интервью) → ИИ найдёт самые сильные моменты и нарежет вертикальные Shorts с субтитрами и заголовками.</p>
+
+<div class="card">
+  <div class="drop" id="drop">📎 Перетащи длинное видео сюда или нажми, чтобы выбрать<div class="hint">mp4 / mov / webm · один файл</div></div>
+  <input type="file" id="file" accept="video/*" style="display:none">
+  <div class="picked" id="picked"><span class="nm" id="pname"></span><span class="rm" id="rm">✕</span></div>
+</div>
+
+<div class="card">
+  <div class="opts">
+    <div class="opt"><label>Сколько роликов</label><input type="number" id="n" value="5" min="1" max="12"></div>
+    <div class="opt"><label>Мин. длина, сек</label><input type="number" id="mins" value="20" min="8" max="90"></div>
+    <div class="opt"><label>Макс. длина, сек</label><input type="number" id="maxs" value="60" min="15" max="120"></div>
+  </div>
+  <div class="row"><input type="checkbox" id="caps" checked><label for="caps" style="margin:0">Субтитры (караоке)</label></div>
+  <button id="go" disabled>✂️ Нарезать на Shorts</button>
+  <div class="prog" id="prog"><div class="bar"><i id="fill"></i></div><div class="stage" id="stage">…</div>
+    <div class="note">Обработка идёт на выделенном сервере и занимает несколько минут (транскрипция + нарезка). Можно не закрывать вкладку.</div>
+  </div>
+  <div class="err" id="err"></div>
+</div>
+
+<div class="card" id="resCard" style="display:none">
+  <label>Готовые Shorts (<span id="cnt">0</span>)</label>
+  <div class="grid" id="grid"></div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s);
+let file=null;
+const drop=$('#drop'),input=$('#file'),go=$('#go');
+drop.onclick=()=>input.click();
+['dragover','dragenter'].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.add('over')}));
+['dragleave','drop'].forEach(e=>drop.addEventListener(e,ev=>{ev.preventDefault();drop.classList.remove('over')}));
+drop.addEventListener('drop',ev=>{ev.preventDefault();pick(ev.dataTransfer.files[0])});
+input.onchange=()=>pick(input.files[0]);
+$('#rm').onclick=()=>{file=null;$('#picked').classList.remove('on');go.disabled=true};
+function pick(f){if(!f)return;if(!(f.type.startsWith('video')||/\.(mp4|mov|webm|mkv|avi)$/i.test(f.name)))return;file=f;$('#pname').textContent=f.name+' · '+(f.size/1048576|0)+' МБ';$('#picked').classList.add('on');go.disabled=false}
+go.onclick=async()=>{
+  if(!file)return;
+  go.disabled=true;$('#err').textContent='';$('#resCard').style.display='none';$('#grid').innerHTML='';
+  $('#prog').classList.add('on');setBar('загружаю видео',2);
+  const fd=new FormData();
+  fd.append('file',file);
+  fd.append('n',$('#n').value);fd.append('min_s',$('#mins').value);fd.append('max_s',$('#maxs').value);
+  fd.append('captions',$('#caps').checked?'1':'0');
+  let jid;
+  try{const r=await fetch('/api/clip',{method:'POST',body:fd});const j=await r.json();
+    if(!r.ok){throw new Error(j.detail||'ошибка загрузки')}jid=j.job_id;}
+  catch(e){return fail(e.message)}
+  poll(jid);
+};
+function setBar(msg,pct){$('#fill').style.width=(pct||0)+'%';$('#stage').textContent=msg+' · '+(pct||0)+'%';}
+function fail(m){$('#err').textContent='Ошибка: '+m;go.disabled=false;$('#prog').classList.remove('on');}
+async function poll(jid){
+  try{const r=await fetch('/api/jobs/'+jid);const j=await r.json();
+    if(j.status==='running'||j.status==='queued'){setBar(j.stage||'обработка',j.progress||0);return setTimeout(()=>poll(jid),2000);}
+    if(j.status==='error')return fail(j.error||'сбой нарезки');
+    if(j.status==='done'){
+      setBar('готово',100);
+      const sh=j.shorts||[];
+      $('#cnt').textContent=sh.length;
+      $('#grid').innerHTML=sh.map(s=>`<div class="short">
+        <video src="${s.url}" controls playsinline preload="metadata"></video>
+        <div class="t">${s.title||'Без названия'}</div>
+        <div class="m">${s.start!=null?fmt(s.start)+'–'+fmt(s.end):''}</div>
+        <a class="dl" href="${s.url}" download>⬇ Скачать</a></div>`).join('');
+      $('#resCard').style.display='block';go.disabled=false;
+      setTimeout(()=>$('#prog').classList.remove('on'),1200);
+    }
+  }catch(e){setTimeout(()=>poll(jid),2500);}
+}
+function fmt(s){s=Math.round(s);return (s/60|0)+':'+String(s%60).padStart(2,'0')}
+</script></body></html>
