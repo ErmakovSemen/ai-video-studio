@@ -16,7 +16,8 @@ KEY = os.getenv("TW_WORKER_SSH_KEY", "/root/.ssh/prometey_worker")
 CODE_DIR = os.getenv("PROMETEY_CODE_DIR", "/opt/prometey")
 ENV_FILE = os.getenv("PROMETEY_ENV_FILE", "/opt/prometey/.env.prod")
 SSH_OPTS = ["-i", KEY, "-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null",
-            "-o", "ConnectTimeout=15"]
+            "-o", "ConnectTimeout=15", "-o", "ServerAliveInterval=10", "-o", "ServerAliveCountMax=6",
+            "-o", "BatchMode=yes"]
 
 
 def _ssh(ip, cmd, timeout=120):
@@ -109,12 +110,21 @@ def run_montage_job(input_paths, prompt, out_path, progress=None, captions=False
         os.remove(jf)
 
         prog("монтирую (это самый долгий этап)", 15)
-        run = ("docker run -d --name montage --network host "
+        run = ("docker rm -f montage 2>/dev/null; docker run -d --name montage --network host "
                "-v /opt/prometey:/app -v /opt/models:/root/.cache/huggingface "
                "-v /opt/job:/job --env-file /opt/prometey/.env.prod "
                "prometey-app python3 -m studio.worker.run_montage /job")
-        r = _ssh(ip, run)
-        if r.returncode != 0:
+        started = False
+        for attempt in range(3):
+            r = _ssh(ip, run)
+            # проверяем по факту, а не только по SSH-коду (IPv6-SSH может оборваться,
+            # но контейнер уже запустился)
+            chk = _ssh(ip, "docker inspect -f '{{.State.Running}}' montage 2>/dev/null || echo no")
+            if r.returncode == 0 or chk.stdout.strip() == "true":
+                started = True
+                break
+            time.sleep(8)
+        if not started:
             raise RuntimeError(f"не удалось запустить контейнер монтажа: {r.stderr[-400:]}")
 
         # ждём завершения контейнера, транслируя прогресс
