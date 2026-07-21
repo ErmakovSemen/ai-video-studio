@@ -1,0 +1,39 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Новый пароль · Прометей</title>
+<link rel="stylesheet" href="/static/ds.css">
+<style>
+.auth{min-height:100vh;display:grid;place-items:center;padding:24px}
+.card{width:100%;max-width:400px}
+.head{text-align:center;margin-bottom:20px}
+.head .logo{font-size:18px;margin-bottom:12px}.head .logo .flame{width:32px;height:32px;font-size:18px}
+.head h1{font-size:24px;margin-bottom:6px}.head p{color:var(--mut);font-size:13px;margin:0}
+.box{padding:24px}
+.err{background:rgba(255,93,108,.1);border:1px solid rgba(255,93,108,.35);color:#ffb3bb;font-size:13px;border-radius:10px;padding:10px 12px;margin-bottom:14px;display:none}
+.err.on{display:block}
+.alt{text-align:center;margin-top:16px;font-size:13px;color:var(--mut)}.alt a{color:var(--ember);font-weight:500}
+</style></head><body>
+<div class="auth">
+  <div class="card">
+    <div class="head">
+      <div class="logo"><span class="flame">🔥</span> ПРОМЕТЕЙ</div>
+      <h1>Новый пароль</h1>
+      <p>Придумай новый — и сразу войдёшь</p>
+    </div>
+    <div class="pcard box">
+      <div class="err" id="err">Ссылка недействительна или устарела. Запроси новую.</div>
+      <form method="post" action="/api/reset">
+        <input type="hidden" name="token" id="token">
+        <div class="field"><label>Новый пароль</label><input name="password" type="password" placeholder="минимум 6 символов" autocomplete="new-password" minlength="6" autofocus required></div>
+        <button class="btn btn-primary btn-block" type="submit">Сохранить и войти</button>
+      </form>
+    </div>
+    <div class="alt"><a href="/recover">Запросить новую ссылку</a></div>
+  </div>
+</div>
+<script>
+const p=new URLSearchParams(location.search);
+document.getElementById('token').value=p.get('token')||'';
+if(p.get('e'))document.getElementById('err').classList.add('on');
+</script>
+</body></html>

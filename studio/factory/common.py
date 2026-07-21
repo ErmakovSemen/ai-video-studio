@@ -69,8 +69,30 @@ def move_card(board: dict, card: dict, from_id: str, to_id: str):
     col(board, to_id)["cards"].append(card)
 
 
+ACTIVITY_LOG = STATE_DIR / "activity.log"
+
+
 def log(role: str, msg: str):
-    print(f"[factory:{role}] {msg}", flush=True)
+    line = f"[factory:{role}] {msg}"
+    print(line, flush=True)
+    try:                                    # durable tail for the dashboard
+        import time as _t
+        with open(ACTIVITY_LOG, "a", encoding="utf-8") as f:
+            f.write(f"{int(_t.time())}|{role}|{msg}\n")
+        # keep the file bounded
+        if ACTIVITY_LOG.stat().st_size > 200_000:
+            lines = ACTIVITY_LOG.read_text(encoding="utf-8").splitlines()[-400:]
+            ACTIVITY_LOG.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    except Exception:
+        pass
+
+
+def autonomous_on() -> bool:
+    return bool(read_state("autonomous.json", {}).get("on"))
+
+
+def set_autonomous(on: bool):
+    write_state("autonomous.json", {"on": bool(on), "changed": __import__("time").time()})
 
 
 def state_path(name: str) -> Path:

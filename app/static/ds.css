@@ -1,0 +1,136 @@
+/* Прометей — дизайн-система «пульт фабрики огня»
+   ember (огонь) + plasma (технология) на near-black; пиксель-акценты, ретро-футуризм.
+   Используется всеми страницами. Ванильный CSS, без сборки. */
+
+@import url('https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root{
+  --void:#0a0a0f; --panel:#111119; --panel-2:#171722; --panel-3:#1e1e2b;
+  --line:#262635; --line-2:#33334a;
+  --ember:#ff7a45; --ember-hot:#ff4d2e; --ember-soft:#ffb089;
+  --plasma:#4de2ff; --plasma-deep:#1aa6c9;
+  --ok:#56d38a; --warn:#ffcf5c; --bad:#ff5d6c;
+  --txt:#eef0f6; --txt-2:#c3c5d4; --mut:#84869a; --faint:#565872;
+  --pixel:'Silkscreen',monospace;
+  --head:'Space Grotesk',-apple-system,Segoe UI,sans-serif;
+  --body:'Inter',-apple-system,Segoe UI,Roboto,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --r:14px; --r-sm:10px;
+  --glow-ember:0 0 0 1px rgba(255,122,69,.35),0 0 24px -6px rgba(255,122,69,.55);
+  --glow-plasma:0 0 0 1px rgba(77,226,255,.3),0 0 22px -6px rgba(77,226,255,.5);
+  --shadow:0 18px 50px -24px rgba(0,0,0,.8);
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--void);color:var(--txt);font-family:var(--body);
+  font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(900px 500px at 82% -8%, rgba(255,122,69,.10), transparent 60%),
+    radial-gradient(760px 520px at 8% 108%, rgba(77,226,255,.08), transparent 55%),
+    linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
+  background-size:auto,auto,34px 34px,34px 34px;
+  background-attachment:fixed;
+}
+a{color:inherit;text-decoration:none}
+::selection{background:rgba(255,122,69,.3);color:#fff}
+
+/* ---------- type ---------- */
+h1,h2,h3{font-family:var(--head);font-weight:700;margin:0;letter-spacing:-.02em;line-height:1.08}
+h1{font-size:clamp(30px,5vw,58px)}
+h2{font-size:clamp(22px,3vw,32px)}
+h3{font-size:19px;letter-spacing:-.01em}
+.eyebrow{font-family:var(--pixel);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ember);display:inline-flex;align-items:center;gap:8px}
+.eyebrow.plasma{color:var(--plasma)}
+.mut{color:var(--mut)}
+.mono{font-family:var(--mono)}
+.pixel{font-family:var(--pixel)}
+
+/* logo lockup */
+.logo{display:inline-flex;align-items:center;gap:10px;font-family:var(--pixel);font-weight:700;font-size:15px;letter-spacing:.04em;color:var(--txt)}
+.logo .flame{width:26px;height:26px;display:grid;place-items:center;border-radius:7px;background:linear-gradient(150deg,var(--ember),var(--ember-hot));box-shadow:var(--glow-ember);font-size:15px}
+
+/* ---------- buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:var(--head);font-weight:600;font-size:14px;
+  border:0;border-radius:11px;padding:12px 20px;cursor:pointer;transition:.16s transform,.16s box-shadow,.16s background;line-height:1;text-align:center}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:linear-gradient(150deg,var(--ember),var(--ember-hot));color:#1a0d06;box-shadow:var(--glow-ember)}
+.btn-primary:hover{box-shadow:0 0 0 1px rgba(255,122,69,.5),0 0 34px -6px rgba(255,122,69,.75)}
+.btn-plasma{background:linear-gradient(150deg,var(--plasma),var(--plasma-deep));color:#04222b;box-shadow:var(--glow-plasma)}
+.btn-ghost{background:var(--panel-2);color:var(--txt);border:1px solid var(--line-2)}
+.btn-ghost:hover{border-color:var(--ember);color:#fff}
+.btn-block{width:100%}
+.btn:disabled{opacity:.45;cursor:default;box-shadow:none}
+
+/* ---------- surfaces ---------- */
+.panel{background:linear-gradient(180deg,var(--panel),var(--panel) 60%);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow)}
+.panel-2{background:var(--panel-2);border:1px solid var(--line);border-radius:var(--r-sm)}
+/* pixel-corner accent card */
+.pcard{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:12px}
+.pcard::before,.pcard::after{content:"";position:absolute;width:7px;height:7px;background:var(--ember)}
+.pcard::before{top:-1px;left:-1px;clip-path:polygon(0 0,100% 0,0 100%)}
+.pcard::after{bottom:-1px;right:-1px;clip-path:polygon(100% 0,100% 100%,0 100%)}
+
+/* ---------- forms ---------- */
+label{display:block;font-size:12px;color:var(--mut);margin:0 0 7px;font-weight:500;letter-spacing:.01em}
+.input,input[type=text],input[type=email],input[type=password],input[type=number],textarea,select{
+  width:100%;background:var(--void);border:1px solid var(--line-2);border-radius:10px;color:var(--txt);
+  padding:12px 13px;font:inherit;font-size:14px;transition:.15s border,.15s box-shadow;outline:0}
+.input:focus,input:focus,textarea:focus,select:focus{border-color:var(--ember);box-shadow:0 0 0 3px rgba(255,122,69,.14)}
+textarea{min-height:90px;resize:vertical}
+.field{margin-bottom:15px}
+
+/* ---------- chips / badges ---------- */
+.chip{display:inline-flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;padding:4px 9px;border-radius:6px;background:var(--panel-3);border:1px solid var(--line-2);color:var(--txt-2)}
+.chip.ember{color:var(--ember);border-color:rgba(255,122,69,.4)}
+.chip.plasma{color:var(--plasma);border-color:rgba(77,226,255,.35)}
+.chip.ok{color:var(--ok);border-color:rgba(86,211,138,.4)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--mut);flex:none}
+.dot.live{background:var(--ok);box-shadow:0 0 0 0 rgba(86,211,138,.6);animation:pulse 1.8s infinite}
+.dot.ember{background:var(--ember)}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(86,211,138,.5)}70%{box-shadow:0 0 0 7px rgba(86,211,138,0)}100%{box-shadow:0 0 0 0 rgba(86,211,138,0)}}
+
+/* ---------- agent conveyor (signature) ---------- */
+.conveyor{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:0;position:relative;padding:6px 0}
+.station{position:relative;padding:16px 12px 14px;text-align:center;min-width:0}
+.station+ .station::before{content:"";position:absolute;left:-2px;top:50%;width:4px;height:4px;background:var(--line-2);
+  box-shadow:-14px 0 0 var(--line-2),-28px 0 0 var(--line-2),14px 0 0 var(--line-2),28px 0 0 var(--line-2)}
+.station .sprite{width:52px;height:52px;margin:0 auto 10px;border-radius:12px;display:grid;place-items:center;font-size:24px;
+  background:var(--panel-2);border:1px solid var(--line-2);image-rendering:pixelated;position:relative;transition:.2s}
+.station.active .sprite{border-color:var(--ember);box-shadow:var(--glow-ember);animation:bob 1.4s ease-in-out infinite}
+.station .role{font-family:var(--pixel);font-size:10px;letter-spacing:.06em;color:var(--txt);text-transform:uppercase}
+.station .job{font-size:11px;color:var(--mut);margin-top:3px}
+.station .count{position:absolute;top:10px;right:calc(50% - 42px);font-family:var(--mono);font-size:11px;color:var(--plasma);background:var(--panel-3);border:1px solid var(--line-2);border-radius:5px;padding:1px 6px}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+
+/* scanline overlay for terminal panels */
+.crt{position:relative;overflow:hidden}
+.crt::after{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(0,0,0,.14) 0 1px,transparent 1px 3px);opacity:.5}
+
+/* agent log (terminal) */
+.termlog{font-family:var(--mono);font-size:12px;line-height:1.7;color:var(--txt-2);max-height:220px;overflow:auto;padding:12px 14px}
+.termlog .t{color:var(--faint)}
+.termlog .a{color:var(--ember)}
+.termlog .p{color:var(--plasma)}
+.termlog .g{color:var(--ok)}
+
+/* progress */
+.bar{height:8px;background:var(--panel-3);border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+.bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--ember),var(--ember-hot));transition:.5s width}
+
+/* toggle */
+.toggle{position:relative;width:46px;height:26px;border-radius:20px;background:var(--panel-3);border:1px solid var(--line-2);cursor:pointer;transition:.2s;flex:none}
+.toggle::after{content:"";position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:var(--mut);transition:.2s}
+.toggle.on{background:linear-gradient(90deg,var(--ember),var(--ember-hot));border-color:transparent;box-shadow:var(--glow-ember)}
+.toggle.on::after{left:22px;background:#1a0d06}
+
+/* utils */
+.wrap{max-width:1180px;margin:0 auto;padding:0 22px}
+.grid{display:grid;gap:16px}
+.row{display:flex;align-items:center;gap:12px}
+.between{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.stack{display:flex;flex-direction:column;gap:12px}
+.hide{display:none!important}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}

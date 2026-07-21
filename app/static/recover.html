@@ -1,0 +1,53 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Восстановление пароля · Прометей</title>
+<link rel="stylesheet" href="/static/ds.css">
+<style>
+.auth{min-height:100vh;display:grid;place-items:center;padding:24px}
+.card{width:100%;max-width:400px}
+.head{text-align:center;margin-bottom:20px}
+.head .logo{font-size:18px;margin-bottom:12px}.head .logo .flame{width:32px;height:32px;font-size:18px}
+.head h1{font-size:24px;margin-bottom:6px}.head p{color:var(--mut);font-size:13px;margin:0}
+.box{padding:24px}
+.alt{text-align:center;margin-top:16px;font-size:13px;color:var(--mut)}.alt a{color:var(--ember);font-weight:500}
+.done{display:none;text-align:center}
+.done.on{display:block}
+.linkbox{margin-top:14px;text-align:left;background:var(--void);border:1px solid var(--line-2);border-radius:10px;padding:12px}
+.linkbox .lbl{font-size:11px;color:var(--faint);margin-bottom:6px}
+.linkbox a{color:var(--plasma);font-family:var(--mono);font-size:12px;word-break:break-all}
+.note{font-size:11px;color:var(--faint);margin-top:10px;line-height:1.5}
+</style></head><body>
+<div class="auth">
+  <div class="card">
+    <div class="head">
+      <div class="logo"><span class="flame">🔥</span> ПРОМЕТЕЙ</div>
+      <h1>Сбросить пароль</h1>
+      <p>Введи email — пришлём ссылку для сброса</p>
+    </div>
+    <div class="pcard box">
+      <form id="form">
+        <div class="field"><label>Email аккаунта</label><input name="email" id="email" type="email" placeholder="you@company.com" autocomplete="email" autofocus required></div>
+        <button class="btn btn-primary btn-block" id="go" type="submit">Прислать ссылку</button>
+      </form>
+      <div class="done" id="done">
+        <div class="row" style="justify-content:center;gap:8px;color:var(--ok);font-weight:600"><span class="dot live"></span> Готово</div>
+        <p class="mut" style="font-size:13px;margin:10px 0 0">Если такой аккаунт есть — ссылка для сброса ниже.</p>
+        <div class="linkbox" id="linkbox"><div class="lbl">Ссылка для сброса (действует 1 час):</div><a id="link" href="#"></a></div>
+        <p class="note">Почтовая отправка ещё не подключена, поэтому ссылку показываем прямо здесь. В проде она уйдёт письмом.</p>
+      </div>
+    </div>
+    <div class="alt"><a href="/login">← Вернуться ко входу</a></div>
+  </div>
+</div>
+<script>
+document.getElementById('form').onsubmit=async e=>{
+  e.preventDefault();const go=document.getElementById('go');go.disabled=true;go.textContent='Проверяю…';
+  const fd=new FormData();fd.append('email',document.getElementById('email').value);
+  try{const r=await fetch('/api/recover',{method:'POST',body:fd});const j=await r.json();
+    document.getElementById('form').style.display='none';document.getElementById('done').classList.add('on');
+    if(j.link){const a=document.getElementById('link');a.href=j.link;a.textContent=location.origin+j.link;}
+    else{document.getElementById('linkbox').style.display='none';}
+  }catch(_){go.disabled=false;go.textContent='Прислать ссылку';}
+};
+</script>
+</body></html>

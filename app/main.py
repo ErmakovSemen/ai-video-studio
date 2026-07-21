@@ -100,8 +100,13 @@ def login_page():
 
 @app.post("/api/login")
 def do_login(username: str = Form(""), password: str = Form(...)):
-    user_ok = (not username) or secrets.compare_digest(username, STUDIO_USER)
-    if user_ok and STUDIO_PASS and secrets.compare_digest(password, STUDIO_PASS):
+    u = username.strip().lower()
+    # owner (env) — accepts admin login or the owner email
+    owner_ok = (not u or u == STUDIO_USER.lower()) and STUDIO_PASS and secrets.compare_digest(password, STUDIO_PASS)
+    # registered account
+    acct = _users().get(u)
+    acct_ok = bool(acct and _check_pw(password, acct.get("pw", "")))
+    if owner_ok or acct_ok:
         resp = RedirectResponse("/cabinet", status_code=303)
         resp.set_cookie("sid", _make_session(), httponly=True, samesite="lax", max_age=_MAXAGE)
         return resp
@@ -115,9 +120,110 @@ def logout():
     return resp
 
 
+# ---------- accounts: registration + password recovery ----------
+CONFIG_DIR = ROOT / "config"; CONFIG_DIR.mkdir(exist_ok=True)
+USERS_FILE = CONFIG_DIR / "users.json"
+SIGNUP_CODE = os.getenv("SIGNUP_CODE", "")          # if set, required to register
+PUBLIC_PATHS |= {"/register", "/api/register", "/recover", "/api/recover", "/reset", "/api/reset"}
+
+
+def _users() -> dict:
+    if USERS_FILE.exists():
+        try:
+            return json.loads(USERS_FILE.read_text(encoding="utf-8"))
+        except Exception:
+            return {}
+    return {}
+
+
+def _save_users(d: dict):
+    USERS_FILE.write_text(json.dumps(d, ensure_ascii=False, indent=2), encoding="utf-8")
+
+
+def _hash_pw(pw: str, salt: str = None) -> str:
+    salt = salt or secrets.token_hex(8)
+    h = hashlib.pbkdf2_hmac("sha256", pw.encode(), salt.encode(), 120_000).hex()
+    return f"pbkdf2${salt}${h}"
+
+
+def _check_pw(pw: str, stored: str) -> bool:
+    try:
+        _, salt, h = stored.split("$")
+        return hmac.compare_digest(hashlib.pbkdf2_hmac("sha256", pw.encode(), salt.encode(), 120_000).hex(), h)
+    except Exception:
+        return False
+
+
+def _grant(email: str):
+    resp = RedirectResponse("/cabinet", status_code=303)
+    resp.set_cookie("sid", _make_session(), httponly=True, samesite="lax", max_age=_MAXAGE)
+    return resp
+
+
+@app.get("/register", response_class=HTMLResponse)
+def register_page():
+    return _static("register.html")
+
+
+@app.post("/api/register")
+def do_register(email: str = Form(...), password: str = Form(...), code: str = Form("")):
+    email = email.strip().lower()
+    if "@" not in email or len(password) < 6:
+        return RedirectResponse("/register?e=bad", status_code=303)
+    if SIGNUP_CODE and not secrets.compare_digest(code, SIGNUP_CODE):
+        return RedirectResponse("/register?e=code", status_code=303)
+    users = _users()
+    if email in users:
+        return RedirectResponse("/register?e=exists", status_code=303)
+    users[email] = {"pw": _hash_pw(password), "created": int(time.time())}
+    _save_users(users)
+    return _grant(email)
+
+
+# reset tokens kept in-memory (short-lived); email delivery not wired -> link shown on page
+_RESET: dict = {}
+
+
+@app.get("/recover", response_class=HTMLResponse)
+def recover_page():
+    return _static("recover.html")
+
+
+@app.post("/api/recover")
+def do_recover(email: str = Form(...)):
+    email = email.strip().lower()
+    users = _users()
+    # always respond the same way (don't leak which emails exist)
+    link = ""
+    if email in users:
+        tok = secrets.token_urlsafe(24)
+        _RESET[tok] = {"email": email, "exp": time.time() + 3600}
+        link = f"/reset?token={tok}"
+    return {"ok": True, "link": link}
+
+
+@app.get("/reset", response_class=HTMLResponse)
+def reset_page():
+    return _static("reset.html")
+
+
+@app.post("/api/reset")
+def do_reset(token: str = Form(...), password: str = Form(...)):
+    rec = _RESET.get(token)
+    if not rec or rec["exp"] < time.time() or len(password) < 6:
+        return RedirectResponse("/reset?token=" + token + "&e=1", status_code=303)
+    users = _users()
+    users.setdefault(rec["email"], {"created": int(time.time())})
+    users[rec["email"]]["pw"] = _hash_pw(password)
+    _save_users(users)
+    _RESET.pop(token, None)
+    return _grant(rec["email"])
+
+
 app.mount("/outputs", StaticFiles(directory=str(OUT)), name="outputs")
 MEDIA = ROOT / "media"; MEDIA.mkdir(exist_ok=True)
 app.mount("/media", StaticFiles(directory=str(MEDIA)), name="media")
+app.mount("/static", StaticFiles(directory=str(Path(__file__).parent / "static")), name="static")
 JOBS: dict[str, dict] = {}
 HEAVY_JOB_LOCK = threading.Semaphore(int(os.getenv("HEAVY_JOB_CONCURRENCY", "1")))
 
@@ -576,6 +682,74 @@ async def api_clip(file: UploadFile = File(...), n: str = Form("5"),
             JOBS[jid].update(status="error", error=str(e)[:300])
     threading.Thread(target=_run, daemon=True).start()
     return {"job_id": jid, "worker": use_worker}
+
+
+FACTORY_PROJECT = os.getenv("FACTORY_PROJECT", "chayniy")
+# station id -> (label, emoji-sprite, board columns feeding it)
+FACTORY_STATIONS = [
+    ("creator",  "Креатор",  "💡", ["ideas"]),
+    ("producer", "Продюсер", "🎬", ["draft", "montage"]),
+    ("reviewer", "Ревьюер",  "🔍", ["review"]),
+    ("director", "Директор", "📤", ["await_post"]),
+    ("analyst",  "Аналитик", "📊", ["posted"]),
+]
+
+
+def _factory_board():
+    from studio import boardsync
+    try:
+        proj = json.loads((PROJECTS / FACTORY_PROJECT / "project.json").read_text(encoding="utf-8"))
+        name = proj.get("board", "chayniy_content")
+    except Exception:
+        name = "chayniy_content"
+    return boardsync.pull(name) or boardsync.default_board(name)
+
+
+@app.get("/api/factory/status")
+def factory_status():
+    from studio.factory import common as C
+    board = _factory_board()
+    counts = {c["id"]: len(c.get("cards", [])) for c in board.get("columns", [])}
+    stations = []
+    for sid, label, sprite, cols in FACTORY_STATIONS:
+        stations.append({"id": sid, "label": label, "sprite": sprite,
+                         "count": sum(counts.get(c, 0) for c in cols)})
+    # recent activity
+    acts, last_role = [], None
+    try:
+        lines = C.ACTIVITY_LOG.read_text(encoding="utf-8").splitlines()[-40:]
+        for ln in lines:
+            ts, role, msg = ln.split("|", 2)
+            acts.append({"ts": int(ts), "role": role, "msg": msg})
+        if acts:
+            last_role = acts[-1]["role"]
+    except Exception:
+        pass
+    return {"autonomous": C.autonomous_on(), "stations": stations,
+            "published": counts.get("posted", 0), "active_role": last_role,
+            "activity": acts[-16:], "credits": _credits()}
+
+
+@app.post("/api/factory/toggle")
+def factory_toggle(on: str = Form(...)):
+    from studio.factory import common as C
+    want = str(on).lower() in ("1", "true", "on", "yes")
+    C.set_autonomous(want)
+    return {"autonomous": want}
+
+
+@app.post("/api/factory/step")
+def factory_step():
+    """Прогнать один шаг конвейера прямо сейчас (в фоне)."""
+    def _run():
+        try:
+            import subprocess, sys as _s
+            subprocess.run([_s.executable, "-m", "studio.factory.run", "--force"],
+                           cwd=str(ROOT), timeout=1800)
+        except Exception:
+            pass
+    threading.Thread(target=_run, daemon=True).start()
+    return {"started": True}
 
 
 @app.post("/api/publish_file")

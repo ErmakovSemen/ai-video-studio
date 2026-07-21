@@ -32,6 +32,9 @@ def step_once(project_slug: str) -> str:
 
 
 def main():
+    force = "--force" in sys.argv
+    if not force and not C.autonomous_on():
+        return                              # таймер вызвал, но автономный режим выключен
     try:
         did = step_once(PROJECT_SLUG)
         C.log("run", f"шаг: {did}")

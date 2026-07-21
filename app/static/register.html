@@ -1,0 +1,48 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Регистрация · Прометей</title>
+<link rel="stylesheet" href="/static/ds.css">
+<style>
+.auth{min-height:100vh;display:grid;place-items:center;padding:24px}
+.card{width:100%;max-width:410px}
+.head{text-align:center;margin-bottom:20px}
+.head .logo{font-size:18px;margin-bottom:12px}.head .logo .flame{width:32px;height:32px;font-size:18px}
+.head h1{font-size:25px;margin-bottom:6px}.head p{color:var(--mut);font-size:13px;margin:0}
+.box{padding:24px}
+.err{background:rgba(255,93,108,.1);border:1px solid rgba(255,93,108,.35);color:#ffb3bb;font-size:13px;border-radius:10px;padding:10px 12px;margin-bottom:14px;display:none}
+.err.on{display:block}
+.hint{font-size:11px;color:var(--faint);margin-top:6px}
+.alt{text-align:center;margin-top:16px;font-size:13px;color:var(--mut)}.alt a{color:var(--ember);font-weight:500}
+.perks{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:16px 0 0}
+</style></head><body>
+<div class="auth">
+  <div class="card">
+    <div class="head">
+      <div class="logo"><span class="flame">🔥</span> ПРОМЕТЕЙ</div>
+      <h1>Запустить фабрику</h1>
+      <p>Команда ИИ-агентов, которая делает контент за тебя</p>
+    </div>
+    <div class="pcard box">
+      <div class="err" id="err"></div>
+      <form method="post" action="/api/register">
+        <div class="field"><label>Рабочий email</label><input name="email" type="email" placeholder="you@company.com" autocomplete="email" autofocus required></div>
+        <div class="field"><label>Пароль</label><input name="password" type="password" placeholder="минимум 6 символов" autocomplete="new-password" minlength="6" required>
+          <div class="hint">Придумай надёжный — им ты войдёшь в кабинет.</div></div>
+        <div class="field" id="codeField" style="display:none"><label>Код приглашения</label><input name="code" type="text" placeholder="если тебе дали код"></div>
+        <button class="btn btn-primary btn-block" type="submit">Создать аккаунт</button>
+      </form>
+      <div class="perks">
+        <span class="chip ember">◆ 5 агентов</span>
+        <span class="chip plasma">◆ автопостинг</span>
+        <span class="chip ok">◆ работает сам</span>
+      </div>
+    </div>
+    <div class="alt">Уже есть аккаунт? <a href="/login">Войти</a></div>
+  </div>
+</div>
+<script>
+const p=new URLSearchParams(location.search),e=p.get('e');
+const map={bad:'Проверь email и пароль (минимум 6 символов).',code:'Неверный код приглашения.',exists:'Такой email уже зарегистрирован — попробуй войти.'};
+if(e){const el=document.getElementById('err');el.textContent=map[e]||'Не получилось. Попробуй ещё раз.';el.classList.add('on');if(e==='code')document.getElementById('codeField').style.display='block';}
+</script>
+</body></html>
