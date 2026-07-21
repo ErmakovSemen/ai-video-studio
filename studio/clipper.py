@@ -74,13 +74,12 @@ def _words_in(words, s, e):
 
 def _src_wh(src):
     r = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0",
-                        "-show_entries", "stream=width,height", "-of", "csv=p=0:s=x", src],
+                        "-show_entries", "stream=width,height", "-of", "default=nk=1:nw=1", src],
                        capture_output=True, text=True)
-    try:
-        w, h = r.stdout.strip().split("x")
-        return int(w), int(h)
-    except Exception:
-        return 1920, 1080
+    nums = [int(x) for x in r.stdout.split() if x.strip().isdigit()]
+    if len(nums) >= 2:
+        return nums[0], nums[1]
+    return 1920, 1080
 
 
 def _face_center_x(src, s, e, wd, idx, samples=9):
@@ -89,9 +88,14 @@ def _face_center_x(src, s, e, wd, idx, samples=9):
     крупнейшего лица (взвешенно по площади). Без cv2 / при ошибке -> None (центр-кроп)."""
     try:
         import cv2
+        CC = getattr(cv2, "CascadeClassifier", None) or getattr(getattr(cv2, "objdetect", None), "CascadeClassifier", None)
+        if CC is None:
+            return None                                 # сборка cv2 без objdetect -> центр-кроп
+        cascade = CC(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
+        if cascade.empty():
+            return None
     except Exception:
-        return None
-    cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
+        return None                                     # любая проблема cv2 -> безопасный центр-кроп
     centers, weights = [], []
     for i in range(samples):
         t = s + (e - s) * (i + 0.5) / samples
@@ -100,18 +104,21 @@ def _face_center_x(src, s, e, wd, idx, samples=9):
                         "-vf", "scale=640:-1", f], capture_output=True)
         if not os.path.exists(f):
             continue
-        img = cv2.imread(f)
-        os.remove(f)
-        if img is None:
+        try:
+            img = cv2.imread(f)
+            os.remove(f)
+            if img is None:
+                continue
+            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            faces = cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(40, 40))
+            if len(faces) == 0:
+                continue
+            fw = img.shape[1]
+            x, y, w, h = max(faces, key=lambda r: r[2] * r[3])   # крупнейшее лицо
+            centers.append((x + w / 2) / fw)
+            weights.append(w * h)
+        except Exception:
             continue
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        faces = cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(40, 40))
-        if len(faces) == 0:
-            continue
-        fw = img.shape[1]
-        x, y, w, h = max(faces, key=lambda r: r[2] * r[3])   # крупнейшее лицо
-        centers.append((x + w / 2) / fw)
-        weights.append(w * h)
     if not centers:
         return None
     # взвешенная медиана (устойчивее среднего к скачкам между спикерами)
@@ -125,48 +132,33 @@ def _face_center_x(src, s, e, wd, idx, samples=9):
 
 
 def _cut_reframe(src, s, e, out, title, words, captions, wd, idx):
-    """Вырезать [s,e], центр-кроп в 9:16, сжать субтитры и хук-заголовок."""
+    """Вырезать [s,e], реврейм 16:9 -> 9:16 вокруг лица спикера, субтитры и хук-заголовок —
+    всё ОДНИМ проходом ffmpeg (надёжнее двухпроходной схемы с промежуточным файлом)."""
     seg_words = _words_in(words, s, e)
-    # реврейм 16:9 -> 9:16: кроп-окно вокруг лица спикера (фолбэк — центр кадра)
     sw, sh = _src_wh(src)
-    cw = int(sh * 9 / 16) & ~1                          # чётная ширина окна
+    cw = int(sh * 9 / 16) & ~1                          # чётная ширина кроп-окна
     fx = _face_center_x(src, s, e, wd, idx)
-    if fx is None:
-        cx = (sw - cw) // 2
-    else:
-        cx = int(fx * sw - cw / 2)
-        cx = max(0, min(cx, sw - cw))
+    cx = (sw - cw) // 2 if fx is None else max(0, min(int(fx * sw - cw / 2), sw - cw))
+
     vf = [f"crop={cw}:{sh}:{cx}:0", f"scale={W}:{H}"]
-    # хук-заголовок сверху (первые ~3с достаточно, но проще на весь клип полупрозрачной плашкой)
-    filters = ",".join(vf)
-    ass = None
     if captions and seg_words:
         ass = os.path.join(wd, f"cap{idx}.ass")
         edit.karaoke_ass(seg_words, ass, group=3)
-    tmp = os.path.join(wd, f"seg{idx}.mp4")
-    subprocess.run([FF, "-y", "-ss", f"{s:.2f}", "-to", f"{e:.2f}", "-i", src,
-                    "-vf", filters, "-c:v", "libx264", "-threads", "2", "-preset", "veryfast",
-                    "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "160k", tmp], capture_output=True)
-    # субтитры + заголовок вторым проходом (если есть)
-    if ass or title:
-        vf2 = []
-        if ass:
-            ap = ass.replace("\\", "/").replace(":", "\\:")
-            fd = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "assets", "fonts")
-            vf2.append(f"ass={ap}:fontsdir='{os.path.abspath(fd)}'")
-        if title:
-            from studio.compose import _wrap
-            tf = out + ".title.txt"
-            open(tf, "w", encoding="utf-8").write(_wrap(title.upper(), width=18))
-            FONT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "assets", "fonts", "DejaVuSans.ttf")
-            vf2.append(f"drawtext=textfile='{tf}':fontfile='{os.path.abspath(FONT)}':fontsize=54:"
-                       f"fontcolor=white:borderw=6:bordercolor=black:box=1:boxcolor=black@0.4:"
-                       f"boxborderw=20:line_spacing=10:x=(w-tw)/2:y=140")
-        r = ffbin.run_checked([FF, "-y", "-i", tmp, "-vf", ",".join(vf2), "-c:v", "libx264",
-                               "-threads", "2", "-preset", "veryfast", "-pix_fmt", "yuv420p",
-                               "-c:a", "copy", out], out_path=out)
-    else:
-        os.replace(tmp, out)
+        ap = ass.replace("\\", "/").replace(":", "\\:")
+        fd = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "assets", "fonts"))
+        vf.append(f"ass={ap}:fontsdir='{fd}'")
+    if title:
+        from studio.compose import _wrap
+        tf = out + ".title.txt"
+        open(tf, "w", encoding="utf-8").write(_wrap(title.upper(), width=18))
+        FONT = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "assets", "fonts", "DejaVuSans.ttf"))
+        vf.append(f"drawtext=textfile='{tf}':fontfile='{FONT}':fontsize=54:fontcolor=white:"
+                  f"borderw=6:bordercolor=black:box=1:boxcolor=black@0.4:boxborderw=20:"
+                  f"line_spacing=10:x=(w-tw)/2:y=140")
+    # -ss/-t как ВЫХОДНЫЕ опции после -i: точная и корректная обрезка [s, e]
+    ffbin.run_checked([FF, "-y", "-i", src, "-ss", f"{s:.2f}", "-t", f"{max(0.5, e - s):.2f}",
+                       "-vf", ",".join(vf), "-c:v", "libx264", "-threads", "2", "-preset", "veryfast",
+                       "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "160k", out], out_path=out)
     return out
 
 
