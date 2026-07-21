@@ -72,10 +72,71 @@ def _words_in(words, s, e):
     return [[w[0], w[1] - s, w[2] - s] for w in words if w[1] >= s and w[2] <= e]
 
 
+def _src_wh(src):
+    r = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0",
+                        "-show_entries", "stream=width,height", "-of", "csv=p=0:s=x", src],
+                       capture_output=True, text=True)
+    try:
+        w, h = r.stdout.strip().split("x")
+        return int(w), int(h)
+    except Exception:
+        return 1920, 1080
+
+
+def _face_center_x(src, s, e, wd, idx, samples=9):
+    """Устойчивый центр лица спикера по X (0..1) для реврейма. None если лиц не нашли.
+    Семплим кадры, детектим Haar-каскадом фронтальные лица, берём медиану центров
+    крупнейшего лица (взвешенно по площади). Без cv2 / при ошибке -> None (центр-кроп)."""
+    try:
+        import cv2
+    except Exception:
+        return None
+    cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
+    centers, weights = [], []
+    for i in range(samples):
+        t = s + (e - s) * (i + 0.5) / samples
+        f = os.path.join(wd, f"face{idx}_{i}.png")
+        subprocess.run([FF, "-y", "-ss", f"{t:.2f}", "-i", src, "-frames:v", "1",
+                        "-vf", "scale=640:-1", f], capture_output=True)
+        if not os.path.exists(f):
+            continue
+        img = cv2.imread(f)
+        os.remove(f)
+        if img is None:
+            continue
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        faces = cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5, minSize=(40, 40))
+        if len(faces) == 0:
+            continue
+        fw = img.shape[1]
+        x, y, w, h = max(faces, key=lambda r: r[2] * r[3])   # крупнейшее лицо
+        centers.append((x + w / 2) / fw)
+        weights.append(w * h)
+    if not centers:
+        return None
+    # взвешенная медиана (устойчивее среднего к скачкам между спикерами)
+    order = sorted(range(len(centers)), key=lambda i: centers[i])
+    tot = sum(weights); acc = 0
+    for i in order:
+        acc += weights[i]
+        if acc >= tot / 2:
+            return centers[i]
+    return centers[order[-1]]
+
+
 def _cut_reframe(src, s, e, out, title, words, captions, wd, idx):
     """Вырезать [s,e], центр-кроп в 9:16, сжать субтитры и хук-заголовок."""
     seg_words = _words_in(words, s, e)
-    vf = [f"crop=ih*9/16:ih:(iw-ih*9/16)/2:0", f"scale={W}:{H}"]
+    # реврейм 16:9 -> 9:16: кроп-окно вокруг лица спикера (фолбэк — центр кадра)
+    sw, sh = _src_wh(src)
+    cw = int(sh * 9 / 16) & ~1                          # чётная ширина окна
+    fx = _face_center_x(src, s, e, wd, idx)
+    if fx is None:
+        cx = (sw - cw) // 2
+    else:
+        cx = int(fx * sw - cw / 2)
+        cx = max(0, min(cx, sw - cw))
+    vf = [f"crop={cw}:{sh}:{cx}:0", f"scale={W}:{H}"]
     # хук-заголовок сверху (первые ~3с достаточно, но проще на весь клип полупрозрачной плашкой)
     filters = ",".join(vf)
     ass = None
