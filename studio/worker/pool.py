@@ -143,7 +143,9 @@ def run_montage_job(input_paths, prompt, out_path, progress=None, captions=False
         except Exception:
             result = {}
         if not result.get("ok"):
-            raise RuntimeError(f"монтаж на воркере упал: {result.get('error', 'unknown')} (exit {exit_code})")
+            logs = _ssh(ip, "docker logs --tail 40 montage 2>&1 | tail -40").stdout.strip()
+            raise RuntimeError(f"монтаж на воркере упал: {result.get('error', 'unknown')} "
+                               f"(exit {exit_code})\n--- worker logs ---\n{logs}")
 
         prog("забираю результат", 94)
         rr = _scp(f"root@{_b(ip)}:/opt/job/out.mp4", out_path, timeout=1200)
