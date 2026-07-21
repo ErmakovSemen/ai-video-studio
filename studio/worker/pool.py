@@ -146,40 +146,65 @@ def run_montage_job(input_paths, prompt, out_path, progress=None, captions=False
         if not started:
             raise RuntimeError(f"не удалось запустить контейнер монтажа: {r.stderr[-400:]}")
 
-        # ждём завершения контейнера, транслируя прогресс
-        while True:
+        # ждём завершения контейнера, транслируя прогресс. Ключевое: НЕ считать джобу
+        # упавшей из-за транзиентного обрыва SSH при опросе — «готово» только когда
+        # docker явно вернул Running=false (а не когда сам ssh не ответил).
+        deadline = time.time() + int(os.getenv("MONTAGE_MAX_SECONDS", "3600"))
+        exit_code = "1"
+        # уникальный маркер, чтобы отличить реальный ответ docker от пустого/оборванного ssh
+        while time.time() < deadline:
             time.sleep(12)
-            st = _ssh(ip, "docker inspect -f '{{.State.Running}} {{.State.ExitCode}}' montage 2>/dev/null || echo 'gone 1'")
-            parts = st.stdout.strip().split()
-            running = parts[0] if parts else "gone"
+            st = _ssh(ip, "echo START; docker inspect -f '{{.State.Running}}|{{.State.ExitCode}}' montage 2>/dev/null; echo END")
+            out = st.stdout
+            if "START" not in out or "END" not in out:
+                continue                                  # ssh оборвался — просто ждём дальше
+            body = out.split("START", 1)[1].split("END", 1)[0].strip()
+            if "|" not in body:
+                # docker inspect ничего не вернул (контейнер уже удалён?) — перепроверим ещё раз
+                continue
+            running, code = body.split("|", 1)
             pj = _ssh(ip, "cat /opt/job/progress.json 2>/dev/null || echo '{}'").stdout.strip()
             try:
                 pd = json.loads(pj)
                 if "stage" in pd:
-                    # маппим прогресс монтажа в диапазон 15..92
                     inner = pd.get("progress", 0)
                     outer = 15 + int(max(0, min(100, inner)) * 0.77)
                     prog(pd["stage"], outer)
             except Exception:
                 pass
-            if running != "true":
-                exit_code = parts[1] if len(parts) > 1 else "1"
+            if running.strip() == "false":
+                exit_code = code.strip() or "1"
                 break
 
-        res = _ssh(ip, "cat /opt/job/result.json 2>/dev/null || echo '{}'").stdout.strip()
-        try:
-            result = json.loads(res)
-        except Exception:
-            result = {}
+        # читаем result.json устойчиво к обрыву ssh (несколько попыток)
+        result = {}
+        for _ in range(5):
+            res = _ssh(ip, "echo START; cat /opt/job/result.json 2>/dev/null; echo END").stdout
+            if "START" in res and "END" in res:
+                body = res.split("START", 1)[1].split("END", 1)[0].strip()
+                try:
+                    result = json.loads(body)
+                    break
+                except Exception:
+                    pass
+            time.sleep(5)
         if not result.get("ok"):
             logs = _ssh(ip, "docker logs --tail 40 montage 2>&1 | tail -40").stdout.strip()
             raise RuntimeError(f"монтаж на воркере упал: {result.get('error', 'unknown')} "
                                f"(exit {exit_code})\n--- worker logs ---\n{logs}")
 
         prog("забираю результат", 94)
-        rr = _scp(f"root@{_b(ip)}:/opt/job/out.mp4", out_path, timeout=1200)
-        if rr.returncode != 0 or not os.path.exists(out_path) or os.path.getsize(out_path) < 1000:
-            raise RuntimeError(f"не удалось забрать результат: {rr.stderr[-300:]}")
+        want = _ssh(ip, "stat -c%s /opt/job/out.mp4 2>/dev/null || echo 0").stdout.strip()
+        want = int(want) if want.isdigit() else 0
+        ok = False
+        for _ in range(4):
+            rr = _scp(f"root@{_b(ip)}:/opt/job/out.mp4", out_path, timeout=1200)
+            if os.path.exists(out_path) and os.path.getsize(out_path) >= max(1000, want):
+                ok = True
+                break
+            time.sleep(5)
+        if not ok:
+            raise RuntimeError(f"не удалось забрать результат ({want} байт): {rr.stderr[-300:]}")
         prog("готово", 100)
         return result.get("result", {})
     finally:
