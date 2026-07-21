@@ -1,6 +1,10 @@
+data/
 venv/
 __pycache__/
 *.pyc
+*.mov
+*.MOV
+*.webm
 .git/
 .DS_Store
 .secrets.env
