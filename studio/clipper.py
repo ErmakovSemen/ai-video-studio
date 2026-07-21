@@ -94,8 +94,9 @@ def _cut_reframe(src, s, e, out, title, words, captions, wd, idx):
             fd = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "assets", "fonts")
             vf2.append(f"ass={ap}:fontsdir='{os.path.abspath(fd)}'")
         if title:
+            from studio.compose import _wrap
             tf = out + ".title.txt"
-            open(tf, "w", encoding="utf-8").write(title.upper())
+            open(tf, "w", encoding="utf-8").write(_wrap(title.upper(), width=18))
             FONT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "assets", "fonts", "DejaVuSans.ttf")
             vf2.append(f"drawtext=textfile='{tf}':fontfile='{os.path.abspath(FONT)}':fontsize=54:"
                        f"fontcolor=white:borderw=6:bordercolor=black:box=1:boxcolor=black@0.4:"
