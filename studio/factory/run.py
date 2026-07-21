@@ -35,6 +35,13 @@ def main():
     force = "--force" in sys.argv
     if not force and not C.autonomous_on():
         return                              # таймер вызвал, но автономный режим выключен
+    # один шаг за раз — не запускать параллельные рендеры при частом тике таймера
+    import fcntl
+    lockf = open(C.STATE_DIR / "run.lock", "w")
+    try:
+        fcntl.flock(lockf, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except BlockingIOError:
+        return                              # предыдущий шаг ещё идёт
     try:
         did = step_once(PROJECT_SLUG)
         C.log("run", f"шаг: {did}")
@@ -42,6 +49,8 @@ def main():
         C.log("run", f"ОШИБКА: {e}")
         traceback.print_exc()
         sys.exit(1)
+    finally:
+        fcntl.flock(lockf, fcntl.LOCK_UN)
 
 
 if __name__ == "__main__":
