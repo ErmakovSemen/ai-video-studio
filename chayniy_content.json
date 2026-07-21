@@ -6,18 +6,6 @@
       "name": "💡 Идеи",
       "cards": [
         {
-          "id": "idea_tea_with_food",
-          "title": "Не запивай еду чаем",
-          "desc": "🪝 Хук: Не запивай еду чаем\nТанины чая мешают усвоению негемового железа из растительной еды — лучше пить чай между приёмами пищи.\n\nБиты: 1) Один нюанс · 2) Танины и железо · 3) Железо из растений · 4) Между приёмами · 5) Через час — и польза\n\n✅ Сценарий готов: scenarios/chayniy/tea_with_food.json — осталось сгенерировать.",
-          "scenario": "scenarios/chayniy/tea_with_food.json",
-          "tags": [
-            "idea",
-            "ready"
-          ],
-          "rendering_failed": false,
-          "retries": 1
-        },
-        {
           "id": "idea_silver_needle",
           "title": "Самый нежный чай — из одних почек",
           "desc": "🪝 Хук: Только почки\nСеребряные иглы (Бай Хао Иньчжэнь) — белый чай из нераскрытых пушистых почек, почти без обработки.\n\nБиты: 1) Нераскрытые почки · 2) Серебряные иглы · 3) Почти без обработки · 4) Светлый и сладкий · 5) Самый честный\n\n✅ Сценарий готов: scenarios/chayniy/silver_needle.json — осталось сгенерировать.",
@@ -104,7 +92,85 @@
     {
       "id": "review",
       "name": "🔍 Ревью",
-      "cards": []
+      "cards": [
+        {
+          "id": "idea_tea_with_food",
+          "title": "Не запивай еду чаем",
+          "desc": "🪝 Хук: Не запивай еду чаем\nТанины чая мешают усвоению негемового железа из растительной еды — лучше пить чай между приёмами пищи.\n\nБиты: 1) Один нюанс · 2) Танины и железо · 3) Железо из растений · 4) Между приёмами · 5) Через час — и польза\n\n✅ Сценарий готов: scenarios/chayniy/tea_with_food.json — осталось сгенерировать.",
+          "scenario": {
+            "title": "Не запивай еду чаем",
+            "hook": "Не запивай еду чаем",
+            "voice": "ru-RU-SvetlanaNeural",
+            "hero": "panda",
+            "brand_image": "assets/chayniy/panda_standing.png",
+            "characters": {
+              "panda": "assets/chayniy/panda_ink.png",
+              "panda_face": "assets/chayniy/panda_face.png",
+              "teacup": "assets/chayniy/teacup_steam.png",
+              "tealeaf": "assets/chayniy/tealeaf.png"
+            },
+            "style": "Japanese sumi-e ink brush illustration, fine pen and ink linework with bold confident strokes and variable line weight, black ink only on white background, occasional diluted ink wash for depth (monochrome only, NO color), large empty white space, single clear focal subject, wabi-sabi, ukiyo-e inspired, hand-drawn spontaneous feel, vertical 9:16",
+            "scenes": [
+              {
+                "image": "a red panda about to sip tea over a plate of food, pausing thoughtfully, bold sumi-e ink, white space",
+                "refs": [
+                  "panda",
+                  "panda_face"
+                ],
+                "motion": "slow zoom in on the pause",
+                "vo": "Любишь запивать обед чаем? Тут есть один нюанс.",
+                "caption": "Один нюанс"
+              },
+              {
+                "image": "a tea cup above a plate with a dark swirl reaching down, bold ink, white background",
+                "refs": [
+                  "teacup"
+                ],
+                "motion": "the dark swirl descends",
+                "vo": "В чае есть танины — они мешают усваивать железо из еды.",
+                "caption": "Танины и железо"
+              },
+              {
+                "image": "ink illustration of plant foods (grains, beans, greens) with an iron symbol, bold ink, white space",
+                "refs": [],
+                "motion": "gentle hold",
+                "vo": "Особенно железо из растений: круп, бобов, зелени.",
+                "caption": "Железо из растений"
+              },
+              {
+                "image": "a clock beside a tea cup moved aside from a plate, bold sumi-e ink, white background",
+                "refs": [
+                  "teacup"
+                ],
+                "motion": "the cup slides aside",
+                "vo": "Следишь за железом — пей чай между приёмами пищи.",
+                "caption": "Между приёмами"
+              },
+              {
+                "image": "a red panda calmly sips tea after a meal, relaxed, bold sumi-e ink, white space",
+                "refs": [
+                  "panda"
+                ],
+                "motion": "slow zoom in",
+                "vo": "Через часик после еды — и чай в радость, и польза.",
+                "caption": "Через час — и польза"
+              }
+            ],
+            "endcard": {
+              "title": "ЧАЙНЫЙ",
+              "sub": "Истории о чае и замедлении.",
+              "vo": "Завари чашку — и почувствуй разницу."
+            }
+          },
+          "tags": [
+            "idea",
+            "ready"
+          ],
+          "rendering_failed": false,
+          "retries": 1,
+          "video_path": "outputs/idea_tea_with_food.mp4"
+        }
+      ]
     },
     {
       "id": "await_post",
