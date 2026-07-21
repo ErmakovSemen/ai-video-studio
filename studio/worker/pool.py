@@ -82,10 +82,9 @@ def run_montage_job(input_paths, prompt, out_path, progress=None, captions=False
     prog("поднимаю рендер-воркер", 3)
     sid = tw.create_server(name, from_image=image_id)
     try:
-        try:
-            tw.add_ipv4(sid)                 # исходящий IPv4 для OpenRouter внутри контейнера
-        except Exception:
-            pass
+        # IPv4 воркеру НЕ нужен: OpenRouter за Cloudflare доступен по IPv6, а контейнер
+        # монтажа запускаем с --network host, чтобы он брал IPv6-egress хоста. Это ещё и
+        # обходит анти-фрод Timeweb (attach IPv4 требует держать ~6000₽ на балансе).
         ip = tw.wait_ready(sid, timeout=600)
         _wait_ssh(ip)
         prog("воркер готов, заливаю задачу", 10)
@@ -110,7 +109,7 @@ def run_montage_job(input_paths, prompt, out_path, progress=None, captions=False
         os.remove(jf)
 
         prog("монтирую (это самый долгий этап)", 15)
-        run = ("docker run -d --name montage "
+        run = ("docker run -d --name montage --network host "
                "-v /opt/prometey:/app -v /opt/models:/root/.cache/huggingface "
                "-v /opt/job:/job --env-file /opt/prometey/.env.prod "
                "prometey-app python3 -m studio.worker.run_montage /job")
