@@ -96,6 +96,11 @@
     {
       "id": "review",
       "name": "🔍 Ревью",
+      "cards": []
+    },
+    {
+      "id": "await_post",
+      "name": "📤 Ожидание постинга",
       "cards": [
         {
           "id": "idea_silver_needle",
@@ -171,11 +176,6 @@
           "video_path": "outputs/idea_silver_needle.mp4"
         }
       ]
-    },
-    {
-      "id": "await_post",
-      "name": "📤 Ожидание постинга",
-      "cards": []
     },
     {
       "id": "posted",
