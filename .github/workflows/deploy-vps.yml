@@ -18,7 +18,7 @@ on:
 
 concurrency:
   group: vps-deploy
-  cancel-in-progress: true
+  cancel-in-progress: false   # queue deploys — cancelling mid `compose up` left the container stopped (502)
 
 jobs:
   deploy:
