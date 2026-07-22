@@ -20,4 +20,5 @@ work/
 queue/
 *.mp3
 *.mp4
+!app/static/assets/demo_*.mp4
 node_modules/
