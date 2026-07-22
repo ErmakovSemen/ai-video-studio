@@ -6,7 +6,7 @@ from pathlib import Path
 from fastapi import FastAPI, Form, HTTPException, UploadFile, File
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from studio import story, imagegen, video, compose
+from studio import story, imagegen, video, compose, scenegen
 from publish import registry as publishers, VideoMeta
 from publish import config as pub_config
 
@@ -251,6 +251,11 @@ def studio():
     return (Path(__file__).parent / "static" / "index.html").read_text(encoding="utf-8")
 
 
+@app.get("/create", response_class=HTMLResponse)
+def create_page():
+    return (Path(__file__).parent / "static" / "create.html").read_text(encoding="utf-8")
+
+
 import re as _re
 def _board_name_ok(name: str) -> bool:
     return bool(_re.match(r'^[a-zA-Zа-яА-ЯёЁ0-9_\-]{1,80}$', name))
@@ -476,6 +481,54 @@ def _run(jid: str, scenario: dict, draft: bool, polish: bool = True, music: str 
         except Exception as e:
             import traceback; traceback.print_exc()
             JOBS[jid].update(status="error", error=str(e)[:300])
+
+
+def _project_or_default(slug: str) -> dict:
+    try:
+        return json.loads((PROJECTS / (slug or FACTORY_PROJECT) / "project.json").read_text(encoding="utf-8"))
+    except Exception:
+        return {"id": slug or "default", "voice": "ru-RU-DmitryNeural", "style": "", "characters": {}}
+
+
+def _create_run(jid: str, idea: str, project_slug: str, extra_instruction: str = ""):
+    JOBS[jid] = {"status": "running", "stage": "продумываю идею", "progress": 5}
+    try:
+        project = _project_or_default(project_slug)
+        res = scenegen.generate(idea, project, extra_instruction=extra_instruction)
+        JOBS[jid].update(stage="рисую кадры и озвучиваю", progress=20, title=res["title"],
+                         scenario=res["scenario"], yt_desc=res.get("desc", ""), yt_tags=res.get("tags", []))
+        out = str(OUT / f"{jid}.mp4")
+        wd = str(WORK / jid)
+        with HEAVY_JOB_LOCK:
+            JOBS[jid]["stage"] = "монтирую"
+            JOBS[jid]["progress"] = 55
+            story.build(res["scenario"], out, wd, base_dir=str(ROOT), draft=True,
+                       gen_stills=True, polish=True, captions=True)
+        JOBS[jid].update(status="done", stage="готово", progress=100, video=f"/outputs/{jid}.mp4")
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        JOBS[jid].update(status="error", error=str(e)[:300])
+
+
+@app.post("/api/create")
+def api_create(idea: str = Form(...), project: str = Form("")):
+    """Флагманский флоу: свободная идея текстом -> агенты генерируют готовый ролик."""
+    if not idea.strip():
+        raise HTTPException(400, "опишите идею")
+    jid = uuid.uuid4().hex[:12]
+    threading.Thread(target=_create_run, args=(jid, idea.strip(), project), daemon=True).start()
+    return {"job_id": jid}
+
+
+@app.post("/api/create/{jid}/edit")
+def api_create_edit(jid: str, instruction: str = Form(...), project: str = Form("")):
+    """Правка результата текстом: пересобираем ролик с учётом уточнения."""
+    prev = JOBS.get(jid)
+    if not prev or not prev.get("scenario"):
+        raise HTTPException(404, "ролик не найден")
+    idea = f"{prev.get('title','')}. {prev.get('scenario',{}).get('hook','')}"
+    threading.Thread(target=_create_run, args=(jid, idea, project, instruction.strip()), daemon=True).start()
+    return {"job_id": jid}
 
 
 @app.get("/api/image-models")

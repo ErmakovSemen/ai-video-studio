@@ -1,0 +1,161 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Создать видео · Прометей</title>
+<link rel="stylesheet" href="/static/ds.css">
+<style>
+body{padding:26px 22px 60px}
+.wrap{max-width:760px}
+.head{margin-bottom:20px}
+.head h1{font-size:24px;margin-bottom:5px}
+.head p{color:var(--mut);font-size:13px;margin:0}
+.back{display:inline-flex;align-items:center;gap:6px;color:var(--mut);font-size:13px;margin-bottom:14px}
+.back:hover{color:var(--txt)}
+.stage-box{padding:22px}
+textarea#idea{min-height:88px;font-size:15px}
+.examples{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.ex{font-family:var(--mono);font-size:11px;color:var(--mut);background:var(--panel-3);border:1px solid var(--line-2);border-radius:7px;padding:5px 9px;cursor:pointer}
+.ex:hover{border-color:var(--ember);color:var(--txt)}
+#goBtn{margin-top:16px}
+/* working state */
+.working{display:none;margin-top:8px}
+.working.on{display:block}
+.stagelbl{text-align:center;font-family:var(--mono);font-size:12px;color:var(--txt-2);margin-top:14px}
+.bar{margin-top:10px}
+/* result */
+.result{display:none;margin-top:22px}
+.result.on{display:block}
+.rlayout{display:grid;grid-template-columns:220px 1fr;gap:22px}
+.rphone{border-radius:20px;padding:7px;background:#05050a;border:1px solid var(--line-2);box-shadow:0 0 0 1px rgba(255,122,69,.12),var(--shadow);position:relative}
+.rphone::before{content:"";position:absolute;top:11px;left:50%;transform:translateX(-50%);width:40px;height:4px;border-radius:3px;background:#1c1c26;z-index:2}
+.rphone video{width:100%;aspect-ratio:9/16;object-fit:cover;border-radius:14px;display:block;background:#000}
+.rtitle{font-size:17px;margin:0 0 14px}
+.editbox{margin-top:6px}
+.editbox label{margin-bottom:8px}
+.edithint{font-size:11px;color:var(--faint);margin-top:6px}
+.actionrow{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.pubdone{display:none;align-items:center;gap:8px;color:var(--ok);font-size:13px;font-family:var(--mono);margin-top:12px}
+.pubdone.on{display:flex}
+.err{background:rgba(255,93,108,.1);border:1px solid rgba(255,93,108,.35);color:#ffb3bb;font-size:13px;border-radius:10px;padding:10px 12px;margin-top:14px;display:none}
+.err.on{display:block}
+@media (max-width:620px){.rlayout{grid-template-columns:1fr}.rphone{max-width:220px;margin:0 auto}}
+</style></head><body>
+<div class="wrap">
+  <a class="back" href="/cabinet">← Кабинет</a>
+  <div class="head"><h1>Создать видео</h1><p>Опишите идею словами — отдел агентов соберёт готовый Shorts.</p></div>
+
+  <div class="pcard stage-box" id="askBox">
+    <label>Тема или идея ролика</label>
+    <textarea id="idea" placeholder="Например: почему нельзя переставать читать книги после школы"></textarea>
+    <div class="examples">
+      <span class="ex">чай vs кофе для концентрации</span>
+      <span class="ex">миф про 8 стаканов воды в день</span>
+      <span class="ex">почему утренние ритуалы работают</span>
+    </div>
+    <button class="btn btn-primary" id="goBtn">✦ Создать видео</button>
+    <div class="err" id="askErr"></div>
+
+    <div class="working" id="working">
+      <div class="dept" id="dept">
+        <div class="desks">
+          <div class="desk" data-s="0"><div class="agent">💡</div><div class="deskplate"></div><div class="role">Идея</div><div class="mini"><i></i></div></div>
+          <div class="desk" data-s="1"><div class="agent">🎨</div><div class="deskplate"></div><div class="role">Кадры</div><div class="mini"><i></i></div></div>
+          <div class="desk" data-s="1"><div class="agent">🎙</div><div class="deskplate"></div><div class="role">Озвучка</div><div class="mini"><i></i></div></div>
+          <div class="desk" data-s="2"><div class="agent">🎬</div><div class="deskplate"></div><div class="role">Монтаж</div><div class="mini"><i></i></div></div>
+        </div>
+        <div class="belt"><div class="reel">🎞</div></div>
+      </div>
+      <div class="bar"><div class="bar" style="margin-bottom:0"><i id="fill" style="display:block;height:8px;background:linear-gradient(90deg,var(--ember),var(--ember-hot));border-radius:6px;width:0;transition:.5s"></i></div></div>
+      <div class="stagelbl" id="stageLbl">…</div>
+    </div>
+  </div>
+
+  <div class="pcard result" id="result">
+    <div class="rlayout">
+      <div class="rphone"><video id="rvid" controls playsinline></video></div>
+      <div>
+        <h2 class="rtitle" id="rtitle"></h2>
+        <div class="editbox">
+          <label>Не то? Уточните текстом — пересоберём этот момент</label>
+          <textarea id="editText" placeholder="Например: сделай хук острее, вставь факт про антиоксиданты"></textarea>
+          <button class="btn btn-ghost" id="editBtn" style="margin-top:10px">↻ Пересобрать с уточнением</button>
+          <div class="edithint">Правка перегенерирует ролик целиком с учётом уточнения (~1-2 мин).</div>
+        </div>
+        <div class="actionrow">
+          <a class="btn btn-ghost" id="dlBtn" download>⬇ Скачать</a>
+          <button class="btn btn-primary" id="pubBtn">▲ Опубликовать</button>
+        </div>
+        <div class="pubdone" id="pubDone"><span class="dot live"></span> Опубликовано</div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+document.querySelectorAll('.ex').forEach(e=>e.onclick=()=>{$('#idea').value=e.textContent;$('#idea').focus()});
+
+let curJid=null,curScenario=null,curTitle=null,curYt={};
+
+function setStage(msg,pct){
+  $('#fill').style.width=(pct||0)+'%';$('#stageLbl').textContent=msg;
+  document.querySelectorAll('#dept .desk').forEach(d=>{
+    const s=+d.dataset.s;
+    d.classList.toggle('busy', pct>=([0,20,55][s]||0) && pct<95);
+  });
+}
+
+async function poll(jid){
+  try{
+    const j=await(await fetch('/api/jobs/'+jid)).json();
+    if(j.status==='error'){$('#askErr').textContent='Ошибка: '+(j.error||'сбой генерации');$('#askErr').classList.add('on');
+      $('#working').classList.remove('on');$('#goBtn').disabled=false;return;}
+    setStage(j.stage||'работаю…', j.progress||0);
+    if(j.status==='done'){
+      curScenario=j.scenario;curTitle=j.title;curYt={desc:j.yt_desc,tags:j.yt_tags};
+      $('#rvid').src=j.video+'?t='+Date.now();$('#dlBtn').href=j.video;$('#rtitle').textContent=j.title||'';
+      $('#working').classList.remove('on');$('#result').classList.add('on');$('#goBtn').disabled=false;
+      $('#pubDone').classList.remove('on');
+      $('#result').scrollIntoView({behavior:'smooth',block:'start'});
+      return;
+    }
+    setTimeout(()=>poll(jid),1500);
+  }catch(e){setTimeout(()=>poll(jid),2000);}
+}
+
+$('#goBtn').onclick=async()=>{
+  const idea=$('#idea').value.trim();
+  if(!idea)return;
+  $('#askErr').classList.remove('on');$('#goBtn').disabled=true;$('#working').classList.add('on');
+  $('#result').classList.remove('on');setStage('продумываю идею',5);
+  const fd=new FormData();fd.append('idea',idea);
+  try{const r=await fetch('/api/create',{method:'POST',body:fd});const j=await r.json();
+    if(!r.ok)throw new Error(j.detail||'ошибка');
+    curJid=j.job_id;poll(curJid);
+  }catch(e){$('#askErr').textContent='Ошибка: '+e.message;$('#askErr').classList.add('on');$('#goBtn').disabled=false;$('#working').classList.remove('on');}
+};
+
+$('#editBtn').onclick=async()=>{
+  const instr=$('#editText').value.trim();
+  if(!instr||!curJid)return;
+  $('#result').classList.remove('on');$('#working').classList.add('on');setStage('учитываю уточнение',5);
+  window.scrollTo({top:0,behavior:'smooth'});
+  const fd=new FormData();fd.append('instruction',instr);
+  try{const r=await fetch(`/api/create/${curJid}/edit`,{method:'POST',body:fd});const j=await r.json();
+    if(!r.ok)throw new Error(j.detail||'ошибка');
+    poll(curJid);
+  }catch(e){$('#askErr').textContent='Ошибка: '+e.message;$('#askErr').classList.add('on');$('#working').classList.remove('on');$('#result').classList.add('on');}
+};
+
+$('#pubBtn').onclick=async()=>{
+  if(!curJid)return;
+  const b=$('#pubBtn');b.disabled=true;b.textContent='Публикую…';
+  const fd=new FormData();
+  fd.append('video',$('#rvid').getAttribute('src').split('?')[0]);
+  fd.append('title',(curTitle||'').slice(0,100));
+  fd.append('description',curYt.desc||'');
+  try{const r=await fetch('/api/publish_file',{method:'POST',body:fd});
+    if(!r.ok)throw new Error('не удалось опубликовать');
+    $('#pubDone').classList.add('on');b.textContent='▲ Опубликовано';
+  }catch(e){b.disabled=false;b.textContent='▲ Опубликовать';alert('Ошибка публикации: '+e.message);}
+};
+</script>
+</body></html>
