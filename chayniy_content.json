@@ -76,23 +76,7 @@
             "idea",
             "ready"
           ]
-        }
-      ]
-    },
-    {
-      "id": "draft",
-      "name": "✏️ Черновик",
-      "cards": []
-    },
-    {
-      "id": "montage",
-      "name": "🎬 Монтаж",
-      "cards": []
-    },
-    {
-      "id": "review",
-      "name": "🔍 Ревью",
-      "cards": [
+        },
         {
           "id": "idea_tea_with_food",
           "title": "Не запивай еду чаем",
@@ -118,7 +102,7 @@
                   "panda_face"
                 ],
                 "motion": "slow zoom in on the pause",
-                "vo": "Любишь запивать обед чаем? Тут есть один нюанс.",
+                "vo": "Запиваешь обед чаем? Возможно, ты теряешь важный элемент.",
                 "caption": "Один нюанс"
               },
               {
@@ -127,14 +111,14 @@
                   "teacup"
                 ],
                 "motion": "the dark swirl descends",
-                "vo": "В чае есть танины — они мешают усваивать железо из еды.",
+                "vo": "Танины в чае могут снижать усвоение железа — особенно растительного.",
                 "caption": "Танины и железо"
               },
               {
                 "image": "ink illustration of plant foods (grains, beans, greens) with an iron symbol, bold ink, white space",
                 "refs": [],
                 "motion": "gentle hold",
-                "vo": "Особенно железо из растений: круп, бобов, зелени.",
+                "vo": "Это важно, если у тебя дефицит железа или ты на растительной диете.",
                 "caption": "Железо из растений"
               },
               {
@@ -143,7 +127,7 @@
                   "teacup"
                 ],
                 "motion": "the cup slides aside",
-                "vo": "Следишь за железом — пей чай между приёмами пищи.",
+                "vo": "Здоровым людям переживать не стоит, но если следишь за железом — пей чай отдельно.",
                 "caption": "Между приёмами"
               },
               {
@@ -152,7 +136,7 @@
                   "panda"
                 ],
                 "motion": "slow zoom in",
-                "vo": "Через часик после еды — и чай в радость, и польза.",
+                "vo": "Час после еды — и чай не помешает, а только порадует.",
                 "caption": "Через час — и польза"
               }
             ],
@@ -167,10 +151,24 @@
             "ready"
           ],
           "rendering_failed": false,
-          "retries": 1,
-          "video_path": "outputs/idea_tea_with_food.mp4"
+          "retries": 2
         }
       ]
+    },
+    {
+      "id": "draft",
+      "name": "✏️ Черновик",
+      "cards": []
+    },
+    {
+      "id": "montage",
+      "name": "🎬 Монтаж",
+      "cards": []
+    },
+    {
+      "id": "review",
+      "name": "🔍 Ревью",
+      "cards": []
     },
     {
       "id": "await_post",
