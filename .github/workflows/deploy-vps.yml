@@ -46,7 +46,9 @@ jobs:
             tar -xzf app.tar.gz -C /tmp/deploy_x
             rsync -a --delete --exclude="data" --exclude=".env.prod" /tmp/deploy_x/ /opt/prometey/
             rm -rf /tmp/deploy_x app.tar.gz
+            docker builder prune -f >/dev/null 2>&1 || true   # keep the 14GB disk from filling
             docker compose build
             docker compose up -d
             docker image prune -f
+            docker builder prune -af >/dev/null 2>&1 || true
           '
