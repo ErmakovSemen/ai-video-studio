@@ -248,6 +248,10 @@ def root():
 
 @app.get("/studio", response_class=HTMLResponse)
 def studio():
+    """Сырой JSON-редактор сценариев — инструмент разработчика, не часть продукта.
+    Клиенту показывать нечего, поэтому по умолчанию закрыт (DEV_TOOLS=1 включает)."""
+    if os.getenv("DEV_TOOLS", "") != "1":
+        return RedirectResponse("/create")
     return (Path(__file__).parent / "static" / "index.html").read_text(encoding="utf-8")
 
 
