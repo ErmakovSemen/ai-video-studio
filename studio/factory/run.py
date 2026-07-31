@@ -6,7 +6,19 @@
 import os, sys, traceback
 from studio.factory import common as C, creator, producer, reviewer, director, analyst
 
-PROJECT_SLUG = os.getenv("FACTORY_PROJECT", "chayniy")
+def _active_project() -> str:
+    """Проект клиента из воркспейса (задаётся онбордингом), иначе — env/дефолт."""
+    try:
+        import json as _j
+        ws = _j.loads((C.ROOT / "config" / "workspace.json").read_text(encoding="utf-8"))
+        if ws.get("project"):
+            return ws["project"]
+    except Exception:
+        pass
+    return os.getenv("FACTORY_PROJECT", "chayniy")
+
+
+PROJECT_SLUG = _active_project()
 
 
 def step_once(project_slug: str) -> str:

@@ -1,0 +1,98 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Мои видео · Прометей</title>
+<link rel="stylesheet" href="/static/ds.css">
+<style>
+body{padding:26px 22px 60px}
+.wrap{max-width:1080px}
+.back{display:inline-flex;align-items:center;gap:6px;color:var(--mut);font-size:13px;margin-bottom:14px}
+.back:hover{color:var(--txt)}
+.head{margin-bottom:20px}
+.head h1{font-size:24px;margin-bottom:5px}
+.head p{color:var(--mut);font-size:13px;margin:0}
+.filters{display:flex;gap:8px;margin-bottom:18px;flex-wrap:wrap}
+.f{font-family:var(--mono);font-size:11px;color:var(--mut);background:var(--panel-2);border:1px solid var(--line-2);border-radius:7px;padding:6px 11px;cursor:pointer}
+.f.on{border-color:var(--ember);color:var(--txt)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:16px}
+.v{background:var(--panel);border:1px solid var(--line);border-radius:13px;overflow:hidden;display:flex;flex-direction:column}
+.v video{width:100%;aspect-ratio:9/16;object-fit:cover;background:#000;display:block}
+.v .b{padding:12px 13px 13px}
+.v .k{font-family:var(--pixel);font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:var(--ember)}
+.v .k.montage{color:var(--plasma)}.v .k.clip{color:var(--ok)}
+.v .t{font-size:13px;font-weight:600;line-height:1.35;margin:6px 0 4px}
+.v .d{font-size:11px;color:var(--faint);font-family:var(--mono)}
+.v .acts{display:flex;gap:6px;margin-top:10px}
+.v .acts a,.v .acts button{flex:1;font-size:12px;padding:7px;border-radius:8px;text-align:center;background:var(--panel-3);border:1px solid var(--line-2);color:var(--txt-2);cursor:pointer;font-family:var(--body)}
+.v .acts a:hover,.v .acts button:hover{border-color:var(--ember);color:#fff}
+.v .acts .del:hover{border-color:var(--bad);color:var(--bad)}
+.empty{text-align:center;padding:60px 24px}
+.empty .ic{font-size:40px;margin-bottom:14px;opacity:.5}
+.empty h3{margin-bottom:8px}
+.empty p{color:var(--mut);font-size:14px;margin:0 auto 20px;max-width:340px}
+</style></head><body>
+<div class="wrap">
+  <a class="back" href="/cabinet">← Кабинет</a>
+  <div class="head"><h1>Мои видео</h1><p>Всё, что создали агенты и вы.</p></div>
+  <div class="filters" id="filters">
+    <span class="f on" data-k="">Все</span>
+    <span class="f" data-k="create">Созданные</span>
+    <span class="f" data-k="montage">Нейромонтаж</span>
+    <span class="f" data-k="clip">Нарезка</span>
+  </div>
+  <div class="grid" id="grid"></div>
+  <div class="empty hide" id="empty">
+    <div class="ic">🎬</div>
+    <h3>Пока пусто</h3>
+    <p>Создайте первый ролик — опишите идею словами, остальное сделают агенты.</p>
+    <a class="btn btn-primary" href="/create">✦ Создать видео</a>
+  </div>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+let ALL=[],FILTER='';
+const KIND={create:['create','Создано'],montage:['montage','Монтаж'],clip:['clip','Нарезка']};
+function fmt(ts){const d=new Date(ts*1000);return d.toLocaleDateString('ru',{day:'numeric',month:'short'})+' '+d.toTimeString().slice(0,5)}
+function render(){
+  const items=ALL.filter(i=>!FILTER||i.kind===FILTER);
+  $('#grid').innerHTML=items.map(i=>{
+    const k=KIND[i.kind]||['create','Видео'];
+    return `<div class="v">
+      <video src="${i.url}" preload="metadata" muted playsinline onmouseenter="this.play()" onmouseleave="this.pause()"></video>
+      <div class="b">
+        <div class="k ${k[0]}">${k[1]}</div>
+        <div class="t">${(i.title||'').replace(/</g,'&lt;')}</div>
+        <div class="d">${fmt(i.created)}</div>
+        <div class="acts">
+          <a href="${i.url}" download>⬇</a>
+          <button onclick="pub('${i.id}','${i.url}')">▲</button>
+          <button class="del" onclick="del('${i.id}')">✕</button>
+        </div>
+      </div></div>`;
+  }).join('');
+  $('#grid').classList.toggle('hide',!items.length);
+  $('#empty').classList.toggle('hide',!!items.length);
+}
+async function load(){
+  try{ALL=await(await fetch('/api/videos')).json();}catch(_){ALL=[]}
+  render();
+}
+async function del(id){
+  if(!confirm('Удалить это видео? Файл будет удалён навсегда.'))return;
+  await fetch('/api/videos/'+id,{method:'DELETE'});load();
+}
+async function pub(id,url){
+  const item=ALL.find(x=>x.id===id);if(!item)return;
+  if(!confirm('Опубликовать «'+item.title+'» в подключённые соцсети?'))return;
+  const fd=new FormData();fd.append('video',url);fd.append('title',(item.title||'').slice(0,100));
+  fd.append('description',item.desc||'');
+  try{const r=await fetch('/api/publish_file',{method:'POST',body:fd});
+    alert(r.ok?'Опубликовано':'Не удалось опубликовать — проверьте подключения');
+  }catch(e){alert('Ошибка: '+e.message)}
+}
+document.querySelectorAll('.f').forEach(f=>f.onclick=()=>{
+  document.querySelectorAll('.f').forEach(x=>x.classList.remove('on'));
+  f.classList.add('on');FILTER=f.dataset.k;render();
+});
+load();
+</script>
+</body></html>

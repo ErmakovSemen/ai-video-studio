@@ -11,16 +11,28 @@ OR_KEY = os.getenv("OPENROUTER_API_KEY", "")
 TEXT_MODEL = os.getenv("FACTORY_TEXT_MODEL", "anthropic/claude-sonnet-4.5")
 
 
-def call_llm(system: str, user: str, model: str = None, temperature: float = 0.6, timeout: int = 90) -> str:
+def call_llm(system: str, user: str, model: str = None, temperature: float = 0.6, timeout: int = 120,
+             tries: int = 3) -> str:
+    """LLM-вызов с ретраями: без них один медленный/сорванный ответ OpenRouter
+    ронял весь пользовательский флоу создания видео."""
     if not OR_KEY:
         raise RuntimeError("OPENROUTER_API_KEY не задан")
     body = {"model": model or TEXT_MODEL, "temperature": temperature,
             "messages": [{"role": "system", "content": system}, {"role": "user", "content": user}]}
-    req = urllib.request.Request("https://openrouter.ai/api/v1/chat/completions",
-        data=json.dumps(body).encode(),
-        headers={"Authorization": f"Bearer {OR_KEY}", "Content-Type": "application/json"})
-    r = json.load(urllib.request.urlopen(req, timeout=timeout))
-    return r["choices"][0]["message"]["content"].strip()
+    last = None
+    for attempt in range(tries):
+        try:
+            req = urllib.request.Request("https://openrouter.ai/api/v1/chat/completions",
+                data=json.dumps(body).encode(),
+                headers={"Authorization": f"Bearer {OR_KEY}", "Content-Type": "application/json"})
+            r = json.load(urllib.request.urlopen(req, timeout=timeout))
+            return r["choices"][0]["message"]["content"].strip()
+        except Exception as e:
+            last = e
+            if attempt < tries - 1:
+                import time as _t
+                _t.sleep(2 * (attempt + 1))
+    raise RuntimeError(f"LLM не ответил после {tries} попыток: {str(last)[:200]}")
 
 
 def parse_json(txt: str):

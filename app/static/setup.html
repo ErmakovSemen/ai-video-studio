@@ -1,0 +1,112 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Настройка канала · Прометей</title>
+<link rel="stylesheet" href="/static/ds.css">
+<style>
+body{padding:34px 22px 60px}
+.wrap{max-width:620px}
+.head{text-align:center;margin-bottom:26px}
+.head .logo{font-size:17px;margin-bottom:14px}.head .logo .flame{width:30px;height:30px;font-size:17px}
+.head h1{font-size:26px;margin-bottom:7px}
+.head p{color:var(--mut);font-size:14px;margin:0}
+.box{padding:26px 24px}
+.steps{display:flex;gap:6px;margin-bottom:22px}
+.steps i{flex:1;height:3px;border-radius:2px;background:var(--panel-3)}
+.steps i.on{background:linear-gradient(90deg,var(--ember),var(--ember-hot))}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px}
+.opt{padding:12px;border:1px solid var(--line-2);border-radius:10px;cursor:pointer;transition:.14s;background:var(--panel-2)}
+.opt:hover{border-color:var(--line-2);background:var(--panel-3)}
+.opt.on{border-color:var(--ember);box-shadow:var(--glow-ember)}
+.opt b{display:block;font-family:var(--head);font-size:13px;font-weight:600}
+.opt span{font-size:11px;color:var(--mut)}
+.emoji-row{display:flex;gap:7px;flex-wrap:wrap}
+.em{width:40px;height:40px;display:grid;place-items:center;font-size:19px;border:1px solid var(--line-2);border-radius:10px;cursor:pointer;background:var(--panel-2)}
+.em.on{border-color:var(--ember);box-shadow:var(--glow-ember)}
+.err{background:rgba(255,93,108,.1);border:1px solid rgba(255,93,108,.35);color:#ffb3bb;font-size:13px;border-radius:10px;padding:10px 12px;margin-top:14px;display:none}
+.err.on{display:block}
+.hint{font-size:11px;color:var(--faint);margin-top:6px}
+.skip{text-align:center;margin-top:16px;font-size:12px;color:var(--faint)}
+.skip a{color:var(--mut)}
+</style></head><body>
+<div class="wrap">
+  <div class="head">
+    <div class="logo"><span class="flame">🔥</span> ПРОМЕТЕЙ</div>
+    <h1>Настроим ваш канал</h1>
+    <p>Минута — и агенты начнут делать видео под вашу тему</p>
+  </div>
+
+  <div class="pcard box">
+    <div class="steps"><i class="on"></i><i class="on"></i><i class="on"></i></div>
+
+    <div class="field">
+      <label>Название канала или бренда</label>
+      <input id="name" type="text" placeholder="Например: Кофейня «Ясно»" autofocus>
+    </div>
+
+    <div class="field">
+      <label>О чём канал</label>
+      <textarea id="topic" placeholder="Например: обжарка кофе, рецепты, короткие советы бариста для домашних кофеманов"></textarea>
+      <div class="hint">Чем конкретнее — тем точнее агенты придумают идеи роликов.</div>
+    </div>
+
+    <div class="field">
+      <label>Визуальный стиль роликов</label>
+      <div class="opts" id="styles"></div>
+    </div>
+
+    <div class="field">
+      <label>Голос озвучки</label>
+      <div class="opts" id="voices"></div>
+    </div>
+
+    <div class="field">
+      <label>Иконка</label>
+      <div class="emoji-row" id="emojis"></div>
+    </div>
+
+    <button class="btn btn-primary btn-block" id="go">Запустить канал →</button>
+    <div class="err" id="err"></div>
+  </div>
+  <div class="skip"><a href="/cabinet">Пропустить пока</a></div>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+let STYLE='ink',VOICE='female_calm',EMOJI='🎬';
+const EMOJIS=['🎬','☕','🍵','💪','📚','🎨','🚀','🌿','🍿','💡','🏠','🐾'];
+
+(async()=>{
+  const p=await(await fetch('/api/setup/presets')).json();
+  $('#styles').innerHTML=p.styles.map(s=>`<div class="opt ${s.id===STYLE?'on':''}" data-t="style" data-v="${s.id}"><b>${s.label}</b></div>`).join('');
+  $('#voices').innerHTML=p.voices.map(v=>`<div class="opt ${v.id===VOICE?'on':''}" data-t="voice" data-v="${v.id}"><b>${v.label}</b></div>`).join('');
+  $('#emojis').innerHTML=EMOJIS.map(e=>`<div class="em ${e===EMOJI?'on':''}" data-e="${e}">${e}</div>`).join('');
+  document.querySelectorAll('.opt').forEach(o=>o.onclick=()=>{
+    const t=o.dataset.t;
+    document.querySelectorAll(`.opt[data-t="${t}"]`).forEach(x=>x.classList.remove('on'));
+    o.classList.add('on');
+    if(t==='style')STYLE=o.dataset.v;else VOICE=o.dataset.v;
+  });
+  document.querySelectorAll('.em').forEach(e=>e.onclick=()=>{
+    document.querySelectorAll('.em').forEach(x=>x.classList.remove('on'));
+    e.classList.add('on');EMOJI=e.dataset.e;
+  });
+})();
+
+$('#go').onclick=async()=>{
+  const name=$('#name').value.trim(),topic=$('#topic').value.trim();
+  if(!name||!topic){$('#err').textContent='Заполните название и тему канала.';$('#err').classList.add('on');return}
+  const b=$('#go');b.disabled=true;b.textContent='Создаю канал…';$('#err').classList.remove('on');
+  const fd=new FormData();
+  fd.append('name',name);fd.append('topic',topic);fd.append('style',STYLE);
+  fd.append('voice',VOICE);fd.append('emoji',EMOJI);
+  try{
+    const r=await fetch('/api/setup',{method:'POST',body:fd});
+    const j=await r.json();
+    if(!r.ok)throw new Error(j.detail||'не удалось создать канал');
+    location.href='/cabinet';
+  }catch(e){
+    $('#err').textContent='Ошибка: '+e.message;$('#err').classList.add('on');
+    b.disabled=false;b.textContent='Запустить канал →';
+  }
+};
+</script>
+</body></html>

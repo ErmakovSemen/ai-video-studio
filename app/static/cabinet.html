@@ -59,6 +59,7 @@ iframe{width:100%;height:100%;border:0;background:var(--void)}
   <!-- SIDEBAR -->
   <aside class="side" id="side">
     <div class="brand"><span class="flame">🔥</span><b>ПРОМЕТЕЙ</b></div>
+    <div id="wsName" style="padding:0 8px 10px;font-size:12px;color:var(--mut)"></div>
 
     <div class="navgroup">
       <div class="glabel">Фабрика</div>
@@ -72,7 +73,8 @@ iframe{width:100%;height:100%;border:0;background:var(--void)}
     </div>
     <div class="navgroup">
       <div class="glabel">Библиотека</div>
-      <div class="navitem" data-src="/content?name=chayniy_content"><span class="ic">▦</span> Мои видео</div>
+      <div class="navitem" onclick="location.href='/videos'"><span class="ic">▦</span> Мои видео</div>
+      <div class="navitem" id="navPlan"><span class="ic">◇</span> Контент-план</div>
       <div class="navitem" data-view="conn"><span class="ic">⚡</span> Подключения</div>
     </div>
 
@@ -198,6 +200,19 @@ function renderLog(acts){
   el.innerHTML=acts.slice().reverse().map(a=>`<div><span class="t">${tsfmt(a.ts)}</span> <span class="${cls[a.role]||'a'}">[${a.role}]</span> ${a.msg}</div>`).join('');
 }
 let AUTO=false;
+// ── workspace: канал клиента (вместо захардкоженного проекта) ──
+async function loadWorkspace(){
+  try{
+    const w=await(await fetch('/api/workspace')).json();
+    if(!w.onboarded){location.href='/setup';return;}
+    document.getElementById('wsName').textContent=(w.emoji||'')+' '+(w.name||'');
+    const plan=document.getElementById('navPlan');
+    plan.onclick=()=>show({src:'/content?name='+encodeURIComponent(w.board)});
+    plan.dataset.src='/content?name='+w.board;
+  }catch(_){}
+}
+loadWorkspace();
+
 async function poll(){
   try{const st=await(await fetch('/api/factory/status')).json();
     renderDept(st);

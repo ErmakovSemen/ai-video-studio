@@ -483,9 +483,168 @@ def _run(jid: str, scenario: dict, draft: bool, polish: bool = True, music: str 
             JOBS[jid].update(status="error", error=str(e)[:300])
 
 
+# ---------- workspace (одна установка = один воркспейс клиента) ----------
+WORKSPACE_FILE = CONFIG_DIR / "workspace.json"
+
+STYLE_PRESETS = {
+    "ink": ("Тушь и минимализм", "Japanese sumi-e ink brush illustration, bold confident strokes, "
+            "black ink on white, large empty space, no text, vertical 9:16"),
+    "flat": ("Плоская графика", "modern flat vector illustration, bold shapes, limited warm palette, "
+             "clean geometric composition, no text, vertical 9:16"),
+    "3d": ("Мягкий 3D", "soft 3D render, clay-like materials, gentle studio lighting, pastel palette, "
+           "friendly rounded forms, no text, vertical 9:16"),
+    "photo": ("Фотореализм", "cinematic photorealistic still, shallow depth of field, natural light, "
+              "editorial composition, no text, vertical 9:16"),
+    "retro": ("Ретро-постер", "retro screenprint poster art, halftone texture, muted vintage palette, "
+              "bold graphic shapes, no text, vertical 9:16"),
+}
+VOICE_PRESETS = {
+    "female_calm": ("Женский, спокойный", "ru-RU-SvetlanaNeural"),
+    "female_warm": ("Женский, тёплый", "ru-RU-DariyaNeural"),
+    "male_calm": ("Мужской, спокойный", "ru-RU-DmitryNeural"),
+}
+
+
+def _workspace() -> dict:
+    if WORKSPACE_FILE.exists():
+        try:
+            return json.loads(WORKSPACE_FILE.read_text(encoding="utf-8"))
+        except Exception:
+            pass
+    return {}
+
+
+def _active_project_slug() -> str:
+    return _workspace().get("project") or os.getenv("FACTORY_PROJECT", "chayniy")
+
+
+@app.get("/api/workspace")
+def api_workspace():
+    ws = _workspace()
+    slug = _active_project_slug()
+    proj = {}
+    try:
+        proj = json.loads((PROJECTS / slug / "project.json").read_text(encoding="utf-8"))
+    except Exception:
+        pass
+    return {"onboarded": bool(ws.get("onboarded")), "project": slug,
+            "name": proj.get("name", ""), "emoji": proj.get("emoji", "🎬"),
+            "board": proj.get("board", f"{slug}_content")}
+
+
+@app.get("/setup", response_class=HTMLResponse)
+def setup_page():
+    return (Path(__file__).parent / "static" / "setup.html").read_text(encoding="utf-8")
+
+
+@app.get("/api/setup/presets")
+def setup_presets():
+    return {"styles": [{"id": k, "label": v[0]} for k, v in STYLE_PRESETS.items()],
+            "voices": [{"id": k, "label": v[0]} for k, v in VOICE_PRESETS.items()]}
+
+
+@app.post("/api/setup")
+def api_setup(name: str = Form(...), topic: str = Form(...), style: str = Form("ink"),
+              voice: str = Form("female_calm"), emoji: str = Form("🎬")):
+    """Первичная настройка воркспейса: создаём проект клиента и делаем его активным."""
+    nm = name.strip()[:60]
+    if not nm or not topic.strip():
+        raise HTTPException(400, "укажите название и тему канала")
+    import re as _r
+    # транслитерация: без неё любое кириллическое имя схлопывалось в "channel"
+    TR = {"а":"a","б":"b","в":"v","г":"g","д":"d","е":"e","ё":"e","ж":"zh","з":"z","и":"i",
+          "й":"y","к":"k","л":"l","м":"m","н":"n","о":"o","п":"p","р":"r","с":"s","т":"t",
+          "у":"u","ф":"f","х":"h","ц":"c","ч":"ch","ш":"sh","щ":"sch","ъ":"","ы":"y","ь":"",
+          "э":"e","ю":"yu","я":"ya"}
+    lat = "".join(TR.get(ch, ch) for ch in nm.lower())
+    base = _r.sub(r"[^a-z0-9]+", "_", lat).strip("_") or "channel"
+    slug = base[:30]
+    n = 2
+    while (PROJECTS / slug).exists():
+        slug = f"{base[:26]}_{n}"; n += 1
+
+    style_prompt = STYLE_PRESETS.get(style, STYLE_PRESETS["ink"])[1]
+    voice_id = VOICE_PRESETS.get(voice, VOICE_PRESETS["female_calm"])[1]
+    proj = {
+        "order": 1, "id": slug, "name": nm, "emoji": emoji.strip()[:4] or "🎬",
+        "style": style_prompt, "voice": voice_id, "music_default": "",
+        "system_prompt": (f"Ты — сторителлер канала «{nm}». Тема канала: {topic.strip()}. "
+                          "Создавай короткие цепляющие видео по этой теме, говори просто и по делу."),
+        "board": f"{slug}_content", "scenarios_dir": slug,
+        "brand_image": "", "characters": {},
+    }
+    (PROJECTS / slug).mkdir(parents=True, exist_ok=True)
+    (PROJECTS / slug / "project.json").write_text(json.dumps(proj, ensure_ascii=False, indent=2),
+                                                  encoding="utf-8")
+    WORKSPACE_FILE.write_text(json.dumps({"project": slug, "onboarded": True,
+                                          "created": int(time.time())}, ensure_ascii=False, indent=2),
+                              encoding="utf-8")
+    return {"ok": True, "project": slug}
+
+
+# ---------- video library ----------
+VIDEOS_FILE = CONFIG_DIR / "videos.json"
+
+
+def _lib_all() -> list:
+    if VIDEOS_FILE.exists():
+        try:
+            return json.loads(VIDEOS_FILE.read_text(encoding="utf-8"))
+        except Exception:
+            return []
+    return []
+
+
+def _lib_add(vid: str, title: str, kind: str, url: str, extra: dict = None):
+    """Зарегистрировать готовый ролик в библиотеке (иначе результат теряется из UI)."""
+    try:
+        items = _lib_all()
+        items = [i for i in items if i.get("id") != vid]
+        items.insert(0, {"id": vid, "title": title or "Без названия", "kind": kind,
+                         "url": url, "created": int(time.time()), **(extra or {})})
+        VIDEOS_FILE.write_text(json.dumps(items[:200], ensure_ascii=False, indent=2), encoding="utf-8")
+    except Exception:
+        pass
+
+
+@app.get("/api/videos")
+def api_videos():
+    """Все созданные ролики. Файлы, которых уже нет на диске, отфильтровываем."""
+    out = []
+    for i in _lib_all():
+        rel = (i.get("url") or "").lstrip("/")
+        if rel.startswith("outputs/") and (OUT / rel[len("outputs/"):]).exists():
+            out.append(i)
+    return out
+
+
+@app.delete("/api/videos/{vid}")
+def api_video_delete(vid: str):
+    safe = "".join(c for c in vid if c.isalnum() or c in "-_")[:60]
+    items = _lib_all()
+    gone = next((i for i in items if i.get("id") == safe), None)
+    VIDEOS_FILE.write_text(json.dumps([i for i in items if i.get("id") != safe], ensure_ascii=False, indent=2),
+                           encoding="utf-8")
+    # удаляем файл по сохранённому пути (у нарезки он в подпапке, не {id}.mp4)
+    rel = (gone or {}).get("url", "").lstrip("/")
+    if rel.startswith("outputs/"):
+        f = OUT / rel[len("outputs/"):]
+        try:
+            if f.exists() and OUT in f.resolve().parents:
+                f.unlink()
+        except Exception:
+            pass
+    return {"deleted": safe}
+
+
+@app.get("/videos", response_class=HTMLResponse)
+def videos_page():
+    return (Path(__file__).parent / "static" / "videos.html").read_text(encoding="utf-8")
+
+
 def _project_or_default(slug: str) -> dict:
     try:
-        return json.loads((PROJECTS / (slug or FACTORY_PROJECT) / "project.json").read_text(encoding="utf-8"))
+        return json.loads((PROJECTS / (slug or _active_project_slug()) / "project.json").read_text(encoding="utf-8"))
     except Exception:
         return {"id": slug or "default", "voice": "ru-RU-DmitryNeural", "style": "", "characters": {}}
 
@@ -505,6 +664,8 @@ def _create_run(jid: str, idea: str, project_slug: str, extra_instruction: str =
             story.build(res["scenario"], out, wd, base_dir=str(ROOT), draft=True,
                        gen_stills=True, polish=True, captions=True)
         JOBS[jid].update(status="done", stage="готово", progress=100, video=f"/outputs/{jid}.mp4")
+        _lib_add(jid, res["title"], "create", f"/outputs/{jid}.mp4",
+                 {"desc": res.get("desc", ""), "tags": res.get("tags", [])})
     except Exception as e:
         import traceback; traceback.print_exc()
         JOBS[jid].update(status="error", error=str(e)[:300])
@@ -677,6 +838,7 @@ async def api_montage_enrich(files: list[UploadFile] = File(...),
                 from studio.worker import pool
                 res = pool.run_montage_job(paths, prompt, out, progress=prog, captions=cap)
                 JOBS[jid].update(status="done", info=res, video=f"/outputs/{jid}.mp4", progress=100)
+                _lib_add(jid, "Нейромонтаж", "montage", f"/outputs/{jid}.mp4")
                 return
             # локальный фолбэк (dev / если воркер не сконфигурен) — под общим лимитом
             JOBS[jid].update(stage="в очереди", status="queued")
@@ -685,6 +847,7 @@ async def api_montage_enrich(files: list[UploadFile] = File(...),
                 from studio import assemble
                 res = assemble.assemble(paths, prompt, out, str(wd), progress=prog, captions=cap)
                 JOBS[jid].update(status="done", info=res, video=f"/outputs/{jid}.mp4", progress=100)
+                _lib_add(jid, "Нейромонтаж", "montage", f"/outputs/{jid}.mp4")
         except Exception as e:
             import traceback; traceback.print_exc()
             JOBS[jid].update(status="error", error=str(e)[:300])
@@ -730,6 +893,8 @@ async def api_clip(file: UploadFile = File(...), n: str = Form("5"),
                        "title": s.get("title", ""), "start": s.get("start"), "end": s.get("end")}
                       for s in res.get("shorts", [])]
             JOBS[jid].update(status="done", info={"count": len(shorts)}, shorts=shorts, progress=100)
+            for n, s in enumerate(shorts):
+                _lib_add(f"{jid}_{n}", s.get("title") or "Short из нарезки", "clip", s["url"])
         except Exception as e:
             import traceback; traceback.print_exc()
             JOBS[jid].update(status="error", error=str(e)[:300])
@@ -737,7 +902,6 @@ async def api_clip(file: UploadFile = File(...), n: str = Form("5"),
     return {"job_id": jid, "worker": use_worker}
 
 
-FACTORY_PROJECT = os.getenv("FACTORY_PROJECT", "chayniy")
 # station id -> (label, emoji-sprite, board columns feeding it)
 FACTORY_STATIONS = [
     ("creator",  "Креатор",  "💡", ["ideas"]),
@@ -751,7 +915,7 @@ FACTORY_STATIONS = [
 def _factory_board():
     from studio import boardsync
     try:
-        proj = json.loads((PROJECTS / FACTORY_PROJECT / "project.json").read_text(encoding="utf-8"))
+        proj = json.loads((PROJECTS / _active_project_slug() / "project.json").read_text(encoding="utf-8"))
         name = proj.get("board", "chayniy_content")
     except Exception:
         name = "chayniy_content"
