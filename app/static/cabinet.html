@@ -54,6 +54,14 @@ iframe{width:100%;height:100%;border:0;background:var(--void)}
 .qcard span{font-size:12px;color:var(--mut)}
 .connrow{display:flex;gap:8px;flex-wrap:wrap}
 .deptidle{text-align:center;font-size:12px;color:var(--faint);margin-top:10px;font-family:var(--mono)}
+/* тариф и остаток квоты — всегда на виду */
+.planbox{border:1px solid var(--line-2);border-radius:12px;padding:11px 13px;margin-bottom:10px;cursor:pointer;transition:.15s}
+.planbox:hover{border-color:var(--ember)}
+.planbox .plname{font-size:13px;font-weight:600;font-family:var(--head)}
+.planbox .qline{font-size:11px;color:var(--mut);margin-bottom:7px;font-family:var(--mono)}
+.qbar{height:5px;background:var(--panel-3);border-radius:4px;overflow:hidden}
+.qbar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--ember),var(--ember-hot));transition:.4s}
+.qbar>i.low{background:linear-gradient(90deg,var(--bad),#ff2d44)}
 /* activation checklist + warnings */
 .warnbar{display:flex;align-items:center;gap:10px;padding:12px 15px;border-radius:12px;margin-bottom:16px;font-size:13px;
   background:rgba(255,207,92,.09);border:1px solid rgba(255,207,92,.35);color:#ffe0a3}
@@ -116,6 +124,14 @@ iframe{width:100%;height:100%;border:0;background:var(--void)}
     </div>
 
     <div class="spacer"></div>
+    <div class="planbox" id="planBox" onclick="location.href='/pricing'">
+      <div class="between" style="margin-bottom:8px">
+        <span class="plname" id="plName">—</span>
+        <span class="chip ember" id="plUp">Тарифы</span>
+      </div>
+      <div class="qline"><span id="plQuota">—</span></div>
+      <div class="qbar"><i id="plBar"></i></div>
+    </div>
     <div class="autobox">
       <div class="between"><span class="lbl">Автономный режим</span><div class="toggle" id="autoToggle"></div></div>
       <div class="st" id="autoState">выключен</div>
@@ -283,6 +299,23 @@ function renderLog(acts){
   el.innerHTML=acts.slice().reverse().map(a=>`<div><span class="t">${tsfmt(a.ts)}</span> <span class="${cls[a.role]||'a'}">[${a.role}]</span> ${a.msg}</div>`).join('');
 }
 let AUTO=false;
+// ── тариф и остаток лимита: человек всегда должен понимать, сколько у него осталось ──
+async function loadPlan(){
+  try{
+    const b=await(await fetch('/api/billing/status')).json();
+    $('#plName').textContent=b.plan.name;
+    const q=b.quota.video||{};
+    if(q.limit==null){$('#plQuota').textContent='роликов: без лимита';$('#plBar').style.width='0%';return}
+    const left=q.left??0;
+    $('#plQuota').textContent=`осталось ${left} из ${q.limit} роликов`;
+    const pct=Math.min(100,Math.round(q.used/q.limit*100));
+    const bar=$('#plBar');bar.style.width=pct+'%';bar.classList.toggle('low',left<=Math.max(1,q.limit*0.15));
+    $('#plUp').textContent=left<=0?'Лимит исчерпан':'Тарифы';
+    $('#plUp').classList.toggle('ok',left>0);
+  }catch(_){}
+}
+loadPlan();setInterval(loadPlan,20000);
+
 // ── workspace: канал клиента (вместо захардкоженного проекта) ──
 async function loadWorkspace(){
   try{

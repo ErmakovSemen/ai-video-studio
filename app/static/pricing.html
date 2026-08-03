@@ -1,0 +1,90 @@
+<!doctype html><html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Тарифы · Прометей</title>
+<meta name="description" content="Тарифы Прометея: от 990₽ в месяц. Видео из идеи, нейромонтаж, нарезка на Shorts и автопилот.">
+<link rel="stylesheet" href="/static/ds.css">
+<style>
+.nav{position:sticky;top:0;z-index:40;background:rgba(10,10,15,.75);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
+.head{text-align:center;padding:52px 0 30px}
+.head h1{font-size:clamp(28px,4vw,44px);margin:14px 0 12px}
+.head p{color:var(--txt-2);font-size:16px;max-width:520px;margin:0 auto}
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;padding-bottom:20px}
+.plan{position:relative;display:flex;flex-direction:column;padding:26px 22px 24px}
+.plan.pop{border-color:var(--ember)}
+.plan .badge{position:absolute;top:-11px;left:50%;transform:translateX(-50%);font-family:var(--pixel);font-size:9px;
+  letter-spacing:.1em;text-transform:uppercase;background:linear-gradient(150deg,var(--ember),var(--ember-hot));
+  color:#1a0d06;padding:4px 11px;border-radius:6px;white-space:nowrap}
+.plan h3{font-size:20px;margin-bottom:5px}
+.plan .tag{color:var(--mut);font-size:13px;min-height:36px}
+.price{display:flex;align-items:baseline;gap:5px;margin:14px 0 18px}
+.price b{font-family:var(--head);font-size:34px;font-weight:700;letter-spacing:-.02em}
+.price span{color:var(--mut);font-size:14px}
+.feats{list-style:none;padding:0;margin:0 0 22px;display:grid;gap:9px}
+.feats li{display:flex;gap:9px;font-size:13px;color:var(--txt-2);line-height:1.45}
+.feats li::before{content:"✓";color:var(--ok);flex:none;font-weight:700}
+.plan .cta{margin-top:auto}
+.faq{padding:36px 0 60px;max-width:720px;margin:0 auto}
+.faq h2{text-align:center;margin-bottom:24px}
+.q{border-bottom:1px solid var(--line);padding:16px 0}
+.q b{display:block;font-family:var(--head);font-size:15px;margin-bottom:6px}
+.q p{margin:0;color:var(--mut);font-size:14px;line-height:1.6}
+.note{text-align:center;color:var(--faint);font-size:12px;padding-bottom:40px;line-height:1.6}
+footer{border-top:1px solid var(--line);padding:24px 0;color:var(--faint);font-size:13px}
+footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px}
+@media (max-width:860px){.plans{grid-template-columns:1fr;max-width:420px;margin:0 auto}}
+</style></head><body>
+
+<nav class="nav"><div class="wrap">
+  <a class="logo" href="/landing"><span class="flame">🔥</span> ПРОМЕТЕЙ</a>
+  <div class="row" style="gap:10px">
+    <a class="btn btn-ghost" style="padding:9px 16px" href="/login">Войти</a>
+    <a class="btn btn-primary" style="padding:9px 16px" href="/register">Начать</a>
+  </div>
+</div></nav>
+
+<div class="wrap head">
+  <div class="eyebrow">тарифы</div>
+  <h1>Дешевле, чем один монтажёр</h1>
+  <p>Платите за объём, а не за часы. Все тарифы включают генерацию с нуля, нейромонтаж и нарезку на Shorts.</p>
+</div>
+
+<div class="wrap"><div class="plans" id="plans"></div></div>
+
+<div class="wrap"><div class="note" id="trialNote">
+  Начните с пробного доступа — 3 ролика бесплатно, карта не нужна.
+</div></div>
+
+<div class="wrap faq">
+  <h2>Частые вопросы</h2>
+  <div class="q"><b>Что считается за ролик?</b>
+    <p>Один готовый вертикальный ролик, созданный из вашей идеи. Пересборка сценария до съёмки не тратит лимит — считаем только снятое видео.</p></div>
+  <div class="q"><b>Что если лимит закончился раньше месяца?</b>
+    <p>Можно перейти на тариф выше в любой момент — лимит пересчитается сразу. Неизрасходованный объём на следующий месяц не переносится.</p></div>
+  <div class="q"><b>Чем отличается качество генерации?</b>
+    <p>На «Потоке» и «Студии» сценарии пишет более сильная модель: заметно лучше хуки, факты и связность текста. На «Старте» — базовая модель, для простых форматов её достаточно.</p></div>
+  <div class="q"><b>Нужны ли свои ключи к ИИ?</b>
+    <p>Нет. Генерация уже включена в тариф — ничего настраивать не нужно. Подключить понадобится только соцсети, куда публиковать.</p></div>
+  <div class="q"><b>Можно платить за фактическое использование?</b>
+    <p>Да, для больших объёмов делаем индивидуальный расчёт по факту сверх пакета. Напишите нам — посчитаем под ваш поток.</p></div>
+</div>
+
+<footer><div class="wrap">
+  <span class="logo" style="font-size:12px"><span class="flame" style="width:20px;height:20px;font-size:12px">🔥</span> ПРОМЕТЕЙ</span>
+  <span>ИИ-видеоредактор · 2026</span>
+</div></footer>
+
+<script>
+fetch('/api/billing/plans').then(r=>r.json()).then(ps=>{
+  document.getElementById('plans').innerHTML=ps.map(p=>`
+    <div class="pcard plan ${p.popular?'pop':''}">
+      ${p.popular?'<span class="badge">чаще всего берут</span>':''}
+      <h3>${p.name}</h3>
+      <div class="tag">${p.tagline}</div>
+      <div class="price"><b>${p.price.toLocaleString('ru')} ₽</b><span>/ ${p.period}</span></div>
+      <ul class="feats">${p.features.map(f=>`<li>${f}</li>`).join('')}</ul>
+      <a class="btn ${p.popular?'btn-primary':'btn-ghost'} btn-block cta" href="/register">Попробовать</a>
+    </div>`).join('');
+}).catch(()=>{document.getElementById('plans').innerHTML='<span class="mut">Не удалось загрузить тарифы.</span>'});
+</script>
+</body></html>

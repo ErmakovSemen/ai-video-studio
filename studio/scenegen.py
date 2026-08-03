@@ -49,7 +49,13 @@ def generate(idea: str, project: dict, avoid_topics: str = "", extra_instruction
     sys = SYS_TMPL.format(brand_prompt=project.get("system_prompt", ""), extra=extra,
                           max_scenes=MAX_SCENES)
     usr = f"Идея пользователя: {idea}"
-    txt = C.call_llm(sys, usr, temperature=0.85)
+    # модель зависит от тарифа — иначе «повышенное качество» было бы пустым обещанием
+    try:
+        from studio import billing
+        model = billing.text_model()
+    except Exception:
+        model = None
+    txt = C.call_llm(sys, usr, temperature=0.85, model=model)
     data = C.parse_json(txt)
 
     slug = _slugify(data.get("slug") or data["title"])

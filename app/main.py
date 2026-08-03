@@ -6,7 +6,7 @@ from pathlib import Path
 from fastapi import FastAPI, Form, HTTPException, UploadFile, File
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from studio import story, imagegen, video, compose, scenegen
+from studio import story, imagegen, video, compose, scenegen, billing
 from publish import registry as publishers, VideoMeta
 from publish import config as pub_config
 
@@ -675,6 +675,34 @@ def _create_run(jid: str, idea: str, project_slug: str, extra_instruction: str =
         JOBS[jid].update(status="error", error=_human_error(e))
 
 
+# ---------- тарифы ----------
+PUBLIC_PATHS |= {"/pricing", "/api/billing/plans"}
+
+
+@app.get("/pricing", response_class=HTMLResponse)
+def pricing_page():
+    return _static("pricing.html")
+
+
+@app.get("/api/billing/plans")
+def api_plans():
+    return billing.plans_public()
+
+
+@app.get("/api/billing/status")
+def api_billing_status():
+    return billing.status()
+
+
+@app.post("/api/billing/plan")
+def api_billing_plan(plan: str = Form(...)):
+    """Сменить тариф. Приём платежей не подключён — это переключение плана,
+    оплата принимается вне продукта (счёт/перевод) и подтверждается владельцем."""
+    if not billing.set_plan(plan):
+        raise HTTPException(400, "Неизвестный тариф")
+    return billing.status()
+
+
 def _human_error(e) -> str:
     """Понятная пользователю ошибка вместо сырого стектрейса — он должен понимать,
     что произошло и что делать дальше."""
@@ -717,6 +745,9 @@ def _script_job(sid: str, idea: str, project_slug: str, instruction: str = ""):
 def api_script(idea: str = Form(...), project: str = Form("")):
     if not idea.strip():
         raise HTTPException(400, "Опишите идею ролика")
+    q = billing.check("video")
+    if not q["allowed"]:
+        raise HTTPException(402, q["reason"])
     sid = uuid.uuid4().hex[:12]
     threading.Thread(target=_script_job, args=(sid, idea.strip(), project), daemon=True).start()
     return {"script_id": sid}
@@ -777,6 +808,7 @@ def api_script_render(sid: str, scenes: str = Form(""), title: str = Form("")):
                             gen_stills=True, polish=True, captions=True)
             JOBS[jid].update(status="done", stage="готово", progress=100,
                              video=f"/outputs/{jid}.mp4", title=scenario["title"])
+            billing.record("video")     # списываем по факту готового ролика
             _lib_add(jid, scenario["title"], "create", f"/outputs/{jid}.mp4",
                      {"desc": s.get("desc", ""), "tags": s.get("tags", [])})
         except Exception as e:
@@ -928,6 +960,9 @@ async def api_montage_enrich(files: list[UploadFile] = File(...),
     """Нейромонтаж: несколько видео + промт -> сшивка + B-roll. Возвращает job_id."""
     if not files:
         raise HTTPException(400, "нет файлов")
+    q = billing.check("montage")
+    if not q["allowed"]:
+        raise HTTPException(402, q["reason"])
     jid = uuid.uuid4().hex[:12]
     wd = WORK / f"montage_{jid}"; wd.mkdir(parents=True, exist_ok=True)
     paths = []
@@ -953,6 +988,7 @@ async def api_montage_enrich(files: list[UploadFile] = File(...),
                 from studio.worker import pool
                 res = pool.run_montage_job(paths, prompt, out, progress=prog, captions=cap)
                 JOBS[jid].update(status="done", info=res, video=f"/outputs/{jid}.mp4", progress=100)
+                billing.record("montage")
                 _lib_add(jid, "Нейромонтаж", "montage", f"/outputs/{jid}.mp4")
                 return
             # локальный фолбэк (dev / если воркер не сконфигурен) — под общим лимитом
@@ -962,6 +998,7 @@ async def api_montage_enrich(files: list[UploadFile] = File(...),
                 from studio import assemble
                 res = assemble.assemble(paths, prompt, out, str(wd), progress=prog, captions=cap)
                 JOBS[jid].update(status="done", info=res, video=f"/outputs/{jid}.mp4", progress=100)
+                billing.record("montage")
                 _lib_add(jid, "Нейромонтаж", "montage", f"/outputs/{jid}.mp4")
         except Exception as e:
             import traceback; traceback.print_exc()
@@ -974,6 +1011,9 @@ async def api_montage_enrich(files: list[UploadFile] = File(...),
 async def api_clip(file: UploadFile = File(...), n: str = Form("5"),
                    captions: str = Form("1"), min_s: str = Form("20"), max_s: str = Form("60")):
     """Нарезка длинного видео на вертикальные Shorts. Возвращает job_id; результат — список роликов."""
+    q = billing.check("clip")
+    if not q["allowed"]:
+        raise HTTPException(402, q["reason"])
     jid = uuid.uuid4().hex[:12]
     wd = WORK / f"clip_{jid}"; wd.mkdir(parents=True, exist_ok=True)
     src = wd / f"src{(os.path.splitext(file.filename or '')[1] or '.mp4')[:8]}"
@@ -1008,6 +1048,7 @@ async def api_clip(file: UploadFile = File(...), n: str = Form("5"),
                        "title": s.get("title", ""), "start": s.get("start"), "end": s.get("end")}
                       for s in res.get("shorts", [])]
             JOBS[jid].update(status="done", info={"count": len(shorts)}, shorts=shorts, progress=100)
+            billing.record("clip")
             for n, s in enumerate(shorts):
                 _lib_add(f"{jid}_{n}", s.get("title") or "Short из нарезки", "clip", s["url"])
         except Exception as e:
