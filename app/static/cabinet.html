@@ -53,6 +53,7 @@ iframe{width:100%;height:100%;border:0;background:var(--void)}
 .qcard b{display:block;font-family:var(--head);font-size:15px}
 .qcard span{font-size:12px;color:var(--mut)}
 .connrow{display:flex;gap:8px;flex-wrap:wrap}
+.deptidle{text-align:center;font-size:12px;color:var(--faint);margin-top:10px;font-family:var(--mono)}
 /* activation checklist + warnings */
 .warnbar{display:flex;align-items:center;gap:10px;padding:12px 15px;border-radius:12px;margin-bottom:16px;font-size:13px;
   background:rgba(255,207,92,.09);border:1px solid rgba(255,207,92,.35);color:#ffe0a3}
@@ -162,6 +163,7 @@ iframe{width:100%;height:100%;border:0;background:var(--void)}
             </div>
             <div class="belt"><div class="reel">🎞</div><div class="reel b">🎞</div><div class="reel c">🎞</div></div>
           </div>
+          <div class="deptidle hide" id="deptIdle"></div>
           <div class="stats">
             <div class="stat ok"><div class="n" id="stPub">0</div><div class="l">опубликовано роликов</div></div>
             <div class="stat ember"><div class="n" id="stQueue">0</div><div class="l">в работе на конвейере</div></div>
@@ -262,6 +264,16 @@ function renderDept(st){
     const c=d.querySelector('.cnt');
     if(s.count&&d.dataset.role!=='analyst'){c.textContent=s.count;c.classList.add('on');}else c.classList.remove('on');
   });
+  // анимируем отдел ТОЛЬКО когда работа реально идёт — иначе интерфейс
+  // изображал занятость на пустом конвейере, и это подрывало доверие
+  const inWork=st.stations.filter(s=>s.id!=='analyst').reduce((a,s)=>a+s.count,0);
+  const live=!!(st.autonomous||inWork>0);
+  $('#dept').classList.toggle('live',live);
+  const idle=$('#deptIdle');
+  if(idle){
+    idle.classList.toggle('hide',live);
+    idle.textContent=st.autonomous?'':'Отдел на паузе — включите автопилот или создайте ролик вручную.';
+  }
 }
 function tsfmt(t){const d=new Date(t*1000);return d.toTimeString().slice(0,8)}
 function renderLog(acts){
