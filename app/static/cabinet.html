@@ -53,7 +53,37 @@ iframe{width:100%;height:100%;border:0;background:var(--void)}
 .qcard b{display:block;font-family:var(--head);font-size:15px}
 .qcard span{font-size:12px;color:var(--mut)}
 .connrow{display:flex;gap:8px;flex-wrap:wrap}
-.deptidle{text-align:center;font-size:12px;color:var(--faint);margin-top:10px;font-family:var(--mono)}
+.deptidle{font-size:12px;color:var(--faint);margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}
+/* конвейер: рабочий монитор, а не иллюстрация завода */
+.board{padding:20px 22px 18px;margin-bottom:18px}
+.board-top{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;margin-bottom:22px}
+.board-h{font-family:var(--head);font-size:17px;font-weight:600;letter-spacing:-.01em}
+.board-sub{font-size:12.5px;color:var(--mut);margin-top:3px}
+.statepill{display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--mut);
+  background:var(--panel-2);border:1px solid var(--line-2);border-radius:20px;padding:5px 12px;white-space:nowrap}
+.statepill i{width:6px;height:6px;border-radius:50%;background:var(--faint);flex:none}
+.statepill.on{color:var(--ok);border-color:rgba(86,211,138,.3)}
+.statepill.on i{background:var(--ok);animation:pulse 2s infinite}
+.pipeline{display:grid;grid-template-columns:repeat(5,1fr);gap:0;position:relative}
+.stage{position:relative;display:flex;flex-direction:column;align-items:center;gap:9px;padding:0 6px}
+/* соединительная линия между стадиями */
+.stage:not(:last-child)::after{content:"";position:absolute;top:19px;left:calc(50% + 24px);right:calc(-50% + 24px);
+  height:1px;background:var(--line-2)}
+.sicon{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:var(--panel-2);
+  border:1px solid var(--line-2);color:var(--mut);transition:.2s;position:relative;z-index:1}
+.sicon svg{width:19px;height:19px}
+.stage.busy .sicon{border-color:var(--ember);color:var(--ember);background:rgba(255,122,69,.08)}
+.stage.has .sicon{color:var(--txt-2)}
+.sname{font-size:11.5px;color:var(--mut);text-align:center;line-height:1.3}
+.snum{font-family:var(--head);font-size:17px;font-weight:600;color:var(--faint);line-height:1}
+.stage.has .snum{color:var(--txt)}
+.stage.busy .snum{color:var(--ember)}
+@media (max-width:560px){
+  .pipeline{grid-template-columns:repeat(5,1fr)}
+  .sicon{width:32px;height:32px;border-radius:9px}.sicon svg{width:16px;height:16px}
+  .sname{font-size:9.5px}.snum{font-size:14px}
+  .stage:not(:last-child)::after{top:16px;left:calc(50% + 20px);right:calc(-50% + 20px)}
+}
 /* тариф и остаток квоты — всегда на виду */
 .planbox{border:1px solid var(--line-2);border-radius:12px;padding:11px 13px;margin-bottom:10px;cursor:pointer;transition:.15s}
 .planbox:hover{border-color:var(--ember)}
@@ -94,10 +124,6 @@ iframe{width:100%;height:100%;border:0;background:var(--void)}
   .hero{padding:18px 15px}
   .quick{grid-template-columns:1fr}
   .stats{grid-template-columns:1fr 1fr}
-  .desks{grid-template-columns:repeat(5,1fr);gap:2px}
-  .desk .agent{width:36px;height:36px;font-size:18px}
-  .desk .role{font-size:7px}
-  .desk .cnt{right:calc(50% - 30px);font-size:10px}
 }
 </style></head><body>
 <div class="app">
@@ -165,19 +191,40 @@ iframe{width:100%;height:100%;border:0;background:var(--void)}
           </div>
           <div class="tasks" id="tasks"></div>
         </div>
-        <div class="hero crt">
-          <div class="eyebrow"><span class="dot live"></span> живой конвейер</div>
-          <h2>Твоя фабрика контента</h2>
-          <p>Команда ИИ-агентов ведёт ролик от идеи до публикации. Включи поток — и отдел работает сам, круглосуточно.</p>
-          <div class="dept" id="dept">
-            <div class="desks">
-              <div class="desk" data-role="creator"><div class="agent">💡</div><div class="deskplate"></div><div class="role">Идея</div><div class="mini"><i></i></div><span class="cnt"></span></div>
-              <div class="desk" data-role="producer"><div class="agent">🎬</div><div class="deskplate"></div><div class="role">Монтаж</div><div class="mini"><i></i></div><span class="cnt"></span></div>
-              <div class="desk" data-role="reviewer"><div class="agent">🔍</div><div class="deskplate"></div><div class="role">Проверка</div><div class="mini"><i></i></div><span class="cnt"></span></div>
-              <div class="desk" data-role="director"><div class="agent">📤</div><div class="deskplate"></div><div class="role">Выпуск</div><div class="mini"><i></i></div><span class="cnt"></span></div>
-              <div class="desk" data-role="analyst"><div class="agent">📊</div><div class="deskplate"></div><div class="role">Аналитика</div><div class="mini"><i></i></div><span class="cnt"></span></div>
+        <div class="pcard board">
+          <div class="board-top">
+            <div>
+              <div class="board-h">Конвейер</div>
+              <div class="board-sub" id="boardSub">производство роликов</div>
             </div>
-            <div class="belt"><div class="reel">🎞</div><div class="reel b">🎞</div><div class="reel c">🎞</div></div>
+            <span class="statepill" id="statePill"><i></i><span>Пауза</span></span>
+          </div>
+          <div class="pipeline" id="dept">
+            <div class="stage" data-role="creator">
+              <div class="sicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2Z"/></svg></div>
+              <div class="sname">Идея</div>
+              <div class="snum" data-num>—</div>
+            </div>
+            <div class="stage" data-role="producer">
+              <div class="sicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/><path d="m3 7 3-4h4l-3 4M10 7l3-4h4l-3 4"/></svg></div>
+              <div class="sname">Съёмка</div>
+              <div class="snum" data-num>—</div>
+            </div>
+            <div class="stage" data-role="reviewer">
+              <div class="sicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 4.4 3.4 8.3 8 9 4.6-.7 8-4.6 8-9V6l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg></div>
+              <div class="sname">Проверка</div>
+              <div class="snum" data-num>—</div>
+            </div>
+            <div class="stage" data-role="director">
+              <div class="sicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></div>
+              <div class="sname">Выпуск</div>
+              <div class="snum" data-num>—</div>
+            </div>
+            <div class="stage" data-role="analyst">
+              <div class="sicon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M7 21V10M12 21V4M17 21v-7"/></svg></div>
+              <div class="sname">Опубликовано</div>
+              <div class="snum" data-num>—</div>
+            </div>
           </div>
           <div class="deptidle hide" id="deptIdle"></div>
           <div class="stats">
@@ -273,22 +320,25 @@ async function loadConn(){
 
 // ── factory dashboard (live) ──
 function renderDept(st){
-  const byId={};st.stations.forEach(s=>byId[s.id]=s);
-  document.querySelectorAll('#dept .desk').forEach(d=>{
-    const s=byId[d.dataset.role];if(!s)return;
-    d.classList.toggle('busy',st.active_role===d.dataset.role);
-    const c=d.querySelector('.cnt');
-    if(s.count&&d.dataset.role!=='analyst'){c.textContent=s.count;c.classList.add('on');}else c.classList.remove('on');
+  const byId={};st.stations.forEach(x=>byId[x.id]=x);
+  document.querySelectorAll('#dept .stage').forEach(el=>{
+    const st2=byId[el.dataset.role];if(!st2)return;
+    const n=st2.count||0;
+    el.querySelector('[data-num]').textContent=n||'—';
+    el.classList.toggle('has',n>0);
+    el.classList.toggle('busy',st.active_role===el.dataset.role);
   });
-  // анимируем отдел ТОЛЬКО когда работа реально идёт — иначе интерфейс
-  // изображал занятость на пустом конвейере, и это подрывало доверие
-  const inWork=st.stations.filter(s=>s.id!=='analyst').reduce((a,s)=>a+s.count,0);
+  // «работает» показываем только когда работа реально идёт
+  const inWork=st.stations.filter(x=>x.id!=='analyst').reduce((a,x)=>a+x.count,0);
   const live=!!(st.autonomous||inWork>0);
-  $('#dept').classList.toggle('live',live);
+  const pill=$('#statePill');
+  pill.classList.toggle('on',live);
+  pill.querySelector('span').textContent=st.autonomous?'Автопилот':(inWork>0?'В работе':'Пауза');
+  $('#boardSub').textContent=inWork>0?`${inWork} в производстве`:'производство роликов';
   const idle=$('#deptIdle');
   if(idle){
     idle.classList.toggle('hide',live);
-    idle.textContent=st.autonomous?'':'Отдел на паузе — включите автопилот или создайте ролик вручную.';
+    idle.textContent='Конвейер остановлен — включите автопилот или создайте ролик вручную.';
   }
 }
 function tsfmt(t){const d=new Date(t*1000);return d.toTimeString().slice(0,8)}

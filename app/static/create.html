@@ -25,6 +25,17 @@ textarea#idea{min-height:80px;font-size:15px}
 /* working */
 .working{display:none;padding:22px}
 .working.on{display:block}
+.steps-run{display:grid;grid-template-columns:repeat(4,1fr);gap:0;position:relative;margin-bottom:4px}
+.srun{display:flex;flex-direction:column;align-items:center;gap:8px;position:relative;padding:0 4px}
+.srun:not(:last-child)::after{content:"";position:absolute;top:19px;left:calc(50% + 24px);right:calc(-50% + 24px);height:1px;background:var(--line-2)}
+.srun .si{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:var(--panel-2);
+  border:1px solid var(--line-2);color:var(--faint);transition:.25s;position:relative;z-index:1}
+.srun .si svg{width:19px;height:19px}
+.srun span{font-size:11.5px;color:var(--faint);transition:.25s}
+.srun.done .si{color:var(--ok);border-color:rgba(86,211,138,.35)}
+.srun.done span{color:var(--txt-2)}
+.srun.now .si{color:var(--ember);border-color:var(--ember);background:rgba(255,122,69,.08)}
+.srun.now span{color:var(--txt)}
 .wtitle{text-align:center;font-family:var(--mono);font-size:13px;color:var(--txt-2);margin-top:16px}
 .wsub{text-align:center;font-size:12px;color:var(--faint);margin-top:6px}
 .barwrap{margin-top:14px}
@@ -90,14 +101,23 @@ textarea#idea{min-height:80px;font-size:15px}
 
   <!-- WORKING -->
   <div class="pcard working" id="working">
-    <div class="dept">
-      <div class="desks">
-        <div class="desk" data-s="0"><div class="agent">💡</div><div class="deskplate"></div><div class="role">Идея</div><div class="mini"><i></i></div></div>
-        <div class="desk" data-s="1"><div class="agent">🎨</div><div class="deskplate"></div><div class="role">Кадры</div><div class="mini"><i></i></div></div>
-        <div class="desk" data-s="1"><div class="agent">🎙</div><div class="deskplate"></div><div class="role">Озвучка</div><div class="mini"><i></i></div></div>
-        <div class="desk" data-s="2"><div class="agent">🎬</div><div class="deskplate"></div><div class="role">Монтаж</div><div class="mini"><i></i></div></div>
+    <div class="steps-run" id="stepsRun">
+      <div class="srun" data-at="0">
+        <div class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 0-4 12.7V17h8v-2.3A7 7 0 0 0 12 2Z"/></svg></div>
+        <span>Сценарий</span>
       </div>
-      <div class="belt"><div class="reel">🎞</div></div>
+      <div class="srun" data-at="35">
+        <div class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg></div>
+        <span>Кадры</span>
+      </div>
+      <div class="srun" data-at="55">
+        <div class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v1a7 7 0 0 1-14 0v-1M12 19v3"/></svg></div>
+        <span>Озвучка</span>
+      </div>
+      <div class="srun" data-at="75">
+        <div class="si"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/><path d="m3 7 3-4h4l-3 4M10 7l3-4h4l-3 4"/></svg></div>
+        <span>Монтаж</span>
+      </div>
     </div>
     <div class="barwrap"><div class="bar"><i id="fill"></i></div></div>
     <div class="wtitle" id="wtitle">…</div>
@@ -155,8 +175,10 @@ function hideErr(el){el.classList.remove('on')}
 function setBar(msg,pct,sub){
   $('#fill').style.width=(pct||0)+'%';$('#wtitle').textContent=msg;
   $('#wsub').textContent=sub||'';
-  document.querySelectorAll('#working .desk').forEach(d=>{
-    d.classList.toggle('busy',pct>=([0,30,60][+d.dataset.s]||0)&&pct<98);
+  document.querySelectorAll('#stepsRun .srun').forEach(el=>{
+    const at=+el.dataset.at;
+    el.classList.toggle('done',pct>at+18);
+    el.classList.toggle('now',pct>=at&&pct<=at+18);
   });
 }
 function working(on){$('#working').classList.toggle('on',on)}
