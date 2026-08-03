@@ -484,7 +484,7 @@ def _run(jid: str, scenario: dict, draft: bool, polish: bool = True, music: str 
             JOBS[jid].update(status="done", info=log, video=f"/outputs/{jid}.mp4", url=url)
         except Exception as e:
             import traceback; traceback.print_exc()
-            JOBS[jid].update(status="error", error=str(e)[:300])
+            JOBS[jid].update(status="error", error=_human_error(e))
 
 
 # ---------- workspace (одна установка = один воркспейс клиента) ----------
@@ -672,7 +672,118 @@ def _create_run(jid: str, idea: str, project_slug: str, extra_instruction: str =
                  {"desc": res.get("desc", ""), "tags": res.get("tags", [])})
     except Exception as e:
         import traceback; traceback.print_exc()
-        JOBS[jid].update(status="error", error=str(e)[:300])
+        JOBS[jid].update(status="error", error=_human_error(e))
+
+
+def _human_error(e) -> str:
+    """Понятная пользователю ошибка вместо сырого стектрейса — он должен понимать,
+    что произошло и что делать дальше."""
+    t = str(e)
+    low = t.lower()
+    if "402" in t or "payment" in low or "insufficient" in low or "credit" in low:
+        return "Закончился баланс на генерацию. Пополните счёт и попробуйте снова."
+    if "не ответил" in low or "timed out" in low or "timeout" in low:
+        return "ИИ-сервис не ответил вовремя. Попробуйте ещё раз через минуту."
+    if "openrouter_api_key" in low or "api key" in low or "401" in t:
+        return "Не настроен ключ доступа к ИИ. Проверьте настройки подключений."
+    if "429" in t or "rate limit" in low:
+        return "Слишком много запросов подряд. Подождите минуту и повторите."
+    if "no image" in low or "imagegen" in low:
+        return "Не удалось сгенерировать картинки. Попробуйте ещё раз или измените тему."
+    if "ffmpeg" in low:
+        return "Сбой при монтаже видео. Попробуйте ещё раз."
+    if "youtube" in low or "not configured" in low:
+        return "Соцсеть не подключена. Подключите её в разделе «Подключения»."
+    return f"Что-то пошло не так: {t[:160]}"
+
+
+# ---------- script-first flow: показать сценарий до рендера ----------
+# Слепое двухминутное ожидание убивает итерации: пользователь видит текст за ~25с,
+# правит его, и только потом платит временем за рендер.
+SCRIPTS: dict = {}
+
+
+def _script_job(sid: str, idea: str, project_slug: str, instruction: str = ""):
+    SCRIPTS[sid] = {"status": "running", "stage": "придумываю сценарий"}
+    try:
+        project = _project_or_default(project_slug)
+        res = scenegen.generate(idea, project, extra_instruction=instruction)
+        SCRIPTS[sid] = {"status": "done", "idea": idea, "project": project_slug, **res}
+    except Exception as e:
+        SCRIPTS[sid] = {"status": "error", "error": _human_error(e)}
+
+
+@app.post("/api/script")
+def api_script(idea: str = Form(...), project: str = Form("")):
+    if not idea.strip():
+        raise HTTPException(400, "Опишите идею ролика")
+    sid = uuid.uuid4().hex[:12]
+    threading.Thread(target=_script_job, args=(sid, idea.strip(), project), daemon=True).start()
+    return {"script_id": sid}
+
+
+@app.get("/api/script/{sid}")
+def api_script_get(sid: str):
+    s = SCRIPTS.get(sid)
+    if not s:
+        raise HTTPException(404, "Сценарий не найден")
+    if s.get("status") == "done":
+        return {"status": "done", "title": s["title"], "hook": s["hook"],
+                "scenes": s["scenario"]["scenes"], "desc": s.get("desc", ""), "tags": s.get("tags", [])}
+    return s
+
+
+@app.post("/api/script/{sid}/redo")
+def api_script_redo(sid: str, instruction: str = Form(...)):
+    s = SCRIPTS.get(sid)
+    if not s:
+        raise HTTPException(404, "Сценарий не найден")
+    threading.Thread(target=_script_job,
+                     args=(sid, s.get("idea", ""), s.get("project", ""), instruction.strip()),
+                     daemon=True).start()
+    return {"script_id": sid}
+
+
+@app.post("/api/script/{sid}/render")
+def api_script_render(sid: str, scenes: str = Form(""), title: str = Form("")):
+    """Снять ролик по (возможно отредактированному пользователем) сценарию."""
+    s = SCRIPTS.get(sid)
+    if not s or s.get("status") != "done":
+        raise HTTPException(404, "Сценарий не готов")
+    scenario = dict(s["scenario"])
+    if scenes:
+        try:
+            edited = json.loads(scenes)
+            for i, sc in enumerate(scenario["scenes"][:len(edited)]):
+                if edited[i].get("vo"):
+                    sc["vo"] = edited[i]["vo"][:400]
+                if edited[i].get("caption"):
+                    sc["caption"] = edited[i]["caption"][:60]
+        except Exception:
+            pass
+    if title.strip():
+        scenario["title"] = title.strip()[:100]
+
+    jid = uuid.uuid4().hex[:12]
+    JOBS[jid] = {"status": "running", "stage": "рисую кадры", "progress": 15}
+
+    def _run():
+        try:
+            out = str(OUT / f"{jid}.mp4")
+            wd = str(WORK / jid)
+            with HEAVY_JOB_LOCK:
+                JOBS[jid].update(stage="рисую кадры и озвучиваю", progress=35)
+                story.build(scenario, out, wd, base_dir=str(ROOT), draft=True,
+                            gen_stills=True, polish=True, captions=True)
+            JOBS[jid].update(status="done", stage="готово", progress=100,
+                             video=f"/outputs/{jid}.mp4", title=scenario["title"])
+            _lib_add(jid, scenario["title"], "create", f"/outputs/{jid}.mp4",
+                     {"desc": s.get("desc", ""), "tags": s.get("tags", [])})
+        except Exception as e:
+            import traceback; traceback.print_exc()
+            JOBS[jid].update(status="error", error=_human_error(e))
+    threading.Thread(target=_run, daemon=True).start()
+    return {"job_id": jid}
 
 
 @app.post("/api/create")
@@ -806,7 +917,7 @@ def api_ai_montage(assets: str = Form(...), prompt: str = Form(...)):
                 JOBS[jid].update(status="done", info={"segments": res["segments"], "duration": res["duration"], "plan": res["plan"]}, video=f"/outputs/{jid}.mp4", url=url)
             except Exception as e:
                 import traceback; traceback.print_exc()
-                JOBS[jid].update(status="error", error=str(e)[:300])
+                JOBS[jid].update(status="error", error=_human_error(e))
     threading.Thread(target=_run, args=(), daemon=True).start()
     return {"job_id": jid}
 
@@ -854,7 +965,7 @@ async def api_montage_enrich(files: list[UploadFile] = File(...),
                 _lib_add(jid, "Нейромонтаж", "montage", f"/outputs/{jid}.mp4")
         except Exception as e:
             import traceback; traceback.print_exc()
-            JOBS[jid].update(status="error", error=str(e)[:300])
+            JOBS[jid].update(status="error", error=_human_error(e))
     threading.Thread(target=_run, daemon=True).start()
     return {"job_id": jid, "clips": len(paths), "worker": use_worker}
 
@@ -901,7 +1012,7 @@ async def api_clip(file: UploadFile = File(...), n: str = Form("5"),
                 _lib_add(f"{jid}_{n}", s.get("title") or "Short из нарезки", "clip", s["url"])
         except Exception as e:
             import traceback; traceback.print_exc()
-            JOBS[jid].update(status="error", error=str(e)[:300])
+            JOBS[jid].update(status="error", error=_human_error(e))
     threading.Thread(target=_run, daemon=True).start()
     return {"job_id": jid, "worker": use_worker}
 
