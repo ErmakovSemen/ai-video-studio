@@ -53,6 +53,24 @@ iframe{width:100%;height:100%;border:0;background:var(--void)}
 .qcard b{display:block;font-family:var(--head);font-size:15px}
 .qcard span{font-size:12px;color:var(--mut)}
 .connrow{display:flex;gap:8px;flex-wrap:wrap}
+/* activation checklist + warnings */
+.warnbar{display:flex;align-items:center;gap:10px;padding:12px 15px;border-radius:12px;margin-bottom:16px;font-size:13px;
+  background:rgba(255,207,92,.09);border:1px solid rgba(255,207,92,.35);color:#ffe0a3}
+.warnbar.bad{background:rgba(255,93,108,.1);border-color:rgba(255,93,108,.35);color:#ffb3bb}
+.warnbar a{color:inherit;text-decoration:underline;white-space:nowrap;margin-left:auto;font-weight:600}
+.startbox{padding:18px 20px;margin-bottom:18px}
+.tasks{display:grid;gap:9px}
+.task{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:11px;background:var(--panel-2);
+  border:1px solid var(--line);cursor:pointer;transition:.14s}
+.task:hover{border-color:var(--ember)}
+.task.done{opacity:.55;cursor:default}
+.task.done:hover{border-color:var(--line)}
+.task .mark{width:22px;height:22px;flex:none;border-radius:50%;border:1.5px solid var(--line-2);display:grid;place-items:center;font-size:12px;color:var(--faint)}
+.task.done .mark{background:var(--ok);border-color:var(--ok);color:#062b16}
+.task .tx b{display:block;font-size:14px;font-family:var(--head);font-weight:600}
+.task .tx span{font-size:12px;color:var(--mut)}
+.task .go{margin-left:auto;color:var(--ember);font-size:13px;font-weight:600;white-space:nowrap}
+.task.done .go{display:none}
 .burger{display:none;background:var(--panel-2);border:1px solid var(--line-2);color:var(--txt);
   width:36px;height:34px;border-radius:9px;font-size:15px;cursor:pointer;flex:none}
 .scrim{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:19}
@@ -121,6 +139,15 @@ iframe{width:100%;height:100%;border:0;background:var(--void)}
     <div class="content">
       <!-- DASHBOARD -->
       <div class="pad" id="dash">
+        <div class="warnbar hide" id="warnBar"></div>
+        <div class="pcard startbox hide" id="startBox">
+          <div class="between" style="margin-bottom:14px">
+            <div><div class="eyebrow">с чего начать</div>
+              <h3 style="margin-top:7px">Три шага до первого результата</h3></div>
+            <span class="chip" id="startProgress">0 из 3</span>
+          </div>
+          <div class="tasks" id="tasks"></div>
+        </div>
         <div class="hero crt">
           <div class="eyebrow"><span class="dot live"></span> живой конвейер</div>
           <h2>Твоя фабрика контента</h2>
@@ -254,7 +281,48 @@ async function poll(){
     $('#logHint').textContent=st.active_role?('активен: '+st.active_role):'ожидание';
     renderLog(st.activity);
     if(st.credits!=null){const c=$('#creditsChip');c.textContent='$ '+st.credits;c.classList.toggle('ok',st.credits>=2);}
+    renderStart(st);
+    renderWarn(st);
   }catch(_){}
+}
+
+// ── что сделать дальше: без этого новый пользователь упирается в пустой экран ──
+function renderStart(st){
+  const tasks=[
+    {done:true,                 t:'Канал настроен',        s:'тема, стиль и голос заданы', go:'',        act:()=>location.href='/setup'},
+    {done:(st.videos||0)>0,     t:'Создайте первое видео', s:'опишите идею — сделаем ролик', go:'Создать', act:()=>location.href='/create'},
+    {done:(st.connected||0)>0,  t:'Подключите соцсеть',    s:'чтобы публиковать в один клик', go:'Подключить', act:()=>show({view:'conn'})},
+  ];
+  const doneN=tasks.filter(t=>t.done).length;
+  const box=$('#startBox');
+  // чек-лист исчезает, когда всё пройдено — не мозолит глаза опытному пользователю
+  box.classList.toggle('hide',doneN>=tasks.length);
+  if(doneN>=tasks.length)return;
+  $('#startProgress').textContent=doneN+' из '+tasks.length;
+  const wrap=$('#tasks');wrap.innerHTML='';
+  tasks.forEach(t=>{
+    const d=document.createElement('div');
+    d.className='task'+(t.done?' done':'');
+    d.innerHTML=`<div class="mark">${t.done?'✓':''}</div>
+      <div class="tx"><b>${t.t}</b><span>${t.s}</span></div>
+      ${t.go?`<span class="go">${t.go} →</span>`:''}`;
+    if(!t.done)d.onclick=t.act;
+    wrap.appendChild(d);
+  });
+}
+
+// ── предупреждаем о балансе заранее, а не падаем посреди генерации ──
+function renderWarn(st){
+  const w=$('#warnBar');
+  if(st.credits!=null&&st.credits<1){
+    w.className='warnbar bad';
+    w.innerHTML='<span>⚠</span><span>Баланс на исходе — генерация скоро перестанет работать.</span>'+
+      '<a href="https://openrouter.ai/settings/credits" target="_blank" rel="noopener">Пополнить</a>';
+  }else if(st.credits!=null&&st.credits<3){
+    w.className='warnbar';
+    w.innerHTML='<span>◔</span><span>Баланса хватит ненадолго — пополните, чтобы фабрика не встала.</span>'+
+      '<a href="https://openrouter.ai/settings/credits" target="_blank" rel="noopener">Пополнить</a>';
+  }else{w.className='warnbar hide'}
 }
 $('#autoToggle').onclick=async()=>{
   const want=!AUTO;const fd=new FormData();fd.append('on',want?'1':'0');

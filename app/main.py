@@ -1057,9 +1057,15 @@ def factory_status():
             last_role = acts[-1]["role"]
     except Exception:
         pass
+    # состояние активации: подсказываем, что сделать дальше (первые минуты решают всё)
+    try:
+        connected = sum(1 for p in publishers if p.configured())
+    except Exception:
+        connected = 0
     return {"autonomous": C.autonomous_on(), "stations": stations,
             "published": counts.get("posted", 0), "active_role": last_role,
-            "activity": acts[-16:], "credits": _credits()}
+            "activity": acts[-16:], "credits": _credits(),
+            "videos": len(api_videos()), "connected": connected}
 
 
 @app.post("/api/factory/toggle")
