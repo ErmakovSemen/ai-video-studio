@@ -1,31 +1,34 @@
-<!doctype html>
-<html lang="ru"><head>
-<meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Prometey — подключение</title>
+<!doctype html><html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Подключение · Прометей</title>
+<link rel="stylesheet" href="/static/ds.css">
 <style>
-  :root{--bg:#0e0e12;--card:#17171f;--mut:#9a9aa5;--acc:#ff6a2b;--txt:#f5f5f7;--ln:#2a2a33}
-  *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--txt);font-family:-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.5}
-  header{padding:14px 22px;border-bottom:1px solid var(--ln)}header a{color:var(--acc);text-decoration:none;font-size:13px}
-  .wrap{max-width:760px;margin:0 auto;padding:24px 18px 60px}
-  h1{font-size:22px;margin:6px 0 4px}.status{font-size:13px;margin-bottom:18px}
-  .ok{color:#7fe0a8}.no{color:#ffb27f}
-  .guide{background:var(--card);border:1px solid var(--ln);border-radius:14px;padding:16px 20px;margin:16px 0}
-  .guide h3{font-size:14px;margin:0 0 8px;color:var(--acc)}
-  .guide ol{margin:0;padding-left:20px;font-size:14px}.guide li{margin-bottom:7px}
-  .guide a{color:#7db4ff}
-  label{display:block;font-size:12px;color:var(--mut);margin:14px 0 5px}
-  input{width:100%;background:#0e0e14;border:1px solid var(--ln);border-radius:10px;color:var(--txt);padding:11px;font-size:14px}
-  button{margin-top:18px;background:var(--acc);color:#111;border:0;border-radius:10px;padding:12px 20px;font-size:14px;font-weight:700;cursor:pointer}
-  .note{color:var(--mut);font-size:12.5px;margin-top:8px}.msg{margin-top:12px;font-size:14px}
+body{padding:26px 20px 60px;max-width:680px;margin:0 auto}
+.back{display:inline-flex;align-items:center;gap:6px;color:var(--mut);font-size:13px;margin-bottom:14px}
+.back:hover{color:var(--txt)}
+h1{font-size:23px;margin:0 0 8px}
+#status{margin-bottom:18px;font-size:13px}
+#status .ok{color:var(--ok)}#status .no{color:var(--mut)}
+.guide{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:18px 20px;margin-bottom:16px}
+.guide h3{font-size:14px;margin:0 0 12px;color:var(--txt)}
+.guide ol{margin:0;padding-left:20px;color:var(--txt-2);font-size:13px;line-height:1.75}
+.guide li{margin-bottom:5px}
+.guide code{background:var(--void);border:1px solid var(--line-2);border-radius:5px;padding:1px 6px;font-family:var(--mono);font-size:12px;color:var(--plasma)}
+.guide b{color:var(--txt)}
+form{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:20px}
+form label{margin-top:12px}
+form label:first-child{margin-top:0}
+button[type=submit]{width:100%;margin-top:18px;background:linear-gradient(150deg,var(--ember),var(--ember-hot));color:#1a0d06;border:0;border-radius:11px;padding:13px;font-size:15px;font-weight:600;font-family:var(--head);cursor:pointer;box-shadow:var(--glow-ember)}
+.note{font-size:11px;color:var(--faint);margin-top:11px;line-height:1.5}
+#msg{margin-top:14px;font-size:13px}
+#msg .ok{color:var(--ok)}#msg .ok a{color:var(--ember);font-weight:600}
 </style></head><body>
-<header><a href="/cabinet">← кабинет</a></header>
-<div class="wrap">
-  <h1 id="title">Подключение</h1>
-  <div class="status" id="status"></div>
-  <div id="guide"></div>
-  <form id="form"></form>
-  <div class="msg" id="msg"></div>
-</div>
+<a class="back" href="/cabinet">← Кабинет</a>
+<h1 id="title">Подключение</h1>
+<div id="status"></div>
+<div id="guide"></div>
+<form id="form"></form>
+<div id="msg"></div>
 <script>
 const PLATFORM=location.pathname.split('/').pop();
 const GUIDES={

@@ -227,14 +227,29 @@ nav.forEach(a=>a.onclick=()=>show(a.dataset.view?{view:a.dataset.view}:{src:a.da
 document.addEventListener('click',e=>{const q=e.target.closest('.qcard[data-src]');if(q)show({src:q.dataset.src})});
 
 // ── connections ──
+// честно показываем сложность: Telegram реально ставится за пару минут,
+// остальные требуют OAuth-приложения — иначе человек упирается в YouTube и бросает
+const CONN_META={
+  telegram:{min:'~2 мин',easy:1,what:'Публикация в ваш Telegram-канал'},
+  youtube:{min:'~20 мин',easy:0,what:'Публикация Shorts на ваш канал'},
+  instagram:{min:'~30 мин',easy:0,what:'Публикация Reels'},
+  tiktok:{min:'аудит TikTok',easy:0,what:'Публикация в TikTok'},
+};
 async function loadConn(){
   const wrap=$('#connCards');wrap.innerHTML='<span class="mut">Загрузка…</span>';
-  try{const ps=await(await fetch('/api/settings')).json();
-    wrap.innerHTML=ps.map(p=>`<div class="pcard" style="padding:15px">
+  try{
+    const ps=await(await fetch('/api/settings')).json();
+    // сначала подключённые, потом самые простые
+    ps.sort((a,b)=>(b.configured-a.configured)||((CONN_META[b.name]?.easy||0)-(CONN_META[a.name]?.easy||0)));
+    wrap.innerHTML=ps.map(p=>{
+      const m=CONN_META[p.name]||{};
+      return `<div class="pcard" style="padding:15px">
       <div class="between"><b style="font-family:var(--head)">${p.label}</b>
-      <span class="chip ${p.configured?'ok':''}">${p.configured?'✓ подключено':'— нет'}</span></div>
-      <div class="mut" style="font-size:12px;margin:8px 0 12px">${p.setup_hint||''}</div>
-      <a class="btn ${p.configured?'btn-ghost':'btn-primary'} btn-block" style="padding:9px" href="/connect/${p.name}">${p.configured?'Настроить':'Подключить'}</a></div>`).join('');
+      <span class="chip ${p.configured?'ok':''}">${p.configured?'✓ подключено':(m.min||'')}</span></div>
+      <div class="mut" style="font-size:12px;margin:8px 0 4px">${m.what||p.setup_hint||''}</div>
+      ${!p.configured&&m.easy?'<div style="font-size:11px;color:var(--ok);margin-bottom:10px">Проще всего начать с этого</div>':'<div style="height:10px"></div>'}
+      <a class="btn ${p.configured?'btn-ghost':(m.easy?'btn-primary':'btn-ghost')} btn-block" style="padding:9px" href="/connect/${p.name}">${p.configured?'Настроить':'Подключить'}</a></div>`;
+    }).join('');
   }catch(_){wrap.innerHTML='<span class="mut">Не удалось загрузить.</span>';}
 }
 
