@@ -6,7 +6,7 @@ from pathlib import Path
 from fastapi import FastAPI, Form, HTTPException, UploadFile, File
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from studio import story, imagegen, video, compose, scenegen, billing
+from studio import story, imagegen, video, compose, scenegen, billing, wallet
 from publish import registry as publishers, VideoMeta
 from publish import config as pub_config
 
@@ -675,6 +675,67 @@ def _create_run(jid: str, idea: str, project_slug: str, extra_instruction: str =
         JOBS[jid].update(status="error", error=_human_error(e))
 
 
+# ---------- кошелёк: баланс, пополнения, промокоды ----------
+@app.get("/wallet", response_class=HTMLResponse)
+def wallet_page():
+    return _static("wallet.html")
+
+
+@app.get("/api/wallet")
+def api_wallet():
+    return wallet.status()
+
+
+@app.get("/api/wallet/quote")
+def api_wallet_quote(amount: int = 0, promo: str = ""):
+    """Показать сумму к оплате до подтверждения — с учётом комиссии и промокода."""
+    return wallet.quote(amount, promo)
+
+
+@app.post("/api/wallet/topup")
+def api_wallet_topup(amount: int = Form(...), promo: str = Form("")):
+    """Создать заявку на пополнение.
+    Реального списания нет: платёж проводит провайдер (ключи владельца) либо
+    владелец подтверждает поступление вручную — см. /api/wallet/confirm."""
+    try:
+        return wallet.create_topup(int(amount), promo)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
+
+@app.post("/api/wallet/confirm")
+def api_wallet_confirm(id: str = Form(...)):
+    """Зачислить пополнение. Сюда же будет ходить вебхук платёжного провайдера."""
+    try:
+        return wallet.confirm_topup(id)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
+
+@app.post("/api/wallet/cancel")
+def api_wallet_cancel(id: str = Form(...)):
+    return {"cancelled": wallet.cancel_topup(id)}
+
+
+@app.get("/api/promo")
+def api_promo_list():
+    return wallet.promo_list()
+
+
+@app.post("/api/promo")
+def api_promo_create(code: str = Form(...), kind: str = Form("no_fee"),
+                     value: int = Form(0), uses: int = Form(0), days: int = Form(0)):
+    try:
+        return wallet.promo_create(code, kind, value, uses, days)
+    except ValueError as e:
+        raise HTTPException(400, str(e))
+
+
+@app.delete("/api/promo/{code}")
+def api_promo_delete(code: str):
+    return {"deleted": wallet.promo_delete(code)}
+
+
 # ---------- тарифы ----------
 PUBLIC_PATHS |= {"/pricing", "/api/billing/plans"}
 
@@ -703,6 +764,28 @@ def api_billing_plan(plan: str = Form(...)):
     return billing.status()
 
 
+def _gate(op: str):
+    """Единая проверка перед тяжёлой операцией: сначала лимит тарифа,
+    если он исчерпан — платим с баланса кошелька. Иначе 402 с понятным текстом."""
+    q = billing.check(op)
+    if q["allowed"]:
+        return {"source": "plan"}
+    c = wallet.can_charge(op)
+    if c["ok"]:
+        return {"source": "wallet", "price": c["price"]}
+    raise HTTPException(402, f"{q['reason']} Либо пополните кошелёк — "
+                             f"разовая операция стоит {c['price']} ₽ "
+                             f"(на балансе {c['balance']} ₽).")
+
+
+def _settle(op: str, source: str):
+    """Зафиксировать факт по завершении: списать квоту или деньги."""
+    if source == "wallet":
+        wallet.charge(op)
+    else:
+        billing.record(op)
+
+
 def _human_error(e) -> str:
     """Понятная пользователю ошибка вместо сырого стектрейса — он должен понимать,
     что произошло и что делать дальше."""
@@ -729,6 +812,7 @@ def _human_error(e) -> str:
 # Слепое двухминутное ожидание убивает итерации: пользователь видит текст за ~25с,
 # правит его, и только потом платит временем за рендер.
 SCRIPTS: dict = {}
+_PAYSRC: dict = {}   # script_id -> "plan"|"wallet"
 
 
 def _script_job(sid: str, idea: str, project_slug: str, instruction: str = ""):
@@ -745,11 +829,10 @@ def _script_job(sid: str, idea: str, project_slug: str, instruction: str = ""):
 def api_script(idea: str = Form(...), project: str = Form("")):
     if not idea.strip():
         raise HTTPException(400, "Опишите идею ролика")
-    q = billing.check("video")
-    if not q["allowed"]:
-        raise HTTPException(402, q["reason"])
+    gate = _gate("video")
     sid = uuid.uuid4().hex[:12]
     threading.Thread(target=_script_job, args=(sid, idea.strip(), project), daemon=True).start()
+    _PAYSRC[sid] = gate["source"]
     return {"script_id": sid}
 
 
@@ -808,7 +891,7 @@ def api_script_render(sid: str, scenes: str = Form(""), title: str = Form("")):
                             gen_stills=True, polish=True, captions=True)
             JOBS[jid].update(status="done", stage="готово", progress=100,
                              video=f"/outputs/{jid}.mp4", title=scenario["title"])
-            billing.record("video")     # списываем по факту готового ролика
+            _settle("video", _PAYSRC.pop(sid, "plan"))   # по факту готового ролика
             _lib_add(jid, scenario["title"], "create", f"/outputs/{jid}.mp4",
                      {"desc": s.get("desc", ""), "tags": s.get("tags", [])})
         except Exception as e:
@@ -960,9 +1043,7 @@ async def api_montage_enrich(files: list[UploadFile] = File(...),
     """Нейромонтаж: несколько видео + промт -> сшивка + B-roll. Возвращает job_id."""
     if not files:
         raise HTTPException(400, "нет файлов")
-    q = billing.check("montage")
-    if not q["allowed"]:
-        raise HTTPException(402, q["reason"])
+    gate = _gate("montage")
     jid = uuid.uuid4().hex[:12]
     wd = WORK / f"montage_{jid}"; wd.mkdir(parents=True, exist_ok=True)
     paths = []
@@ -988,7 +1069,7 @@ async def api_montage_enrich(files: list[UploadFile] = File(...),
                 from studio.worker import pool
                 res = pool.run_montage_job(paths, prompt, out, progress=prog, captions=cap)
                 JOBS[jid].update(status="done", info=res, video=f"/outputs/{jid}.mp4", progress=100)
-                billing.record("montage")
+                _settle("montage", gate["source"])
                 _lib_add(jid, "Нейромонтаж", "montage", f"/outputs/{jid}.mp4")
                 return
             # локальный фолбэк (dev / если воркер не сконфигурен) — под общим лимитом
@@ -998,7 +1079,7 @@ async def api_montage_enrich(files: list[UploadFile] = File(...),
                 from studio import assemble
                 res = assemble.assemble(paths, prompt, out, str(wd), progress=prog, captions=cap)
                 JOBS[jid].update(status="done", info=res, video=f"/outputs/{jid}.mp4", progress=100)
-                billing.record("montage")
+                _settle("montage", gate["source"])
                 _lib_add(jid, "Нейромонтаж", "montage", f"/outputs/{jid}.mp4")
         except Exception as e:
             import traceback; traceback.print_exc()
@@ -1011,9 +1092,7 @@ async def api_montage_enrich(files: list[UploadFile] = File(...),
 async def api_clip(file: UploadFile = File(...), n: str = Form("5"),
                    captions: str = Form("1"), min_s: str = Form("20"), max_s: str = Form("60")):
     """Нарезка длинного видео на вертикальные Shorts. Возвращает job_id; результат — список роликов."""
-    q = billing.check("clip")
-    if not q["allowed"]:
-        raise HTTPException(402, q["reason"])
+    gate = _gate("clip")
     jid = uuid.uuid4().hex[:12]
     wd = WORK / f"clip_{jid}"; wd.mkdir(parents=True, exist_ok=True)
     src = wd / f"src{(os.path.splitext(file.filename or '')[1] or '.mp4')[:8]}"
@@ -1048,7 +1127,7 @@ async def api_clip(file: UploadFile = File(...), n: str = Form("5"),
                        "title": s.get("title", ""), "start": s.get("start"), "end": s.get("end")}
                       for s in res.get("shorts", [])]
             JOBS[jid].update(status="done", info={"count": len(shorts)}, shorts=shorts, progress=100)
-            billing.record("clip")
+            _settle("clip", gate["source"])
             for n, s in enumerate(shorts):
                 _lib_add(f"{jid}_{n}", s.get("title") or "Short из нарезки", "clip", s["url"])
         except Exception as e:
