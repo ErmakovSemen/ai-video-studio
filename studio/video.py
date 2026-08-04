@@ -10,11 +10,16 @@ VIDEO_PROVIDER = os.getenv("VIDEO_PROVIDER", "openrouter").lower()
 
 
 def animate(image_path: str, motion_prompt: str, out_path: str,
-            model_path: str | None = None) -> str:
-    """Dispatch image->video to the configured provider (openrouter | higgsfield)."""
+            model_path: str | None = None, hf_params: dict | None = None) -> str:
+    """Dispatch image->video to the configured provider (openrouter | higgsfield).
+
+    hf_params — жанр/тайм-эффект под съёмочный приём (см. studio/motion.py).
+    OpenRouter их не принимает, приём там уже вшит в motion_prompt.
+    """
     if VIDEO_PROVIDER == "higgsfield":
         from studio import higgsfield
-        return higgsfield.animate(image_path, motion_prompt, out_path, model_path=model_path)
+        return higgsfield.animate(image_path, motion_prompt, out_path,
+                                  model_path=model_path, params=hf_params)
     return _animate_openrouter(image_path, motion_prompt, out_path)
 
 

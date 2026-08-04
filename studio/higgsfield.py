@@ -23,24 +23,25 @@ MODEL = MODEL_PATH.strip("/")
 DURATION = int(os.getenv("HIGGSFIELD_DURATION", "5"))
 
 # Known models: id -> {label, path, price_usd_per_clip, desc}
+# Model IDs correspond to Higgsfield REST API model names
 MODELS = {
-    "dop/standard": {
-        "label": "DOP Standard",
-        "path": "/higgsfield-ai/dop/standard",
+    "cinematic_studio_video_v2": {
+        "label": "Cinema Studio v2",
+        "path": "/api/v1/video/generate",
         "price_usd": 0.10,
-        "desc": "Кинематографичное движение, хорошее качество",
+        "desc": "Refined cinematic camera & color, genre control",
     },
-    "dop/turbo": {
-        "label": "DOP Turbo",
-        "path": "/higgsfield-ai/dop/turbo",
-        "price_usd": 0.06,
-        "desc": "Быстрее, дешевле — для черновых прогонов",
-    },
-    "cinematica/standard": {
-        "label": "Cinematica",
-        "path": "/higgsfield-ai/cinematica/standard",
+    "cinematic_studio_3_0": {
+        "label": "Cinema Studio 3.0",
+        "path": "/api/v1/video/generate",
         "price_usd": 0.14,
-        "desc": "Максимальный кинематографизм, плавные камеры",
+        "desc": "Most advanced cinema-grade, best quality",
+    },
+    "cinematic_studio_video": {
+        "label": "Cinema Studio v1",
+        "path": "/api/v1/video/generate",
+        "price_usd": 0.08,
+        "desc": "Solid cinematic, dramatic compositions",
     },
 }
 
@@ -77,14 +78,20 @@ def _find_video_url(obj) -> str | None:
     return None
 
 
+# Параметры, которые cinematic_studio реально принимает. Отправляем только их —
+# лишние ключи модель отвергает целиком, роняя генерацию сцены.
+_ALLOWED_PARAMS = {"genre", "speedramp", "mode", "sound", "cfg_scale"}
+
+
 def animate(image_path: str, motion_prompt: str, out_path: str,
-            model_path: str | None = None) -> str:
+            model_path: str | None = None, params: dict | None = None) -> str:
     """Animate a still into a short clip via Higgsfield. Same signature as video.animate."""
     if not configured():
         raise RuntimeError("HIGGSFIELD_API_KEY required")
     img_url = upload(image_path, filename="frame.png")
-    prompt = (motion_prompt or "") + ", subtle minimal cinematic motion, keep the character stable"
+    prompt = motion_prompt or "subtle minimal cinematic motion, keep the character stable"
     payload = {"image_url": img_url, "prompt": prompt, "duration": DURATION}
+    payload.update({k: v for k, v in (params or {}).items() if k in _ALLOWED_PARAMS})
     endpoint = BASE + (model_path or MODEL_PATH)
     req = urllib.request.Request(endpoint, data=json.dumps(payload).encode(),
                                  headers=_auth_header())

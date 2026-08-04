@@ -81,16 +81,27 @@ def text_card(text: str, out_png: str):
     img.save(out_png)
 
 
-def mock_clip(image_path: str | None, fallback_text: str, seconds: float, out: str):
-    """Free draft clip: slow Ken-Burns zoom on an image (or a text card)."""
+def mock_clip(image_path: str | None, fallback_text: str, seconds: float, out: str,
+              scene: dict | None = None, i: int = 0, total: int = 1):
+    """Free draft clip from a still.
+
+    Приём камеры берётся из scene["shot"] — тот же, что уйдёт в платную
+    генерацию, поэтому черновик показывает настоящую раскадровку, а не
+    один и тот же зум на каждой сцене. Без scene поведение прежнее.
+    """
     src = image_path
     tmp = None
     if not src or not os.path.exists(src):
         tmp = out + ".bg.png"; text_card(fallback_text, tmp); src = tmp
     frames = max(2, int(seconds * 30))
+    if scene is not None:
+        from studio import motion
+        vf = motion.ff_filter(scene, i, total, W, H, frames, 30)
+    else:
+        vf = (f"scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},"
+              f"zoompan=z='min(zoom+0.0009,1.16)':d={frames}:s={W}x{H}:fps=30,format=yuv420p")
     subprocess.run([FF, "-y", "-loop", "1", "-i", src, "-t", f"{seconds:.2f}",
-                    "-vf", (f"scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},"
-                            f"zoompan=z='min(zoom+0.0009,1.16)':d={frames}:s={W}x{H}:fps=30,format=yuv420p"),
+                    "-vf", vf,
                     "-c:v", "libx264", "-threads", "1", "-preset", "ultrafast", "-an", out], capture_output=True)
     if tmp and os.path.exists(tmp):
         os.remove(tmp)

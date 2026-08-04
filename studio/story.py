@@ -18,7 +18,7 @@ Scenario schema:
 }
 """
 import os, json
-from studio import imagegen, video, compose
+from studio import imagegen, video, compose, motion
 
 PAD = 0.35  # seconds of trailing silence per scene so cuts breathe
 
@@ -51,6 +51,7 @@ def build(scenario: dict, out_path: str, workdir: str, base_dir: str = ".",
     t = 0.0                     # running timeline offset (polish)
     log = {"title": scenario.get("title"), "draft": draft, "polish": polish, "scenes": []}
 
+    n_scenes = len(scenario["scenes"])
     for i, sc in enumerate(scenario["scenes"]):
         refs = [chars[name] for name in sc.get("refs", []) if name in chars]
         raw = os.path.join(workdir, f"raw{i}.mp4")
@@ -65,23 +66,26 @@ def build(scenario: dict, out_path: str, workdir: str, base_dir: str = ".",
         baked_exists = baked and os.path.exists(baked)
         if baked_exists and draft:
             img = baked
-            compose.mock_clip(baked, sc.get("caption", sc["vo"]), seconds, raw)
+            compose.mock_clip(baked, sc.get("caption", sc["vo"]), seconds, raw, sc, i, n_scenes)
         elif draft and gen_stills:
             img = os.path.join(workdir, f"img{i}.png")
             no_text = (" IMPORTANT: absolutely NO text, NO letters, NO words, NO captions, "
                        "NO writing, NO watermark, NO signs anywhere in the image — clean illustration only.")
             imagegen.generate_image(f"{style} SCENE: {sc['image']}{no_text}", img, refs)
-            compose.mock_clip(img, sc.get("caption", sc["vo"]), seconds, raw)
+            compose.mock_clip(img, sc.get("caption", sc["vo"]), seconds, raw, sc, i, n_scenes)
         elif draft:
-            compose.mock_clip(refs[0] if refs else None, sc.get("caption", sc["vo"]), seconds, raw)
+            compose.mock_clip(refs[0] if refs else None, sc.get("caption", sc["vo"]), seconds, raw,
+                              sc, i, n_scenes)
         elif baked_exists:
             # Pro render: reuse precommitted stills (saves Gemini cost, consistent characters)
             img = baked
-            video.animate(img, sc["motion"], raw, model_path=model_path)
+            video.animate(img, motion.prompt_for(sc, i, n_scenes), raw, model_path=model_path,
+                          hf_params=motion.hf_params(sc, i, n_scenes))
         else:
             img = os.path.join(workdir, f"img{i}.png")
             imagegen.generate_image(f"{style} SCENE: {sc['image']}", img, refs)
-            video.animate(img, sc["motion"], raw, model_path=model_path)
+            video.animate(img, motion.prompt_for(sc, i, n_scenes), raw, model_path=model_path,
+                          hf_params=motion.hf_params(sc, i, n_scenes))
         sv = os.path.join(workdir, f"sc{i}.mp4")
         if polish:
             edit.trim(raw, seconds, sv)                    # no burned caption

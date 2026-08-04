@@ -3,6 +3,7 @@
 (studio/factory/creator.py) — чтобы не дублировать промт и парсинг."""
 import re
 from studio.factory import common as C
+from studio import motion
 
 MAX_SCENES = 7
 
@@ -25,12 +26,18 @@ SYS_TMPL = """{brand_prompt}
   "tags": ["тег1","тег2","тег3","тег4","тег5"],
   "scenes": [
     {{"image": "английское описание кадра для художника, БЕЗ текста на картинке, в заданном стиле",
-      "motion": "английское краткое описание движения камеры/элементов",
+      "shot": "id съёмочного приёма — РОВНО одно значение из списка ниже",
       "vo": "русский текст озвучки для этой сцены, 1-2 короткие фразы",
       "caption": "короткая подпись на экране, 2-4 слова"}}
   ]
 }}
-Сцен: 5-{max_scenes}, каждая — новый визуальный бит, vo вместе складывается в связный текст ролика."""
+Сцен: 5-{max_scenes}, каждая — новый визуальный бит, vo вместе складывается в связный текст ролика.
+
+Приёмы для "shot" (бери id из левой колонки, ничего не выдумывай):
+{shots}
+Правила монтажа: первая сцена — приём с энергией (crash_zoom / whip_pan / fpv_dive),
+он останавливает пролистывание; последняя — приём с весом (pull_back / tilt_up /
+static_hold), он ставит точку. Подряд один и тот же приём не повторяй."""
 
 
 def _slugify(s: str) -> str:
@@ -47,7 +54,7 @@ def generate(idea: str, project: dict, avoid_topics: str = "", extra_instruction
     if extra_instruction:
         extra += f"\nВАЖНОЕ УТОЧНЕНИЕ от пользователя: {extra_instruction}\n"
     sys = SYS_TMPL.format(brand_prompt=project.get("system_prompt", ""), extra=extra,
-                          max_scenes=MAX_SCENES)
+                          max_scenes=MAX_SCENES, shots=motion.vocabulary())
     usr = f"Идея пользователя: {idea}"
     # модель зависит от тарифа — иначе «повышенное качество» было бы пустым обещанием
     try:
