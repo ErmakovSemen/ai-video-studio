@@ -23,3 +23,7 @@ venv/
 work/
 yt_token.json
 media/uploads/
+
+# локальные env-файлы с секретами
+.env*
+!.env.example
