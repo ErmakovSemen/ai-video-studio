@@ -93,8 +93,11 @@ def build(scenario: dict, out_path: str, workdir: str, base_dir: str = ".",
                 words_global.append([w, t + a, t + b])
         else:
             compose.scene_clip(raw, sc.get("caption", ""), seconds, sv)
-        # First-second grab: bold hook line over scene 0 (retention lever for Shorts)
-        hook = scenario.get("hook") if i == 0 else None
+        # First-second grab: bold hook line over scene 0 (retention lever for Shorts).
+        # hook_overlay — короткая надпись на кадре; если её нет, берём hook целиком.
+        # Дублировать субтитры слово в слово вредно: два текста разом никто не читает,
+        # и обещание ролика теряется в шуме.
+        hook = (scenario.get("hook_overlay") or scenario.get("hook")) if i == 0 else None
         if hook:
             hv = os.path.join(workdir, f"sc{i}_hook.mp4")
             compose.burn_hook(sv, hook, hv); sv = hv

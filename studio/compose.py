@@ -120,19 +120,52 @@ def _wrap(text: str, width: int = 22) -> str:
     return "\n".join(lines)
 
 
+def _fit_text(text: str, size: int, max_w: int, min_size: int = 22) -> tuple[str, int]:
+    """Перенести текст и подобрать кегль так, чтобы он гарантированно влез в кадр.
+
+    Считать перенос в символах нельзя: кириллица в верхнем регистре шире латиницы,
+    и строка из 21 символа при кегле 54 занимает 747px — больше, чем весь кадр
+    шириной 720. Поэтому меряем реальную ширину шрифтом и, если даже одно слово
+    не помещается, уменьшаем кегль. Возвращаем (текст с переносами, кегль).
+    """
+    from PIL import ImageFont
+    for s in range(size, min_size - 1, -2):
+        try:
+            f = ImageFont.truetype(FONT, s)
+        except Exception:
+            return _wrap(text), size          # без шрифта — старое поведение
+        def w_of(t): return f.getbbox(t)[2]
+        words, lines, cur = text.split(), [], ""
+        for word in words:
+            probe = (cur + " " + word).strip()
+            if cur and w_of(probe) > max_w:
+                lines.append(cur); cur = word
+            else:
+                cur = probe
+        if cur:
+            lines.append(cur)
+        if all(w_of(ln) <= max_w for ln in lines):
+            return "\n".join(lines), s
+    return "\n".join(lines), min_size
+
+
 def burn_hook(clip: str, hook: str, out: str):
     """Burn a bold, high-contrast HOOK line near the top — the first-second grab.
 
-    Big yellow text on a translucent dark box, upper third, persistent for the clip.
+    Крупный текст с жирной обводкой в верхней трети, держится весь клип.
+    Полупрозрачной плашки нет намеренно: на белом фоне сумиэ она читалась
+    грязно-серой заплаткой поперёк рисунка. Обводка даёт тот же контраст,
+    не закрывая иллюстрацию.
     """
     if not hook.strip():
         ffbin.run_checked([FF, "-y", "-i", clip, "-c", "copy", out], out_path=out)
         return out
     hf = out + ".hook.txt"
-    open(hf, "w", encoding="utf-8").write(_wrap(hook.strip().upper()))
-    vf = (f"drawtext=textfile='{hf}':fontfile='{FONT}':fontsize=54:fontcolor=0x0AD6FF:"
-          f"borderw=6:bordercolor=black:box=1:boxcolor=black@0.45:boxborderw=24:"
-          f"line_spacing=12:x=(w-tw)/2:y=170")
+    txt, size = _fit_text(hook.strip().upper(), 54, W - 60)
+    open(hf, "w", encoding="utf-8").write(txt)
+    vf = (f"drawtext=textfile='{hf}':fontfile='{FONT}':fontsize={size}:fontcolor=0x0AD6FF:"
+          f"borderw=7:bordercolor=black:shadowcolor=black@0.55:shadowx=0:shadowy=3:"
+          f"line_spacing=12:x=(w-tw)/2:y=150")
     ffbin.run_checked([FF, "-y", "-i", clip, "-vf", vf, "-an", "-r", "30",
                        "-c:v", "libx264", "-threads", "1", "-preset", "ultrafast",
                        "-pix_fmt", "yuv420p", out], out_path=out)
@@ -142,9 +175,10 @@ def burn_hook(clip: str, hook: str, out: str):
 def scene_clip(raw_clip: str, caption: str, seconds: float, out: str):
     """Trim a raw clip to `seconds`, burn a bottom caption, drop its audio."""
     capf = out + ".txt"
-    open(capf, "w", encoding="utf-8").write(_wrap(caption, width=22))
+    ctxt, csize = _fit_text(caption, 44, W - 60)
+    open(capf, "w", encoding="utf-8").write(ctxt)
     vf = (f"scale={W}:{H}:force_original_aspect_ratio=increase,crop={W}:{H},"
-          f"drawtext=textfile='{capf}':fontfile='{FONT}':fontsize=44:fontcolor=white:"
+          f"drawtext=textfile='{capf}':fontfile='{FONT}':fontsize={csize}:fontcolor=white:"
           f"borderw=3:bordercolor=black:line_spacing=8:x=(w-tw)/2:y=h-320")
     ffbin.run_checked([FF, "-y", "-i", raw_clip, "-t", f"{seconds:.2f}", "-vf", vf,
                        "-an", "-r", "30", "-c:v", "libx264", "-threads", "1", "-preset", "ultrafast",
