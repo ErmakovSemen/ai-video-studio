@@ -193,13 +193,17 @@ def recover_page():
 def do_recover(email: str = Form(...)):
     email = email.strip().lower()
     users = _users()
-    # always respond the same way (don't leak which emails exist)
-    link = ""
+    # Ссылку сброса НЕЛЬЗЯ возвращать в ответе: почта не подключена, и раньше
+    # любой мог запросить сброс на чужой адрес и получить рабочий токен прямо
+    # в JSON — полный захват аккаунта без доступа к ящику. Пока нет SMTP,
+    # ссылка уходит в лог сервера, откуда её достаёт владелец.
     if email in users:
         tok = secrets.token_urlsafe(24)
         _RESET[tok] = {"email": email, "exp": time.time() + 3600}
-        link = f"/reset?token={tok}"
-    return {"ok": True, "link": link}
+        print(f"[recover] сброс пароля для {email}: /reset?token={tok} (действует 1 час)",
+              flush=True)
+    # ответ одинаковый в любом случае — не выдаём, есть ли такой аккаунт
+    return {"ok": True}
 
 
 @app.get("/reset", response_class=HTMLResponse)

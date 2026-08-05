@@ -31,9 +31,10 @@
       </form>
       <div class="done" id="done">
         <div class="row" style="justify-content:center;gap:8px;color:var(--ok);font-weight:600"><span class="dot live"></span> Готово</div>
-        <p class="mut" style="font-size:13px;margin:10px 0 0">Если такой аккаунт есть — ссылка для сброса ниже.</p>
-        <div class="linkbox" id="linkbox"><div class="lbl">Ссылка для сброса (действует 1 час):</div><a id="link" href="#"></a></div>
-        <p class="note">Почтовая отправка ещё не подключена, поэтому ссылку показываем прямо здесь. В проде она уйдёт письмом.</p>
+        <p class="mut" style="font-size:13px;margin:10px 0 0">Если такой аккаунт есть, ссылка для сброса создана и действует один час.</p>
+        <p class="note">Почтовая отправка пока не подключена: попросите владельца воркспейса
+        достать ссылку из журнала сервера. Показывать её прямо здесь нельзя — тогда сбросить
+        пароль смог бы любой, кто знает ваш адрес.</p>
       </div>
     </div>
     <div class="alt"><a href="/login">← Вернуться ко входу</a></div>
@@ -45,8 +46,6 @@ document.getElementById('form').onsubmit=async e=>{
   const fd=new FormData();fd.append('email',document.getElementById('email').value);
   try{const r=await fetch('/api/recover',{method:'POST',body:fd});const j=await r.json();
     document.getElementById('form').style.display='none';document.getElementById('done').classList.add('on');
-    if(j.link){const a=document.getElementById('link');a.href=j.link;a.textContent=location.origin+j.link;}
-    else{document.getElementById('linkbox').style.display='none';}
   }catch(_){go.disabled=false;go.textContent='Прислать ссылку';}
 };
 </script>
