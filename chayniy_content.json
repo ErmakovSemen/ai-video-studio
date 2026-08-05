@@ -4,6 +4,21 @@
     {
       "id": "ideas",
       "name": "💡 Идеи",
+      "cards": []
+    },
+    {
+      "id": "draft",
+      "name": "✏️ Черновик",
+      "cards": []
+    },
+    {
+      "id": "montage",
+      "name": "🎬 Монтаж",
+      "cards": []
+    },
+    {
+      "id": "review",
+      "name": "🔍 Ревью",
       "cards": [
         {
           "id": "idea_tea_with_food",
@@ -79,24 +94,10 @@
             "ready"
           ],
           "rendering_failed": false,
-          "retries": 2
+          "retries": 2,
+          "video_path": "outputs/idea_tea_with_food.mp4"
         }
       ]
-    },
-    {
-      "id": "draft",
-      "name": "✏️ Черновик",
-      "cards": []
-    },
-    {
-      "id": "montage",
-      "name": "🎬 Монтаж",
-      "cards": []
-    },
-    {
-      "id": "review",
-      "name": "🔍 Ревью",
-      "cards": []
     },
     {
       "id": "await_post",
