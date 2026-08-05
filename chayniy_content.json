@@ -4,7 +4,76 @@
     {
       "id": "ideas",
       "name": "💡 Идеи",
-      "cards": []
+      "cards": [
+        {
+          "id": "idea_tea_for_sleep_1785940141",
+          "title": "Чай для крепкого сна? 😴",
+          "desc": "Многие пьют чай для бодрости, но что, если я скажу, что он может подарить вам глубокий, спокойный сон?",
+          "scenario": {
+            "title": "Чай для крепкого сна? 😴",
+            "hook": "Многие пьют чай для бодрости, но что, если я скажу, что он может подарить вам глубокий, спокойный сон?",
+            "voice": "ru-RU-SvetlanaNeural",
+            "hero": "panda",
+            "brand_image": "assets/chayniy/panda_standing.png",
+            "characters": {
+              "panda": "assets/chayniy/panda_ink.png",
+              "panda_standing": "assets/chayniy/panda_standing.png",
+              "panda_face": "assets/chayniy/panda_face.png",
+              "teacup": "assets/chayniy/teacup_steam.png",
+              "tealeaf": "assets/chayniy/tealeaf.png",
+              "branch": "assets/chayniy/branch_teabush.png"
+            },
+            "style": "Japanese ink brush illustration, fine pen and ink linework with variable line weight (thicker where pressed, thinner where lifted), no color fills — black ink only on white background, occasional diluted ink wash for depth (monochrome only), large empty white space 65-75% of frame, single focal object or character, wabi-sabi aesthetic, ukiyo-e inspired, hand-drawn spontaneous feel, no text no watermark no gradients, vertical 9:16",
+            "scenes": [
+              {
+                "image": "A close-up of chamomile flowers gently swirling in a teacup, soft focus, warm evening light, cozy atmosphere.",
+                "shot": "crash_zoom",
+                "vo": "Многие пьют чай для бодрости, но что, если я скажу, что некоторые сорта дарят глубокий сон?",
+                "caption": "Чай для сна?"
+              },
+              {
+                "image": "A hand gently stirring a steaming cup of herbal tea, steam rising, in a peaceful, dimly lit room, a book lies open nearby.",
+                "shot": "orbit",
+                "vo": "Ромашковый чай содержит апигенин — вещество, которое связывается с рецепторами мозга и снижает тревожность.",
+                "caption": "Древняя мудрость"
+              },
+              {
+                "image": "A close-up of dried lavender and valerian root being added to a teapot, delicate and fragrant.",
+                "shot": "handheld",
+                "vo": "Чай с мелиссой увеличивает уровень ГАМК — нейромедиатора, отвечающего за расслабление нервной системы.",
+                "caption": "Травы спокойствия"
+              },
+              {
+                "image": "A person slowly sips tea, eyes closed in contentment, bathed in soft moonlight filtering through a window, serene expression.",
+                "shot": "push_in",
+                "vo": "Улун с низким содержанием кофеина богат L-теанином, который улучшает качество сна, не вызывая сонливости днём.",
+                "caption": "Глоток безмятежности"
+              },
+              {
+                "image": "A beautifully arranged tea set on a low table, with steam gently rising from a cup, soft glowing lanterns in the background, a feeling of deep peace.",
+                "shot": "pull_back",
+                "vo": "Заваривайте эти чаи за час до сна — и ваш организм получит естественную поддержку для восстановления.",
+                "caption": "Путь к сну"
+              }
+            ]
+          },
+          "yt_desc": "Откройте для себя чай, который не только успокаивает, но и мягко убаюкивает. Узнайте, как древняя мудрость может улучшить ваш сон. Поделитесь в комментариях, какой чай помогает вам расслабиться!",
+          "yt_tags": [
+            "чай",
+            "сон",
+            "расслабление",
+            "вечернийчай",
+            "медитация"
+          ],
+          "tags": [
+            "auto",
+            "creator"
+          ],
+          "created": 1785940141,
+          "retries": 1,
+          "rendering_failed": false
+        }
+      ]
     },
     {
       "id": "draft",
@@ -98,74 +167,6 @@
           "video_path": "outputs/idea_tea_with_food.mp4",
           "needs_human": true,
           "reject_reason": "Хук слабый — это просто повтор заголовка, не создаёт интригу. Первая сцена лучше, но хук должен быть ярче. Факты в целом корректны (танины действительно могут снижать усвоение негемового железа), но формулировка 'теряешь важный элемент' слишком драматична для здоровых людей. Связность хорошая."
-        },
-        {
-          "id": "idea_tea_for_sleep_1785940141",
-          "title": "Чай для крепкого сна? 😴",
-          "desc": "Многие пьют чай для бодрости, но что, если я скажу, что он может подарить вам глубокий, спокойный сон?",
-          "scenario": {
-            "title": "Чай для крепкого сна? 😴",
-            "hook": "Многие пьют чай для бодрости, но что, если я скажу, что он может подарить вам глубокий, спокойный сон?",
-            "voice": "ru-RU-SvetlanaNeural",
-            "hero": "panda",
-            "brand_image": "assets/chayniy/panda_standing.png",
-            "characters": {
-              "panda": "assets/chayniy/panda_ink.png",
-              "panda_standing": "assets/chayniy/panda_standing.png",
-              "panda_face": "assets/chayniy/panda_face.png",
-              "teacup": "assets/chayniy/teacup_steam.png",
-              "tealeaf": "assets/chayniy/tealeaf.png",
-              "branch": "assets/chayniy/branch_teabush.png"
-            },
-            "style": "Japanese ink brush illustration, fine pen and ink linework with variable line weight (thicker where pressed, thinner where lifted), no color fills — black ink only on white background, occasional diluted ink wash for depth (monochrome only), large empty white space 65-75% of frame, single focal object or character, wabi-sabi aesthetic, ukiyo-e inspired, hand-drawn spontaneous feel, no text no watermark no gradients, vertical 9:16",
-            "scenes": [
-              {
-                "image": "A close-up of chamomile flowers gently swirling in a teacup, soft focus, warm evening light, cozy atmosphere.",
-                "shot": "crash_zoom",
-                "vo": "Многие пьют чай для бодрости, но что, если я скажу, что он может подарить вам глубокий, спокойный сон?",
-                "caption": "Чай для сна?"
-              },
-              {
-                "image": "A hand gently stirring a steaming cup of herbal tea, steam rising, in a peaceful, dimly lit room, a book lies open nearby.",
-                "shot": "orbit",
-                "vo": "В восточной традиции есть особые напитки, способные успокоить ум и подготовить тело к отдыху.",
-                "caption": "Древняя мудрость"
-              },
-              {
-                "image": "A close-up of dried lavender and valerian root being added to a teapot, delicate and fragrant.",
-                "shot": "handheld",
-                "vo": "Некоторые травы, заваренные с особой заботой, становятся эликсиром спокойствия.",
-                "caption": "Травы спокойствия"
-              },
-              {
-                "image": "A person slowly sips tea, eyes closed in contentment, bathed in soft moonlight filtering through a window, serene expression.",
-                "shot": "push_in",
-                "vo": "Один глоток, и суета дня отступает, открывая путь к безмятежности.",
-                "caption": "Глоток безмятежности"
-              },
-              {
-                "image": "A beautifully arranged tea set on a low table, with steam gently rising from a cup, soft glowing lanterns in the background, a feeling of deep peace.",
-                "shot": "pull_back",
-                "vo": "Позвольте этому ритуалу стать вашим проводником в мир крепкого и восстанавливающего сна.",
-                "caption": "Путь к сну"
-              }
-            ]
-          },
-          "yt_desc": "Откройте для себя чай, который не только успокаивает, но и мягко убаюкивает. Узнайте, как древняя мудрость может улучшить ваш сон. Поделитесь в комментариях, какой чай помогает вам расслабиться!",
-          "yt_tags": [
-            "чай",
-            "сон",
-            "расслабление",
-            "вечернийчай",
-            "медитация"
-          ],
-          "tags": [
-            "auto",
-            "creator"
-          ],
-          "created": 1785940141,
-          "retries": 0,
-          "video_path": "outputs/idea_tea_for_sleep_1785940141.mp4"
         }
       ]
     },
