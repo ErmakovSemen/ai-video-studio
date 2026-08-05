@@ -4,75 +4,7 @@
     {
       "id": "ideas",
       "name": "💡 Идеи",
-      "cards": [
-        {
-          "id": "idea_tea_and_silence_1785937416",
-          "title": "Чай и Тишина: Вкус без слов 🤫",
-          "desc": "Может ли тишина быть ингредиентом чая?",
-          "scenario": {
-            "title": "Чай и Тишина: Вкус без слов 🤫",
-            "hook": "Может ли тишина быть ингредиентом чая?",
-            "voice": "ru-RU-SvetlanaNeural",
-            "hero": "panda",
-            "brand_image": "assets/chayniy/panda_standing.png",
-            "characters": {
-              "panda": "assets/chayniy/panda_ink.png",
-              "panda_standing": "assets/chayniy/panda_standing.png",
-              "panda_face": "assets/chayniy/panda_face.png",
-              "teacup": "assets/chayniy/teacup_steam.png",
-              "tealeaf": "assets/chayniy/tealeaf.png",
-              "branch": "assets/chayniy/branch_teabush.png"
-            },
-            "style": "Japanese ink brush illustration, fine pen and ink linework with variable line weight (thicker where pressed, thinner where lifted), no color fills — black ink only on white background, occasional diluted ink wash for depth (monochrome only), large empty white space 65-75% of frame, single focal object or character, wabi-sabi aesthetic, ukiyo-e inspired, hand-drawn spontaneous feel, no text no watermark no gradients, vertical 9:16",
-            "scenes": [
-              {
-                "image": "Крупный план старого глиняного чайника, из его носика медленно струится пар. Фон размыт.",
-                "shot": "crash_zoom",
-                "vo": "Мы привыкли к словам, к звукам, к постоянному потоку информации.",
-                "caption": "Мир шума"
-              },
-              {
-                "image": "Руки осторожно поднимают пиалу с тёмным чаем. На поверхности чая едва заметные круги.",
-                "shot": "orbit",
-                "vo": "Но что, если самый ценный ингредиент чая — это не листья, а тишина?",
-                "caption": "Вкус тишины"
-              },
-              {
-                "image": "Медленно опускается закатное солнце, его лучи проникают сквозь окно, освещая чайную доску. На ней стоит пустая пиала.",
-                "shot": "pull_back",
-                "vo": "Тишина позволяет нам услышать истинный вкус, почувствовать аромат каждой нотки.",
-                "caption": "Слушай внимательно"
-              },
-              {
-                "image": "Крупный план человека, медленно делающего глоток чая с закрытыми глазами. Выражение лица спокойное и умиротворенное.",
-                "shot": "push_in",
-                "vo": "Она растворяет суету, оставляя лишь чистое ощущение момента.",
-                "caption": "Момент сейчас"
-              },
-              {
-                "image": "Общий план уютной комнаты, где на низком столике стоит чайная утварь. За окном виднеется спокойный пейзаж. В комнате царит полумрак.",
-                "shot": "static_hold",
-                "vo": "Позвольте себе эту роскошь – чашку чая в полной тишине. И услышьте, что говорит вам ваш внутренний мир.",
-                "caption": "Найди свой покой"
-              }
-            ]
-          },
-          "yt_desc": "В мире, где шум окружает нас повсюду, чай предлагает убежище. Он учит слушать себя, находить гармонию в простом. Позвольте себе этот момент тишины. Подписывайтесь, чтобы найти свой путь к внутреннему спокойствию.",
-          "yt_tags": [
-            "чай",
-            "тишина",
-            "медитация",
-            "спокойствие",
-            "внутренний_мир"
-          ],
-          "tags": [
-            "auto",
-            "creator"
-          ],
-          "created": 1785937416,
-          "retries": 0
-        }
-      ]
+      "cards": []
     },
     {
       "id": "draft",
@@ -166,6 +98,74 @@
           "video_path": "outputs/idea_tea_with_food.mp4",
           "needs_human": true,
           "reject_reason": "Хук слабый — это просто повтор заголовка, не создаёт интригу. Первая сцена лучше, но хук должен быть ярче. Факты в целом корректны (танины действительно могут снижать усвоение негемового железа), но формулировка 'теряешь важный элемент' слишком драматична для здоровых людей. Связность хорошая."
+        },
+        {
+          "id": "idea_tea_and_silence_1785937416",
+          "title": "Чай и Тишина: Вкус без слов 🤫",
+          "desc": "Может ли тишина быть ингредиентом чая?",
+          "scenario": {
+            "title": "Чай и Тишина: Вкус без слов 🤫",
+            "hook": "Может ли тишина быть ингредиентом чая?",
+            "voice": "ru-RU-SvetlanaNeural",
+            "hero": "panda",
+            "brand_image": "assets/chayniy/panda_standing.png",
+            "characters": {
+              "panda": "assets/chayniy/panda_ink.png",
+              "panda_standing": "assets/chayniy/panda_standing.png",
+              "panda_face": "assets/chayniy/panda_face.png",
+              "teacup": "assets/chayniy/teacup_steam.png",
+              "tealeaf": "assets/chayniy/tealeaf.png",
+              "branch": "assets/chayniy/branch_teabush.png"
+            },
+            "style": "Japanese ink brush illustration, fine pen and ink linework with variable line weight (thicker where pressed, thinner where lifted), no color fills — black ink only on white background, occasional diluted ink wash for depth (monochrome only), large empty white space 65-75% of frame, single focal object or character, wabi-sabi aesthetic, ukiyo-e inspired, hand-drawn spontaneous feel, no text no watermark no gradients, vertical 9:16",
+            "scenes": [
+              {
+                "image": "Крупный план старого глиняного чайника, из его носика медленно струится пар. Фон размыт.",
+                "shot": "crash_zoom",
+                "vo": "Мы привыкли к словам, к звукам, к постоянному потоку информации.",
+                "caption": "Мир шума"
+              },
+              {
+                "image": "Руки осторожно поднимают пиалу с тёмным чаем. На поверхности чая едва заметные круги.",
+                "shot": "orbit",
+                "vo": "Но что, если самый ценный ингредиент чая — это не листья, а тишина?",
+                "caption": "Вкус тишины"
+              },
+              {
+                "image": "Медленно опускается закатное солнце, его лучи проникают сквозь окно, освещая чайную доску. На ней стоит пустая пиала.",
+                "shot": "pull_back",
+                "vo": "Тишина позволяет нам услышать истинный вкус, почувствовать аромат каждой нотки.",
+                "caption": "Слушай внимательно"
+              },
+              {
+                "image": "Крупный план человека, медленно делающего глоток чая с закрытыми глазами. Выражение лица спокойное и умиротворенное.",
+                "shot": "push_in",
+                "vo": "Она растворяет суету, оставляя лишь чистое ощущение момента.",
+                "caption": "Момент сейчас"
+              },
+              {
+                "image": "Общий план уютной комнаты, где на низком столике стоит чайная утварь. За окном виднеется спокойный пейзаж. В комнате царит полумрак.",
+                "shot": "static_hold",
+                "vo": "Позвольте себе эту роскошь – чашку чая в полной тишине. И услышьте, что говорит вам ваш внутренний мир.",
+                "caption": "Найди свой покой"
+              }
+            ]
+          },
+          "yt_desc": "В мире, где шум окружает нас повсюду, чай предлагает убежище. Он учит слушать себя, находить гармонию в простом. Позвольте себе этот момент тишины. Подписывайтесь, чтобы найти свой путь к внутреннему спокойствию.",
+          "yt_tags": [
+            "чай",
+            "тишина",
+            "медитация",
+            "спокойствие",
+            "внутренний_мир"
+          ],
+          "tags": [
+            "auto",
+            "creator"
+          ],
+          "created": 1785937416,
+          "retries": 0,
+          "video_path": "outputs/idea_tea_and_silence_1785937416.mp4"
         }
       ]
     },
