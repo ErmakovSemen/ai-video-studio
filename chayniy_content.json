@@ -72,80 +72,6 @@
           "created": 1785940141,
           "retries": 2,
           "rendering_failed": true
-        },
-        {
-          "id": "idea_tea_path_to_clarity_1785947498",
-          "title": "Как чай помогает найти ясность? 🍵✨",
-          "desc": "Знаете, что самое сложное в нашей суетливой жизни?",
-          "scenario": {
-            "title": "Как чай помогает найти ясность? 🍵✨",
-            "hook": "Знаете, что самое сложное в нашей суетливой жизни?",
-            "voice": "ru-RU-SvetlanaNeural",
-            "hero": "panda",
-            "brand_image": "assets/chayniy/panda_standing.png",
-            "characters": {
-              "panda": "assets/chayniy/panda_ink.png",
-              "panda_standing": "assets/chayniy/panda_standing.png",
-              "panda_face": "assets/chayniy/panda_face.png",
-              "teacup": "assets/chayniy/teacup_steam.png",
-              "tealeaf": "assets/chayniy/tealeaf.png",
-              "branch": "assets/chayniy/branch_teabush.png"
-            },
-            "style": "Japanese ink brush illustration, fine pen and ink linework with variable line weight (thicker where pressed, thinner where lifted), no color fills — black ink only on white background, occasional diluted ink wash for depth (monochrome only), large empty white space 65-75% of frame, single focal object or character, wabi-sabi aesthetic, ukiyo-e inspired, hand-drawn spontaneous feel, no text no watermark no gradients, vertical 9:16",
-            "scenes": [
-              {
-                "image": "a chaotic desk with multiple screens, papers, and coffee cups, symbolizing modern overload",
-                "shot": "crash_zoom",
-                "vo": "Вы когда-нибудь чувствовали, что голова переполнена мыслями?",
-                "caption": "Поток информации"
-              },
-              {
-                "image": "a hand slowly reaching for a simple, elegant gaiwan on a minimalist tea tray, soft diffused light",
-                "shot": "push_in",
-                "vo": "Чайная церемония — древний способ вернуть ясность ума.",
-                "caption": "Найди свой момент"
-              },
-              {
-                "image": "close-up of hot water being poured into a gaiwan, steam gently rising, focus on the swirling tea leaves",
-                "shot": "orbit",
-                "vo": "Это не просто чаепитие, а осознанный ритуал.",
-                "caption": "Больше, чем напиток"
-              },
-              {
-                "image": "a person holding a small porcelain cup, eyes closed, deeply inhaling the aroma of the tea, serene expression",
-                "shot": "handheld",
-                "vo": "Каждое движение замедляет внутренний хаос.",
-                "caption": "Дыши глубоко"
-              },
-              {
-                "image": "a close-up of clear, amber tea being poured from a small pitcher into a tasting cup, light catching the liquid",
-                "shot": "push_in",
-                "vo": "Аромат, тепло чашки, тишина — и мысли проясняются.",
-                "caption": "Шаг к ясности"
-              },
-              {
-                "image": "a wide shot of a peaceful, minimalist tea space, with a single person sitting calmly, enjoying tea, bathed in soft, natural light",
-                "shot": "pull_back",
-                "vo": "Попробуйте: одна чашка может изменить весь ваш день.",
-                "caption": "Ощути покой"
-              }
-            ]
-          },
-          "yt_desc": "В бесконечном потоке информации и задач, найти внутреннюю ясность становится настоящим искусностью. Чайная церемония — это не просто приготовление напитка, а путь к себе.\nПозвольте себе замедлиться, вдохните аромат чая и обретите гармонию. Подписывайтесь, чтобы узнать больше о чайной мудрости!",
-          "yt_tags": [
-            "чайная_церемония",
-            "медитация",
-            "осознанность",
-            "гармония",
-            "замедление"
-          ],
-          "tags": [
-            "auto",
-            "creator"
-          ],
-          "created": 1785947498,
-          "retries": 1,
-          "rendering_failed": false
         }
       ]
     },
@@ -241,6 +167,81 @@
           "video_path": "outputs/idea_tea_with_food.mp4",
           "needs_human": true,
           "reject_reason": "Хук слабый — это просто повтор заголовка, не создаёт интригу. Первая сцена лучше, но хук должен быть ярче. Факты в целом корректны (танины действительно могут снижать усвоение негемового железа), но формулировка 'теряешь важный элемент' слишком драматична для здоровых людей. Связность хорошая."
+        },
+        {
+          "id": "idea_tea_path_to_clarity_1785947498",
+          "title": "Как чай помогает найти ясность? 🍵✨",
+          "desc": "Знаете, что самое сложное в нашей суетливой жизни?",
+          "scenario": {
+            "title": "Как чай помогает найти ясность? 🍵✨",
+            "hook": "Знаете, что самое сложное в нашей суетливой жизни?",
+            "voice": "ru-RU-SvetlanaNeural",
+            "hero": "panda",
+            "brand_image": "assets/chayniy/panda_standing.png",
+            "characters": {
+              "panda": "assets/chayniy/panda_ink.png",
+              "panda_standing": "assets/chayniy/panda_standing.png",
+              "panda_face": "assets/chayniy/panda_face.png",
+              "teacup": "assets/chayniy/teacup_steam.png",
+              "tealeaf": "assets/chayniy/tealeaf.png",
+              "branch": "assets/chayniy/branch_teabush.png"
+            },
+            "style": "Japanese ink brush illustration, fine pen and ink linework with variable line weight (thicker where pressed, thinner where lifted), no color fills — black ink only on white background, occasional diluted ink wash for depth (monochrome only), large empty white space 65-75% of frame, single focal object or character, wabi-sabi aesthetic, ukiyo-e inspired, hand-drawn spontaneous feel, no text no watermark no gradients, vertical 9:16",
+            "scenes": [
+              {
+                "image": "a chaotic desk with multiple screens, papers, and coffee cups, symbolizing modern overload",
+                "shot": "crash_zoom",
+                "vo": "Вы когда-нибудь чувствовали, что голова переполнена мыслями?",
+                "caption": "Поток информации"
+              },
+              {
+                "image": "a hand slowly reaching for a simple, elegant gaiwan on a minimalist tea tray, soft diffused light",
+                "shot": "push_in",
+                "vo": "Чайная церемония — древний способ вернуть ясность ума.",
+                "caption": "Найди свой момент"
+              },
+              {
+                "image": "close-up of hot water being poured into a gaiwan, steam gently rising, focus on the swirling tea leaves",
+                "shot": "orbit",
+                "vo": "Это не просто чаепитие, а осознанный ритуал.",
+                "caption": "Больше, чем напиток"
+              },
+              {
+                "image": "a person holding a small porcelain cup, eyes closed, deeply inhaling the aroma of the tea, serene expression",
+                "shot": "handheld",
+                "vo": "Каждое движение замедляет внутренний хаос.",
+                "caption": "Дыши глубоко"
+              },
+              {
+                "image": "a close-up of clear, amber tea being poured from a small pitcher into a tasting cup, light catching the liquid",
+                "shot": "push_in",
+                "vo": "Аромат, тепло чашки, тишина — и мысли проясняются.",
+                "caption": "Шаг к ясности"
+              },
+              {
+                "image": "a wide shot of a peaceful, minimalist tea space, with a single person sitting calmly, enjoying tea, bathed in soft, natural light",
+                "shot": "pull_back",
+                "vo": "Попробуйте: одна чашка может изменить весь ваш день.",
+                "caption": "Ощути покой"
+              }
+            ]
+          },
+          "yt_desc": "В бесконечном потоке информации и задач, найти внутреннюю ясность становится настоящим искусностью. Чайная церемония — это не просто приготовление напитка, а путь к себе.\nПозвольте себе замедлиться, вдохните аромат чая и обретите гармонию. Подписывайтесь, чтобы узнать больше о чайной мудрости!",
+          "yt_tags": [
+            "чайная_церемония",
+            "медитация",
+            "осознанность",
+            "гармония",
+            "замедление"
+          ],
+          "tags": [
+            "auto",
+            "creator"
+          ],
+          "created": 1785947498,
+          "retries": 1,
+          "rendering_failed": false,
+          "video_path": "outputs/idea_tea_path_to_clarity_1785947498.mp4"
         }
       ]
     },
