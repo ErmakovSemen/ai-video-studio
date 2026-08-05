@@ -167,6 +167,80 @@
           "video_path": "outputs/idea_tea_with_food.mp4",
           "needs_human": true,
           "reject_reason": "Хук слабый — это просто повтор заголовка, не создаёт интригу. Первая сцена лучше, но хук должен быть ярче. Факты в целом корректны (танины действительно могут снижать усвоение негемового железа), но формулировка 'теряешь важный элемент' слишком драматична для здоровых людей. Связность хорошая."
+        }
+      ]
+    },
+    {
+      "id": "await_post",
+      "name": "📤 Ожидание постинга",
+      "cards": [
+        {
+          "id": "idea_tea_soundscape_1785943809",
+          "title": "Слушай свой чай: секрет внутренней гармонии 🤫",
+          "desc": "А что, если чай не только вкус, но и звук?",
+          "scenario": {
+            "title": "Слушай свой чай: секрет внутренней гармонии 🤫",
+            "hook": "А что, если чай не только вкус, но и звук?",
+            "voice": "ru-RU-SvetlanaNeural",
+            "hero": "panda",
+            "brand_image": "assets/chayniy/panda_standing.png",
+            "characters": {
+              "panda": "assets/chayniy/panda_ink.png",
+              "panda_standing": "assets/chayniy/panda_standing.png",
+              "panda_face": "assets/chayniy/panda_face.png",
+              "teacup": "assets/chayniy/teacup_steam.png",
+              "tealeaf": "assets/chayniy/tealeaf.png",
+              "branch": "assets/chayniy/branch_teabush.png"
+            },
+            "style": "Japanese ink brush illustration, fine pen and ink linework with variable line weight (thicker where pressed, thinner where lifted), no color fills — black ink only on white background, occasional diluted ink wash for depth (monochrome only), large empty white space 65-75% of frame, single focal object or character, wabi-sabi aesthetic, ukiyo-e inspired, hand-drawn spontaneous feel, no text no watermark no gradients, vertical 9:16",
+            "scenes": [
+              {
+                "image": "Close-up on dry tea leaves being gently poured into a ceramic gaiwan, with a soft, diffused light, highlighting the texture and subtle movements.",
+                "shot": "push_in",
+                "vo": "А что, если чай не только вкус, но и звук?",
+                "caption": "Чайные звуки"
+              },
+              {
+                "image": "Macro shot of hot water slowly cascading onto tea leaves in a transparent glass teapot, creating tiny bubbles and a gentle hiss.",
+                "shot": "static_hold",
+                "vo": "Вслушайтесь в легкий шепот заварки, когда вода касается сухих листьев.",
+                "caption": "Шёпот заварки"
+              },
+              {
+                "image": "Close-up of a small, delicate tea cup being placed on a wooden table, producing a subtle, resonant 'клик'.",
+                "shot": "orbit",
+                "vo": "Заметьте мягкий звон чаши, когда она обретает свое место.",
+                "caption": "Звон чаши"
+              },
+              {
+                "image": "A person's hands gently holding a warm tea cup, steam subtly rising, in a peaceful, minimalist setting. Focus on the quiet contemplation.",
+                "shot": "handheld",
+                "vo": "Эти звуки — мелодия спокойствия, приглашение замедлиться.",
+                "caption": "Мелодия покоя"
+              },
+              {
+                "image": "Wide shot of a serene tea ceremony setup, with a person sitting calmly, eyes closed, savoring the moment, surrounded by soft light. Emphasize peace and introspection.",
+                "shot": "pull_back",
+                "vo": "Они открывают дверь к внутренней гармонии. Позвольте себе услышать.",
+                "caption": "Слушай свой чай"
+              }
+            ]
+          },
+          "yt_desc": "Мы часто пьём чай, но редко его слушаем. Откройте для себя мир чайных звуков – от шепота заварки до звона чашки. Заметьте, как эти звуки помогают найти внутренний покой и гармонию. Подпишитесь, чтобы узнать больше о чайных ритуалах и искусстве замедления.",
+          "yt_tags": [
+            "чайная_церемония",
+            "медитация",
+            "звуки_природы",
+            "осознанность",
+            "дзен_чай"
+          ],
+          "tags": [
+            "auto",
+            "creator"
+          ],
+          "created": 1785943809,
+          "retries": 0,
+          "video_path": "outputs/idea_tea_soundscape_1785943809.mp4"
         },
         {
           "id": "idea_tea_path_to_clarity_1785947498",
@@ -242,80 +316,6 @@
           "retries": 2,
           "rendering_failed": false,
           "video_path": "outputs/idea_tea_path_to_clarity_1785947498.mp4"
-        }
-      ]
-    },
-    {
-      "id": "await_post",
-      "name": "📤 Ожидание постинга",
-      "cards": [
-        {
-          "id": "idea_tea_soundscape_1785943809",
-          "title": "Слушай свой чай: секрет внутренней гармонии 🤫",
-          "desc": "А что, если чай не только вкус, но и звук?",
-          "scenario": {
-            "title": "Слушай свой чай: секрет внутренней гармонии 🤫",
-            "hook": "А что, если чай не только вкус, но и звук?",
-            "voice": "ru-RU-SvetlanaNeural",
-            "hero": "panda",
-            "brand_image": "assets/chayniy/panda_standing.png",
-            "characters": {
-              "panda": "assets/chayniy/panda_ink.png",
-              "panda_standing": "assets/chayniy/panda_standing.png",
-              "panda_face": "assets/chayniy/panda_face.png",
-              "teacup": "assets/chayniy/teacup_steam.png",
-              "tealeaf": "assets/chayniy/tealeaf.png",
-              "branch": "assets/chayniy/branch_teabush.png"
-            },
-            "style": "Japanese ink brush illustration, fine pen and ink linework with variable line weight (thicker where pressed, thinner where lifted), no color fills — black ink only on white background, occasional diluted ink wash for depth (monochrome only), large empty white space 65-75% of frame, single focal object or character, wabi-sabi aesthetic, ukiyo-e inspired, hand-drawn spontaneous feel, no text no watermark no gradients, vertical 9:16",
-            "scenes": [
-              {
-                "image": "Close-up on dry tea leaves being gently poured into a ceramic gaiwan, with a soft, diffused light, highlighting the texture and subtle movements.",
-                "shot": "push_in",
-                "vo": "А что, если чай не только вкус, но и звук?",
-                "caption": "Чайные звуки"
-              },
-              {
-                "image": "Macro shot of hot water slowly cascading onto tea leaves in a transparent glass teapot, creating tiny bubbles and a gentle hiss.",
-                "shot": "static_hold",
-                "vo": "Вслушайтесь в легкий шепот заварки, когда вода касается сухих листьев.",
-                "caption": "Шёпот заварки"
-              },
-              {
-                "image": "Close-up of a small, delicate tea cup being placed on a wooden table, producing a subtle, resonant 'клик'.",
-                "shot": "orbit",
-                "vo": "Заметьте мягкий звон чаши, когда она обретает свое место.",
-                "caption": "Звон чаши"
-              },
-              {
-                "image": "A person's hands gently holding a warm tea cup, steam subtly rising, in a peaceful, minimalist setting. Focus on the quiet contemplation.",
-                "shot": "handheld",
-                "vo": "Эти звуки — мелодия спокойствия, приглашение замедлиться.",
-                "caption": "Мелодия покоя"
-              },
-              {
-                "image": "Wide shot of a serene tea ceremony setup, with a person sitting calmly, eyes closed, savoring the moment, surrounded by soft light. Emphasize peace and introspection.",
-                "shot": "pull_back",
-                "vo": "Они открывают дверь к внутренней гармонии. Позвольте себе услышать.",
-                "caption": "Слушай свой чай"
-              }
-            ]
-          },
-          "yt_desc": "Мы часто пьём чай, но редко его слушаем. Откройте для себя мир чайных звуков – от шепота заварки до звона чашки. Заметьте, как эти звуки помогают найти внутренний покой и гармонию. Подпишитесь, чтобы узнать больше о чайных ритуалах и искусстве замедления.",
-          "yt_tags": [
-            "чайная_церемония",
-            "медитация",
-            "звуки_природы",
-            "осознанность",
-            "дзен_чай"
-          ],
-          "tags": [
-            "auto",
-            "creator"
-          ],
-          "created": 1785943809,
-          "retries": 0,
-          "video_path": "outputs/idea_tea_soundscape_1785943809.mp4"
         }
       ]
     },
