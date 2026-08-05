@@ -72,6 +72,73 @@
           "created": 1785940141,
           "retries": 2,
           "rendering_failed": true
+        },
+        {
+          "id": "idea_tea_leaves_whisper_1785954917",
+          "title": "Шёпот чайных листьев: раскрой тайну 🍃",
+          "desc": "Что, если листья чая не просто хранят вкус, но и помнят истории?",
+          "scenario": {
+            "title": "Шёпот чайных листьев: раскрой тайну 🍃",
+            "hook": "Что, если листья чая не просто хранят вкус, но и помнят истории?",
+            "voice": "ru-RU-SvetlanaNeural",
+            "hero": "panda",
+            "brand_image": "assets/chayniy/panda_standing.png",
+            "characters": {
+              "panda": "assets/chayniy/panda_ink.png",
+              "panda_standing": "assets/chayniy/panda_standing.png",
+              "panda_face": "assets/chayniy/panda_face.png",
+              "teacup": "assets/chayniy/teacup_steam.png",
+              "tealeaf": "assets/chayniy/tealeaf.png",
+              "branch": "assets/chayniy/branch_teabush.png"
+            },
+            "style": "Japanese ink brush illustration, fine pen and ink linework with variable line weight (thicker where pressed, thinner where lifted), no color fills — black ink only on white background, occasional diluted ink wash for depth (monochrome only), large empty white space 65-75% of frame, single focal object or character, wabi-sabi aesthetic, ukiyo-e inspired, hand-drawn spontaneous feel, no text no watermark no gradients, vertical 9:16",
+            "scenes": [
+              {
+                "image": "Close-up shot of dried tea leaves resting in a clay gaiwan, steam subtly rising, soft, diffused light, ancient, mysterious atmosphere.",
+                "shot": "crash_zoom",
+                "vo": "Что, если листья чая не просто хранят вкус, но и помнят истории?",
+                "caption": "Память листьев"
+              },
+              {
+                "image": "A single, aged tea leaf, magnified, with intricate veins resembling ancient maps or forgotten symbols, illuminated by a gentle spotlight.",
+                "shot": "orbit",
+                "vo": "Каждая прожилка, каждый изгиб — это свиток времени, где записаны шепот ветра и прикосновения рук.",
+                "caption": "Свитки времени"
+              },
+              {
+                "image": "A hand gently pouring hot water into a gaiwan, the water caressing the tea leaves, creating a soft, swirling motion, steam rising gracefully.",
+                "shot": "handheld",
+                "vo": "Когда горячая вода омывает их, они начинают рассказывать.",
+                "caption": "Вода-рассказчик"
+              },
+              {
+                "image": "Macro shot of tea leaves slowly unfurling in water, revealing their hidden shapes and colors, like ancient secrets awakening.",
+                "shot": "push_in",
+                "vo": "Истории о земле, где они родились, о солнце, что их грело, и о дожде, что их питал.",
+                "caption": "Пробуждение тайн"
+              },
+              {
+                "image": "A person holding a small, delicate tea cup with both hands, eyes closed in contemplation, steam rising gently, serene expression.",
+                "shot": "static_hold",
+                "vo": "Погрузитесь в эту чашку. Слушайте, как шепчут листья, и найдите свою историю.",
+                "caption": "Твоя история"
+              }
+            ]
+          },
+          "yt_desc": "Каждая чашка чая — это не только напиток, но и путешествие в прошлое. Узнайте, как древние листья хранят мудрость веков и делятся ею с нами. Присоединяйтесь к нашему каналу для новых открытий!",
+          "yt_tags": [
+            "чай",
+            "истории",
+            "мудрость",
+            "традиции",
+            "медитация"
+          ],
+          "tags": [
+            "auto",
+            "creator"
+          ],
+          "created": 1785954917,
+          "retries": 0
         }
       ]
     },
