@@ -1,0 +1,56 @@
+{
+  "title": "Ты завариваешь чай неправильно",
+  "hook": "Ты делаешь это не так",
+  "world": "лайфхак / ирония",
+  "voice": "ru-RU-SvetlanaNeural",
+  "hero": "panda",
+  "brand_image": "assets/chayniy/panda_standing.png",
+  "characters": {
+    "panda": "assets/chayniy/panda_ink.png",
+    "panda_face": "assets/chayniy/panda_face.png",
+    "teacup": "assets/chayniy/teacup_steam.png"
+  },
+  "style": "Japanese sumi-e ink brush illustration, fine pen and ink linework with bold confident strokes and variable line weight, black ink only on white background, occasional diluted ink wash for depth (monochrome only, NO color), large empty white space, single clear focal subject, wabi-sabi, ukiyo-e inspired, hand-drawn spontaneous feel, vertical 9:16",
+  "scenes": [
+    {
+      "image": "a red panda with a deadpan face drops a tea bag by its string into a huge wooden bucket of water, absurd oversized bucket, bold sumi-e ink, white space",
+      "refs": ["panda", "panda_face"],
+      "motion": "the tea bag dangles and dips into the bucket",
+      "vo": "Скорее всего, ты завариваешь чай... в ведре.",
+      "caption": "Чай в ведре?"
+    },
+    {
+      "image": "a red panda pours hot water from a kettle to warm a small clay teapot, steam rising, careful and precise, bold sumi-e ink, white space",
+      "refs": ["panda"],
+      "motion": "steam rises as the pot is warmed",
+      "vo": "А как надо? Сначала обдай кипятком чайник — прогрей его.",
+      "caption": "Прогрей посуду"
+    },
+    {
+      "image": "water being quickly poured over tea leaves in a gaiwan and immediately discarded to the side, motion of the rinse, bold ink, white background",
+      "refs": [],
+      "motion": "quick rinse poured out",
+      "vo": "Первый залив сразу слей: он будит лист и смывает пыль.",
+      "caption": "Промой лист"
+    },
+    {
+      "image": "a small teapot pouring tea into a neat row of tiny cups, short quick pour, elegant, bold sumi-e ink, white space",
+      "refs": ["teacup"],
+      "motion": "tea pours across the row of little cups",
+      "vo": "Потом — своя температура и короткие заливы. Каждый со своим вкусом.",
+      "caption": "Коротко, по чуть-чуть"
+    },
+    {
+      "image": "a red panda shrugs with a relaxed easy grin, one paw raised carefree, holding a big simple mug of tea, bold sumi-e ink, white space",
+      "refs": ["panda", "panda_face"],
+      "motion": "an easy carefree shrug",
+      "vo": "Но честно? Завари как хочешь. Хороший чай испортить сложно — а тёмный простит и кипяток, и лишние минуты.",
+      "caption": "Да завари как хочешь"
+    }
+  ],
+  "endcard": {
+    "title": "ЧАЙНЫЙ",
+    "sub": "Истории о чае и замедлении.",
+    "vo": "Завари чашку — и почувствуй разницу."
+  }
+}
