@@ -1,0 +1,146 @@
+"""End-to-end producer: QC stills -> (Yandex) voice -> karaoke -> music -> loudnorm -14
+-> YouTube -> board card. Usage: _prod.py <key>  (metadata read from CFG below)."""
+import os, sys, time, json, subprocess, re
+ROOT = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, ROOT)
+from studio import imagegen, qc, story
+
+_orig = imagegen.generate_image
+imagegen.generate_image = lambda p, o, refs=None, model=None: qc.generate_checked(_orig, p, o, scene=p, refs=refs, tries=3)
+
+CFG = {
+ "go_strategy": dict(
+   title="В этой игре ходов больше, чем атомов во Вселенной ⚫⚪",
+   desc=("Го (вэйци) — одна из древнейших игр на Земле, ей больше двух тысяч лет. Правила "
+         "учат за минуту, но число возможных позиций больше, чем атомов в наблюдаемой "
+         "Вселенной. Го наказывает жадность: побеждает не тот, кто хватает, а кто видит всю "
+         "доску и думает про влияние на всём поле — поэтому его так любят стратеги. Иногда "
+         "лучший ход — замедлиться и посмотреть шире.\n\nЗавари чашку — и почувствуй разницу."),
+   tags=["го","вэйци","стратегия","weiqi","мышление","бизнес","настольныеигры"]),
+ "self_respect": dict(
+   title="Ты пьёшь нормальный кофе, а чай — как будто себя не уважаешь 🍵",
+   desc=("Странная штука: ради кофе мы покупаем зёрна, мелем, ждём — целый ритуал. А чай "
+         "кидаем самым дешёвым пакетиком, а это часто просто пыль, самый низкий сорт листа. "
+         "Хороший рассыпной чай стоит копейки, а пять минут тишины ты точно заслужил. "
+         "Относись к себе как к тому, кого любишь — начни с чашки.\n\n"
+         "Завари чашку — и почувствуй разницу."),
+   tags=["чай","кофе","заботаосебе","рассыпнойчай","психология","самоуважение"]),
+ "cold_brew": dict(
+   title="Завари чай холодной водой 🍵",
+   desc=("Чай можно заварить вообще без кипятка. Залей лист холодной водой и оставь на "
+         "несколько часов: холодная вода тянет вкус медленно и почти не достаёт горечь. "
+         "Кофеина выходит меньше, а вкус — мягкий и сладковатый. Идеально в жару: поставь "
+         "вечером — будет готово к утру.\n\nЗавари чашку — и почувствуй разницу."),
+   tags=["чай","холоднаязаварка","coldbrew","лайфхак","лето"]),
+ "resteep": dict(
+   title="Не выбрасывай заварку после первой чашки 🍵",
+   desc=("Заварил лист один раз и выбросил? Зря. Хороший крупный лист заваривают не раз и "
+         "не два — вторая и третья заварка раскрывают новые оттенки вкуса. Лист может "
+         "отдавать вкус три, пять, а то и больше раз. А вот пыль из пакетика выдыхается за "
+         "одну.\n\nЗавари чашку — и почувствуй разницу."),
+   tags=["чай","завариваниечая","рассыпнойчай","лайфхак"]),
+ "oriental_beauty": dict(
+   title="Этот чай вкусный, потому что его покусали жучки 🍵",
+   desc=("Восточная красавица (Дун Фан Мэй Жэнь) — тайваньский улун с невероятной историей. "
+         "Крошечные цикадки кусают молодые листья, и в ответ куст вырабатывает особые "
+         "ароматические вещества — так рождается вкус мёда и спелых фруктов. Поэтому на "
+         "таких плантациях не используют пестициды: чем больше укусов, тем слаще чай.\n\n"
+         "Завари чашку — и почувствуй разницу."),
+   tags=["чай","улун","восточнаякрасавица","Тайвань","природа","факты"]),
+ "gongfu": dict(
+   title="Один лист — десять чашек 🍵",
+   desc=("На западе чай заваривают один раз, а в Китае — иначе. В маленькую гайвань кладут "
+         "много листа и заливают всего на секунды. Каждый пролив — новая чашка, и каждая на "
+         "вкус другая: первая яркая, пятая нежная, десятая едва уловимая. Так лист "
+         "раскрывается полностью — это гунфу-ча.\n\nЗавари чашку — и почувствуй разницу."),
+   tags=["чай","гунфу","гайвань","улун","Китай","чайнаяцеремония"]),
+ "high_mountain": dict(
+   title="Лучший улун растёт в облаках 🍵",
+   desc=("Самый ароматный улун растёт высоко в горах, где живут облака. Там холоднее, и куст "
+         "растёт медленно — а значит копит в листе больше сахаров и аромата. Поэтому "
+         "высокогорный улун, гаошань, такой сливочный и цветочный. Чем выше гора — тем тише "
+         "и слаще чай.\n\nЗавари чашку — и почувствуй разницу."),
+   tags=["чай","улун","гаошань","высокогорный","Тайвань","аромат"]),
+ "brew_wrong": dict(
+   title="Ты завариваешь чай неправильно 🍵 (или нет)",
+   desc=("Строго говоря, чай стоит заваривать не «пакетик в ведро кипятка», а по-человечески: "
+         "прогреть посуду, слить первый быстрый залив, чтобы разбудить лист, а дальше — своя "
+         "температура и короткие заливы, каждый со своим вкусом. Но честно? Хороший чай "
+         "испортить сложно, а тёмный простит и кипяток, и лишние минуты. Главное — чтобы тебе "
+         "было вкусно.\n\nЗавари чашку — и почувствуй разницу."),
+   tags=["чай","завариваниечая","гунфу","лайфхак","чайнаяцеремония","чёрныйчай","пуэр"]),
+ "puerh_wine": dict(
+   title="Чай, который стареет как вино 🍵",
+   desc=("Почти любой чай пьют свежим — но не пуэр. Его прессуют в плотный диск и "
+         "оставляют дозревать годами: он медленно ферментируется, становится мягче и "
+         "глубже. Старые редкие диски ценятся как хорошее вино — за них платят тысячи. "
+         "Время здесь не враг, а главный мастер вкуса.\n\nЗавари чашку — и почувствуй разницу."),
+   tags=["чай","пуэр","puerh","выдержка","Китай","ферментация"]),
+ "tea_horse_road": dict(
+   title="Чай возили по дороге смертников 🍵",
+   desc=("Тысячу лет назад чай несли из Юньнани в Тибет по Чайно-конной дороге — узким "
+         "тропам над пропастью в Гималаях. Спрессованный чай меняли на сильных тибетских "
+         "лошадей, а носильщики тащили на себе до ста килограммов. Чай был валютой, "
+         "лекарством и смыслом всего пути.\n\nЗавари чашку — и почувствуй разницу."),
+   tags=["чай","Тибет","Юньнань","история","Китай","пуэр","чайнаядорога"]),
+ "not_real_tea": dict(
+   title="Половина «чая» — вообще не чай 🍵",
+   desc=("Ромашка, мята, ройбуш, каркаде — по привычке мы зовём их чаем, но это не чай. "
+         "Настоящий чай — только лист одного растения, камелии китайской. Зелёный, чёрный, "
+         "улун, пуэр — всё это её лист. А травяные сборы правильно называть настоями, или "
+         "тизанами. Не хуже — просто другое.\n\nЗавари чашку — и почувствуй разницу."),
+   tags=["чай","тизан","ройбуш","каркаде","камелия","факты","травянойчай"]),
+ "tea_drunk": dict(
+   title="От чая можно опьянеть — без капли алкоголя 🍵",
+   desc=("Чайное опьянение — реальное явление, по-китайски ча-цзуй (茶醉). Крепкий чай "
+         "на пустой желудок может вызвать лёгкое головокружение, тепло и эйфорию — без "
+         "капли алкоголя. Виноват дуэт кофеина и L-теанина, а пустой желудок усиливает "
+         "эффект. Не нравится — поешь перед чаем и пей помедленнее.\n\n"
+         "Завари чашку — и почувствуй разницу."),
+   tags=["чай","чайноеопьянение","чацзуй","Lтеанин","кофеин","пуэр","наука"]),
+}
+
+def two_pass_loudnorm(src, dst, I=-14.0, TP=-1.5, LRA=11.0):
+    p1 = subprocess.run(["ffmpeg","-i",src,"-af",f"loudnorm=I={I}:TP={TP}:LRA={LRA}:print_format=json","-f","null","-"],
+        capture_output=True, text=True).stderr
+    d = json.loads(re.search(r"\{[^{}]*\"input_i\"[^{}]*\}", p1, re.S).group(0))
+    af = (f"loudnorm=I={I}:TP={TP}:LRA={LRA}:measured_I={d['input_i']}:measured_TP={d['input_tp']}:"
+          f"measured_LRA={d['input_lra']}:measured_thresh={d['input_thresh']}:offset={d['target_offset']}:linear=true")
+    subprocess.run(["ffmpeg","-y","-i",src,"-af",af,"-c:v","copy","-c:a","aac","-b:a","192k",dst], capture_output=True)
+
+KEY = sys.argv[1]
+cfg = CFG[KEY]
+sc = story.load(os.path.join(ROOT, f"scenarios/chayniy/{KEY}.json"))
+wd = os.path.join(ROOT, "work", f"{KEY}_{int(time.time())}")
+raw = os.path.join(ROOT, "outputs", f"{KEY}_raw.mp4"); out = os.path.join(ROOT, "outputs", f"{KEY}.mp4")
+music = os.path.join(ROOT, "assets/music/inspired.mp3")
+voice = os.getenv("YANDEX_VOICE","alena") if os.getenv("TTS_BACKEND")=="yandex" else "edge"
+print(f"rendering ({voice}):", sc["title"], flush=True)
+story.build(sc, raw, wd, base_dir=ROOT, draft=True, gen_stills=True, polish=True, music=music, captions=True)
+two_pass_loudnorm(raw, out); os.remove(raw)
+print("rendered", os.path.getsize(out)//1024, "kb", flush=True)
+
+tok = json.load(open(os.path.join(ROOT, "yt_token.json")))
+os.environ.update(YT_CLIENT_ID=tok["client_id"], YT_CLIENT_SECRET=tok["client_secret"], YT_REFRESH_TOKEN=tok["refresh_token"])
+from publish.youtube import YouTubePublisher
+from publish.base import VideoMeta
+res = YouTubePublisher().publish(out, VideoMeta(title=cfg["title"][:100], description=cfg["desc"],
+        tags=cfg["tags"], category_id="27", privacy="public", made_for_kids=False))
+print("URL:", res["url"], flush=True)
+try:
+    from studio import boardsync
+    board = boardsync.pull("chayniy_content") or boardsync.default_board("chayniy_content")
+    cols = {c["id"]: c for c in board["columns"]}
+    if "ideas" in cols:                       # move the idea card out of Идеи
+        cols["ideas"]["cards"] = [c for c in cols["ideas"].get("cards", []) if c.get("id") != f"idea_{KEY}"]
+    posted = cols["posted"]; posted.setdefault("cards", [])
+    card = {"id": f"cli_{KEY}", "title": sc["title"],
+            "desc": f"{res['url']}\nголос: {voice} · субтитры: да", "video": res["url"],
+            "scenario": f"scenarios/chayniy/{KEY}.json",
+            "tags": ["published","cli","youtube"]+(["yandex-voice"] if voice != "edge" else [])}
+    ex = next((c for c in posted["cards"] if c.get("id") == card["id"]), None)
+    (ex.update(card) if ex else posted["cards"].insert(0, card))
+    ok = boardsync.push("chayniy_content", board, message=f"board: posted {KEY}")
+    print("board:", "synced" if ok else "skip", flush=True)
+except Exception as e:
+    print("board error", e, flush=True)
