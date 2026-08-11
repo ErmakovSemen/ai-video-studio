@@ -65,7 +65,13 @@ def tts_timed(text: str, out_mp3: str, voice: str = None, rate: str = "+8%"):
                     sent_b.append([ch["text"], s, s + ch["duration"] / 1e7])
     import time
     last = None
-    for attempt in range(4):                       # edge-tts intermittently returns no audio
+    # edge-tts периодически отдаёт пустой ответ, и это не мгновенный сбой, а
+    # троттлинг: при рендере подряд идёт 5-6 запросов, и сервис затыкается на
+    # десятки секунд. Прежние 4 попытки за ~12 секунд в это окно не попадали, и
+    # падение озвучки ОДНОЙ сцены роняло рендер целиком. Ждём до ~2.5 минут:
+    # ролик всё равно собирается минуту, лишняя пауза дешевле потерянного прогона.
+    delays = [2, 5, 10, 20, 35, 50]
+    for attempt, pause in enumerate(delays):
         word_b.clear(); sent_b.clear()
         try:
             asyncio.run(_run())
@@ -73,7 +79,9 @@ def tts_timed(text: str, out_mp3: str, voice: str = None, rate: str = "+8%"):
                 break
         except Exception as e:
             last = e
-        time.sleep(1.2 * (attempt + 1))
+        if attempt < len(delays) - 1:
+            print(f"[tts] попытка {attempt + 1} без звука, жду {pause}с", flush=True)
+            time.sleep(pause)
     else:
         raise RuntimeError(f"edge-tts no audio after retries: {last}")
 
