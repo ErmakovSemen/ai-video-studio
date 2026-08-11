@@ -72,6 +72,73 @@
           "created": 1785940141,
           "retries": 2,
           "rendering_failed": true
+        },
+        {
+          "id": "idea_tea_and_meditation_1786484997",
+          "title": "Чай и осознанность: медитация в чашке 🧘‍♀️",
+          "desc": "Что, если я скажу, что ты уже медитируешь каждый день, даже не зная об этом?",
+          "scenario": {
+            "title": "Чай и осознанность: медитация в чашке 🧘‍♀️",
+            "hook": "Что, если я скажу, что ты уже медитируешь каждый день, даже не зная об этом?",
+            "voice": "ru-RU-SvetlanaNeural",
+            "hero": "panda",
+            "brand_image": "assets/chayniy/panda_standing.png",
+            "characters": {
+              "panda": "assets/chayniy/panda_ink.png",
+              "panda_standing": "assets/chayniy/panda_standing.png",
+              "panda_face": "assets/chayniy/panda_face.png",
+              "teacup": "assets/chayniy/teacup_steam.png",
+              "tealeaf": "assets/chayniy/tealeaf.png",
+              "branch": "assets/chayniy/branch_teabush.png"
+            },
+            "style": "Japanese ink brush illustration, fine pen and ink linework with variable line weight (thicker where pressed, thinner where lifted), no color fills — black ink only on white background, occasional diluted ink wash for depth (monochrome only), large empty white space 65-75% of frame, single focal object or character, wabi-sabi aesthetic, ukiyo-e inspired, hand-drawn spontaneous feel, no text no watermark no gradients, vertical 9:16",
+            "scenes": [
+              {
+                "image": "a close-up shot of steam rising from a freshly poured cup of tea, soft light, shallow depth of field",
+                "shot": "crash_zoom",
+                "vo": "Что, если я скажу, что ты уже медитируешь каждый день, даже не зная об этом?",
+                "caption": "Медитация в чашке?"
+              },
+              {
+                "image": "a person slowly pouring hot water into a teapot, hands moving gracefully, focus on the gentle stream",
+                "shot": "orbit",
+                "vo": "Каждое движение при заваривании чая — это шаг к внутреннему покою.",
+                "caption": "Искусство заваривания"
+              },
+              {
+                "image": "a close-up of tea leaves unfurling in hot water in a glass teapot, intricate details of the leaves",
+                "shot": "push_in",
+                "vo": "Наблюдай за танцем листьев, за тем, как они раскрывают свои ароматы.",
+                "caption": "Танец листьев"
+              },
+              {
+                "image": "a person holding a warm teacup with both hands, eyes closed in contemplation, serene expression",
+                "shot": "handheld",
+                "vo": "Почувствуй тепло, вдохни аромат, отпусти все мысли.",
+                "caption": "Момент покоя"
+              },
+              {
+                "image": "a static shot of a single teacup on a simple wooden table, soft natural light, a calm, minimalist setting",
+                "shot": "static_hold",
+                "vo": "Чай — это твой проводник к осознанности, к моменту здесь и сейчас.",
+                "caption": "Твой проводник к Дзен"
+              }
+            ]
+          },
+          "yt_desc": "Чайная церемония — это не просто ритуал, это практика осознанности. Узнай, как превратить каждое чаепитие в момент глубокой медитации. Подписывайся, чтобы открыть для себя мир спокойствия через чай.",
+          "yt_tags": [
+            "чай",
+            "медитация",
+            "осознанность",
+            "дзен",
+            "спокойствие"
+          ],
+          "tags": [
+            "auto",
+            "creator"
+          ],
+          "created": 1786484997,
+          "retries": 0
         }
       ]
     },
