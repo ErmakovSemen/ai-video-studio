@@ -22,9 +22,14 @@ def _used_topics(project: dict, board: dict) -> str:
 
 def maybe_create_idea(project: dict, board: dict) -> bool:
     ideas = C.col(board, "ideas")["cards"]
-    if len(ideas) >= MIN_IDEAS:
-        C.log("creator", f"в очереди уже {len(ideas)} идей, пропускаю")
+    # считаем только живые: карточки, снятые в «нужна помощь», очередью не являются,
+    # иначе они запирают креатора и конвейер стоит с полной на вид очередью
+    live = [c for c in ideas if not c.get("needs_human")]
+    if len(live) >= MIN_IDEAS:
+        C.log("creator", f"в очереди уже {len(live)} живых идей, пропускаю")
         return False
+    if len(ideas) != len(live):
+        C.log("creator", f"{len(ideas) - len(live)} карточек ждут человека — в очередь не считаю")
 
     ipath = C.STATE_DIR / f"insights_{project['id']}.md"
     insights = ipath.read_text(encoding="utf-8") if ipath.exists() else ""

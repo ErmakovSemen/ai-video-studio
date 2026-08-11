@@ -89,10 +89,17 @@ go.onclick=async()=>{
 };
 function setBar(msg,pct){$('#fill').style.width=(pct||0)+'%';$('#stage').textContent=msg+' · '+(pct||0)+'%';}
 function fail(m){$('#err').textContent='Ошибка: '+m;go.disabled=false;$('#prog').classList.remove('on');}
+let pFails=0;
 async function poll(jid){
-  try{const r=await fetch('/api/jobs/'+jid);const j=await r.json();
-    if(j.status==='running'||j.status==='queued'){setBar(j.stage||'обработка',j.progress||0);return setTimeout(()=>poll(jid),2000);}
+  // без проверки r.ok потерянная джоба (рестарт контейнера -> 404) не попадала ни в одну
+  // ветку: прогресс замирал навсегда, без ошибки и без повтора
+  try{const r=await fetch('/api/jobs/'+jid);
+    if(r.status===404)return fail('задача потерялась — сервер перезапустился, запустите нарезку заново');
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const j=await r.json();
+    if(j.status==='running'||j.status==='queued'){setBar(j.stage||'обработка',j.progress||0);pFails=0;return setTimeout(()=>poll(jid),2000);}
     if(j.status==='error')return fail(j.error||'сбой нарезки');
+    if(j.status!=='done')return fail('непонятный ответ сервера ('+(j.status||'без статуса')+')');
     if(j.status==='done'){
       setBar('готово',100);
       const sh=j.shorts||[];
@@ -105,7 +112,10 @@ async function poll(jid){
       $('#resCard').style.display='block';go.disabled=false;
       setTimeout(()=>$('#prog').classList.remove('on'),1200);
     }
-  }catch(e){setTimeout(()=>poll(jid),2500);}
+  }catch(e){
+    if(++pFails>15)return fail('сервер не отвечает — загляните в «Мои видео», нарезка могла дойти');
+    setTimeout(()=>poll(jid),2500);
+  }
 }
 function fmt(s){s=Math.round(s);return (s/60|0)+':'+String(s%60).padStart(2,'0')}
 </script></body></html>
