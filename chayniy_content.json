@@ -321,7 +321,7 @@
           "retries": 0,
           "video_path": "outputs/idea_tea_and_meditation_1786484997.mp4",
           "needs_human": true,
-          "publish_error": "('invalid_grant: Token has been expired or revoked.', {'error': 'invalid_grant', 'error_description': 'Token has been expired or revoked.'})"
+          "publish_error": "('invalid_grant: Bad Request', {'error': 'invalid_grant', 'error_description': 'Bad Request'})"
         }
       ]
     },
