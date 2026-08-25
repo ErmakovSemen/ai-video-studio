@@ -1,0 +1,57 @@
+{
+  "title": "Почему во всём мире у чая только два имени",
+  "hook": "У чая два имени",
+  "world": "лингвистика / факты",
+  "voice": "ru-RU-SvetlanaNeural",
+  "hero": "panda",
+  "brand_image": "assets/chayniy/panda_standing.png",
+  "characters": {
+    "panda": "assets/chayniy/panda_ink.png",
+    "panda_face": "assets/chayniy/panda_face.png",
+    "teacup": "assets/chayniy/teacup_steam.png",
+    "tealeaf": "assets/chayniy/tealeaf.png"
+  },
+  "style": "Japanese sumi-e ink brush illustration, fine pen and ink linework with bold confident strokes and variable line weight, black ink only on white background, occasional diluted ink wash for depth (monochrome only, NO color), large empty white space, single clear focal subject, wabi-sabi, ukiyo-e inspired, hand-drawn spontaneous feel, vertical 9:16",
+  "scenes": [
+    {
+      "image": "a red panda holds a single tea leaf that splits into two glowing paths curling away in its paws, curious expression, bold sumi-e ink, white space",
+      "refs": ["panda", "tealeaf"],
+      "motion": "the leaf splits and the two paths pull apart",
+      "vo": "Почти весь мир называет чай одним из всего двух слов. Почему?",
+      "caption": "Два слова"
+    },
+    {
+      "image": "a camel caravan crosses a vast mountain desert carrying pressed tea bricks strapped on its back, tiny figures dwarfed by the scale of the peaks, bold sumi-e ink, white space",
+      "refs": [],
+      "motion": "slow pan following the caravan across the ridge",
+      "vo": "По суше чай шёл караванами — через Персию, Россию, Балканы. Так родилось слово «чай».",
+      "caption": "По суше — «чай»"
+    },
+    {
+      "image": "a wooden sailing ship with full billowing sails crosses stormy ocean waves, crates stacked on its deck, dramatic scale, bold sumi-e ink, white space",
+      "refs": [],
+      "motion": "the ship rises and falls with the waves",
+      "vo": "По морю его везли голландцы с юга Китая. Так родилось слово «ти» — tea, thé, tee.",
+      "caption": "По морю — «ти»"
+    },
+    {
+      "image": "two identical teacups steaming side by side on a plain table, calm symmetry, bold sumi-e ink, white space",
+      "refs": ["teacup"],
+      "motion": "slow push in centering both cups",
+      "vo": "Один и тот же лист — а название зависело от того, как он к тебе доехал.",
+      "caption": "Один лист, два пути"
+    },
+    {
+      "image": "a red panda sits content holding a warm cup of tea in both paws, ears perked with quiet realization, serene, bold sumi-e ink, lots of white space",
+      "refs": ["panda", "panda_face"],
+      "motion": "slow gentle zoom in on the calm face",
+      "vo": "Две тысячи лет истории торговли уместились в одном глотке.",
+      "caption": "Целая история в глотке"
+    }
+  ],
+  "endcard": {
+    "title": "ЧАЙНЫЙ",
+    "sub": "Истории о чае и замедлении.",
+    "vo": "Завари чашку — и почувствуй разницу."
+  }
+}
