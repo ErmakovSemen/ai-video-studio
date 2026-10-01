@@ -99,6 +99,23 @@ def log(role: str, msg: str):
         pass
 
 
+def notify(text: str):
+    """Сообщить владельцу в Telegram. Молчаливый отказ — главная болезнь фабрики:
+    две недели простоя прошли незамеченными, потому что кричать было некому."""
+    token = os.getenv("AGT_TG_BOT_TOKEN", "")
+    chat = os.getenv("AGT_TG_CHAT_ID", "")
+    if not token or not chat:
+        return
+    try:
+        req = urllib.request.Request(
+            f"https://api.telegram.org/bot{token}/sendMessage",
+            data=json.dumps({"chat_id": chat, "text": text[:3500]}).encode(),
+            headers={"Content-Type": "application/json"})
+        urllib.request.urlopen(req, timeout=15).read()
+    except Exception as e:
+        print(f"[factory] не смог уведомить в TG: {e}", flush=True)
+
+
 def autonomous_on() -> bool:
     return bool(read_state("autonomous.json", {}).get("on"))
 
