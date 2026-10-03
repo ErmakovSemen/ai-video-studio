@@ -1,6 +1,6 @@
 """Загрузка ролика на YouTube через publish.youtube (YouTube Data API v3).
 Нужны env: YT_CLIENT_ID, YT_CLIENT_SECRET, YT_REFRESH_TOKEN (см. SETUP-YOUTUBE.md).
-Запуск из корня репо: python3 -m animations.jinjunmei.upload_youtube [--theme ink|kraft] [--privacy public|unlisted|private]"""
+Запуск из корня репо: python3 -m animations.jinjunmei.upload_youtube [--theme kraft|ink] [--privacy public|unlisted|private]"""
 import argparse, pathlib, sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[2]
@@ -17,7 +17,7 @@ DESCRIPTION = """Горы Уишань, деревня Тунму — родин
 TAGS = ["Цзинь Цзюнь Мэй", "金骏眉", "Jin Jun Mei", "красный чай", "китайский чай", "Уишань", "чай", "история чая", "анимация"]
 
 ap = argparse.ArgumentParser()
-ap.add_argument("--theme", default="ink", choices=["ink", "kraft"])
+ap.add_argument("--theme", default="kraft", choices=["ink", "kraft"])
 ap.add_argument("--privacy", default="public", choices=["public", "unlisted", "private"])
 a = ap.parse_args()
 video = pathlib.Path(__file__).parent / "out" / f"jinjunmei_{a.theme}.mp4"
