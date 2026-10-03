@@ -299,5 +299,12 @@
     ink:   { name: 'ink',   paper: '#efe8d9', paperDark: '#a89c84', paperLight: '#fbf8f0', line: '#1b1917', soft: '#4c4741', guide: '#a39a8a', light: '#93a8b4', cold: '#557488', warm: '#c88a12', seal: '#b2241c', wash: '#f4c86a', grain: 14 },
   };
 
-  window.PENCIL = { W, H, rng, hash, clamp, seg, lerp, ease, easeIO, easeOut, life, resample, smooth, ellipse, pod, along, CAM, pencil, hatch, hand, glyph, makePaper, makeTooth, hexA, PALETTES };
+  // стереть область под фигурой (в координатах камеры): передний план непрозрачен
+  function erasePolyLocal(g, polyW) {
+    const q = polyW.map(CAM.map);
+    g.save(); g.globalCompositeOperation = 'destination-out'; g.beginPath();
+    q.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); g.closePath(); g.fill(); g.restore();
+  }
+
+  window.PENCIL = { W, H, rng, hash, clamp, seg, lerp, ease, easeIO, easeOut, life, resample, smooth, ellipse, pod, along, CAM, pencil, hatch, hand, glyph, makePaper, makeTooth, hexA, PALETTES, erasePolyLocal };
 })();

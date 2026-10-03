@@ -1,4 +1,4 @@
-"""Звук синтезом под константы timing.json: шаги, ветер, чай, гонг, печать, взмах мантии, щипки, аккорд.
+"""Звук синтезом под константы timing.json: шорох карандаша, сминание и бросок бумаги, переворот страниц, свиток, гонг, чай, щипки, аккорд.
 Без стоков. Выход: out/audio.wav (48 кГц, стерео). Громкость потом нормализуется ffmpeg loudnorm."""
 import json, pathlib
 import numpy as np
@@ -59,22 +59,18 @@ def bell(f, dur=2.5):
     return sum(a * np.sin(2 * np.pi * f * m * t) * np.exp(-t / (dur * d)) for m, a, d in parts) * np.minimum(1, t / 0.003)
 
 
-# 1) гул: до поворота холодная квинта, после — тёплое мажорное трезвучие
+# 1) гул: холодный до поворота, тёплый после
 t = np.arange(N) / SR
 turn = real(T["turn"])
 cold = (np.sin(2 * np.pi * 55 * t) + 0.6 * np.sin(2 * np.pi * 82.4 * t + 0.3) + 0.25 * np.sin(2 * np.pi * 110.7 * t))
 warm = (np.sin(2 * np.pi * 49 * t) + 0.6 * np.sin(2 * np.pi * 73.4 * t) + 0.5 * np.sin(2 * np.pi * 61.7 * t) + 0.3 * np.sin(2 * np.pi * 98 * t))
-x = np.clip((t - turn + 0.1) / 0.4, 0, 1)
+x = np.clip((t - turn + 0.1) / 0.5, 0, 1)
 drone = ((1 - x) * cold + x * warm * 1.2) * np.clip(t / 1.5, 0, 1) * np.clip((T["duration"] - t) / 2.0, 0, 1) * (0.8 + 0.2 * np.sin(2 * np.pi * 0.13 * t))
 L += drone * 0.055; Rch += drone * 0.055
 
-# 2) ветер: медленно плывущий шум
-noise = rng.standard_normal(N)
-wind = signal.lfilter(*signal.butter(2, [200 / (SR / 2), 900 / (SR / 2)], btype="band"), noise) * (0.5 + 0.5 * np.sin(2 * np.pi * 0.09 * t + 1))
-L += wind * 0.02; Rch += wind * 0.018
-
-# 3) шорох карандаша в окнах рисования
-scratch = signal.lfilter(*signal.butter(2, [1800 / (SR / 2), 7000 / (SR / 2)], btype="band"), rng.standard_normal(N))
+# 2) шорох карандаша, пока карточка прорисовывается
+bp = lambda lo, hi, x: signal.lfilter(*signal.butter(2, [lo / (SR / 2), hi / (SR / 2)], btype="band"), x)
+scratch = bp(1800, 7000, rng.standard_normal(N))
 gate = np.zeros(N)
 for a0, a1 in windows(T["draw"]): gate[int(a0 * SR):int(a1 * SR)] = 1
 gate = signal.lfilter([1 / 2400], [1, -1 + 1 / 2400], gate)
@@ -82,53 +78,50 @@ k = np.floor(t * T["drawRate"]).astype(int)
 stroke = rng.uniform(0.35, 1.0, k.max() + 2)[k]
 L += scratch * gate * stroke * 0.045; Rch += scratch * gate * stroke * 0.04
 
-# 4) шаги: мягкий глухой удар + шорох ткани
-for i, ts in enumerate(T["steps"]):
-    n = int(0.12 * SR); tt = np.arange(n) / SR
-    thud = np.sin(2 * np.pi * (70 + 40 * np.exp(-tt / 0.02)) * tt) * np.exp(-tt / 0.04)
-    rustle = signal.lfilter(*signal.butter(2, 2500 / (SR / 2), "high"), rng.standard_normal(n)) * np.exp(-tt / 0.03) * 0.25
-    add(thud + rustle, real(ts), 0.32, pan=-0.3 + 0.6 * (i % 2))
+# 3) бумага: сминание (треск), бросок (свист), переворот страницы (шелест + хлопок)
+def crunch(dur):
+    n = int(dur * SR); out_ = np.zeros(n)
+    for _ in range(int(dur * 90)):
+        i = rng.integers(0, n - 800); m = rng.integers(150, 700)
+        out_[i:i + m] += rng.standard_normal(m) * np.exp(-np.arange(m) / (m / 4)) * rng.uniform(0.3, 1)
+    return bp(900, 7000, out_) * np.sin(np.pi * np.arange(n) / n) ** 0.5
+def whoosh(dur, f0=500, f1=2600):
+    n = int(dur * SR); src = rng.standard_normal(n); out_ = np.zeros(n)
+    for j in range(0, n, 1200):
+        fc = f0 + (f1 - f0) * np.sin(np.pi * j / n); out_[j:j + 1200] = bp(fc * 0.7, min(SR / 2 - 100, fc * 1.4), src[j:j + 1200])
+    return out_ * np.sin(np.pi * np.arange(n) / n)
+for b, kind in zip(T["B"], T["kind"]):
+    tb = real(b)
+    if kind == "crumple":
+        add(crunch(0.5), tb, 0.55, pan=-0.1)
+        add(whoosh(0.4), tb + 0.5, 0.45, pan=0.5)
+    else:
+        add(whoosh(0.5, 1500, 4500), tb + 0.1, 0.35, pan=-0.2)
+        ft = np.arange(int(0.2 * SR)) / SR
+        add(np.sin(2 * np.pi * 95 * ft) * np.exp(-ft / 0.05) + 0.3 * bp(400, 3000, rng.standard_normal(len(ft))) * np.exp(-ft / 0.02), tb + 0.85, 0.35)
 
-# 5) падение: глухой удар + шелест
-ft = np.arange(int(0.5 * SR)) / SR
-add(np.sin(2 * np.pi * 60 * ft) * np.exp(-ft / 0.12) + 0.3 * rng.standard_normal(len(ft)) * np.exp(-ft / 0.05), real(T["fall"] + 0.9), 0.5)
-
-# 6) льётся чай: полосовой шум с «бульканьем»
-a0, a1 = real(T["pour"][0]) + 0.15, real(T["pour"][1]) - 0.15
-n = int((a1 - a0) * SR); tt = np.arange(n) / SR
-gurgle = signal.lfilter(*signal.butter(2, [600 / (SR / 2), 2400 / (SR / 2)], btype="band"), rng.standard_normal(n))
-gurgle *= (0.6 + 0.4 * np.sin(2 * np.pi * 11 * tt + 3 * np.sin(2 * np.pi * 1.3 * tt))) * np.clip(tt / 0.1, 0, 1) * np.clip((tt[-1] - tt) / 0.15, 0, 1)
-add(gurgle, a0, 0.18, pan=0.2)
-
-# 7) щипки до поворота (минорная пентатоника)
-for i, tp in enumerate(T["plucks"]):
-    add(pluck(hz(["A3", "C4", "E4", "D4", "G3", "A3"][i % 6]), 1.8, 0.2), real(tp), 0.26, pan=-0.3 + 0.1 * i)
-
-# 8) поворот: гонг + удар; печать
+# 4) свиток разворачивается + поворот: гонг
+u0, u1 = real(T["unroll"][0]), real(T["unroll"][1])
+add(bp(300, 2500, rng.standard_normal(int((u1 - u0) * SR))) * np.linspace(0.3, 1, int((u1 - u0) * SR)), u0, 0.3)
 gt = np.arange(int(3.2 * SR)) / SR
 gong = sum(a * np.sin(2 * np.pi * 70 * m * gt) * np.exp(-gt / d) for m, a, d in [(1, 1, 2.2), (2.41, 0.6, 1.4), (3.93, 0.4, 0.9), (5.32, 0.25, 0.6)])
-thump = np.sin(2 * np.pi * (48 + 60 * np.exp(-gt / 0.04)) * gt) * np.exp(-gt / 0.25)
-add(gong * 0.35 + thump * 0.6, turn, 1.0)
+add(gong * 0.35 + np.sin(2 * np.pi * (48 + 60 * np.exp(-gt / 0.04)) * gt) * np.exp(-gt / 0.25) * 0.6, u1 - 0.05, 1.0)
 st = np.arange(int(0.4 * SR)) / SR
 add(np.sin(2 * np.pi * 110 * st) * np.exp(-st / 0.09) + 0.2 * rng.standard_normal(len(st)) * np.exp(-st / 0.02), real(T["stamp"]), 0.5)
 
-# 9) тёплый мотив (мажорная пентатоника)
+# 5) льётся чай
+a0, a1 = real(T["pour"][0]) + 0.25, real(T["pour"][1]) - 0.1
+n = int((a1 - a0) * SR); tt = np.arange(n) / SR
+gurgle = bp(600, 2400, rng.standard_normal(n)) * (0.6 + 0.4 * np.sin(2 * np.pi * 11 * tt + 3 * np.sin(2 * np.pi * 1.3 * tt))) * np.clip(tt / 0.1, 0, 1) * np.clip((tt[-1] - tt) / 0.15, 0, 1)
+add(gurgle, a0, 0.2, pan=0.2)
+
+# 6) щипки (холодно) и тёплый мотив
+for i, tp in enumerate(T["plucks"]):
+    add(pluck(hz(["A3", "C4", "E4", "D4", "G3", "A3"][i % 6]), 1.8, 0.2), real(tp), 0.26, pan=-0.3 + 0.1 * i)
 for i, tm in enumerate(T["motif"]):
     add(pluck(hz(["G4", "B4", "D5", "E5", "D5", "G5"][i % 6]), 1.6, 0.9), real(tm), 0.28, pan=0.2 - 0.08 * i)
 
-# 10) взмах мантии: свист ткани от броска до касания кустов
-a0, a1 = real(T["throw"]), real(T["drape"])
-n = int((a1 - a0 + 0.3) * SR); tt = np.arange(n) / SR
-sw = rng.standard_normal(n); out_ = np.zeros(n); f0 = 400
-for j in range(0, n, 2400):
-    seg_ = sw[j:j + 2400]; fc = f0 + 2600 * np.sin(np.pi * min(1, j / n))
-    out_[j:j + len(seg_)] = signal.lfilter(*signal.butter(2, [fc * 0.7 / (SR / 2), min(0.99, fc * 1.4 / (SR / 2))], btype="band"), seg_)
-out_ *= np.sin(np.pi * np.clip(tt / (a1 - a0 + 0.3), 0, 1))
-add(out_, a0, 0.35, pan=0.4)
-dt = np.arange(int(0.6 * SR)) / SR
-add(np.sin(2 * np.pi * 85 * dt) * np.exp(-dt / 0.15) + 0.25 * signal.lfilter(*signal.butter(2, 1200 / (SR / 2)), rng.standard_normal(len(dt))) * np.exp(-dt / 0.1), a1, 0.45, pan=0.4)
-
-# 11) финальный аккорд
+# 7) финальный аккорд
 for j, nt in enumerate(["G3", "D4", "G4", "B4"]):
     add(bell(hz(nt), 4.5) * 0.7 + pluck(hz(nt), 4.5, 0.8) * 0.5, real(T["finalChord"]) + 0.08 * j, 0.15)
 
