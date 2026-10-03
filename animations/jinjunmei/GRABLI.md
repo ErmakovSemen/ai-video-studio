@@ -10,3 +10,6 @@
 | Финальный аккорд: shape mismatch в numpy | разная длительность слоёв — длины звуков одинаковые |
 | `multiple_root_compositions` в lint | две html с composition-id в корне. Вторая палитра генерится sed во временный файл в `render.sh` |
 | 骏 рисуется как 駿 | так нарисовано в шрифте Ma Shan Zheng (традиционная форма). Допустимо: 金駿眉 |
+| edge-tts: certificate verify failed | edge-tts ходит по WebSocket — прокси облачной среды его не пропускает. Озвучка офлайн: RHVoice (`apt install rhvoice rhvoice-russian`) |
+| Piper: 403 на модели | huggingface.co закрыт политикой сети. Нужно добавить домен в Allowed domains окружения |
+| Фразы озвучки налезают друг на друга | голос медленнее 2 слов/с. `voice.py` печатает таблицу и помечает «НАЛЕЗАЕТ»; лечение — RATE=120 и удлинить паузу (`holds`) под фразу |

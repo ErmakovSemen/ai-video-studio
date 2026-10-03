@@ -10,4 +10,4 @@
 - `GRABLI.md` — список граблей
 - `out/` — готовые MP4 и листы кадров
 
-Сборка: `./render.sh all high` (нужны Node 22, ffmpeg, Python+numpy+scipy; ~2 мин на обе палитры).
+Сборка: `./render.sh all high`; с озвучкой: `VOICE=aleksandr-hq RATE=120 ./render.sh all high` (голоса офлайн: `apt install rhvoice rhvoice-russian`).

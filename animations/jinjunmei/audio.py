@@ -125,3 +125,16 @@ mix /= max(1e-9, np.abs(mix).max()) / 0.8
 out = HERE / "out"; out.mkdir(exist_ok=True)
 wavfile.write(out / "audio_raw.wav", SR, (mix * 32767).astype(np.int16))
 print("audio_raw.wav ok", mix.shape)
+
+# версия с голосом: музыка приседает (~-8 дБ) под голос
+vf = out / "voice.wav"
+if vf.exists():
+    vsr, v = wavfile.read(vf); v = v.astype(np.float64) / 32768
+    v = np.pad(v, (0, max(0, N - len(v))))[:N]
+    act = (np.abs(v) > 0.02).astype(float)
+    act = np.convolve(act, np.ones(int(0.25 * SR)) / (0.25 * SR), "same") > 0.02  # склеиваем паузы между словами
+    duck = signal.lfilter([1 / 4800], [1, -1 + 1 / 4800], 1 - 0.6 * act)       # плавные атака/отпуск ~0.1 с
+    vm = mix * duck[:, None] + 0.75 * np.stack([v, v], 1)
+    vm /= max(1e-9, np.abs(vm).max()) / 0.8
+    wavfile.write(out / "audio_voice_raw.wav", SR, (vm * 32767).astype(np.int16))
+    print("audio_voice_raw.wav ok")
