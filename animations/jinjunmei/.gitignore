@@ -1,0 +1,6 @@
+out/audio.wav
+out/audio_raw.wav
+out/*_silent.mp4
+_*.html
+out/voice.wav
+out/audio_voice*.wav
