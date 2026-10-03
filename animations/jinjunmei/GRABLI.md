@@ -13,3 +13,4 @@
 | edge-tts: certificate verify failed | edge-tts ходит по WebSocket — прокси облачной среды его не пропускает. Озвучка офлайн: RHVoice (`apt install rhvoice rhvoice-russian`) |
 | Piper: 403 на модели | huggingface.co закрыт политикой сети. Нужно добавить домен в Allowed domains окружения |
 | Фразы озвучки налезают друг на друга | голос медленнее 2 слов/с. `voice.py` печатает таблицу и помечает «НАЛЕЗАЕТ»; лечение — RATE=120 и удлинить паузу (`holds`) под фразу |
+| HyperFrames TTS не помогает с русским | `hyperframes tts` = Kokoro (нет русского, модель с huggingface.co). HeyGen TTS (есть русский + тайминги слов) требует доступ к api.heygen.com и ключ HeyGen |
