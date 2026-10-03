@@ -268,7 +268,7 @@
 
   function drawCaptions(g, t, d) {
     CAM.reset();
-    hand(g, 'Горы Уишань · Фуцзянь', 540, 330, { id: 'c1', d, size: 96, color: pal.line, p: seg(t, 0.9, 2.0), fade: 1 - seg(t, 3.3, 3.6) });
+    hand(g, 'Горы Уишань · Фуцзянь', 540, 330, { id: 'c1', d, size: 96, color: pal.line, p: seg(t, 0.8, 1.8), fade: 1 - seg(t, 3.5, 3.8) });
     const f2 = 1 - seg(t, 6.7, 7.0);
     hand(g, 'Тунму — здесь родился', 540, 1470, { id: 'c2a', d, size: 88, color: pal.line, p: seg(t, 4.3, 5.2), fade: f2 });
     hand(g, 'первый красный чай', 540, 1570, { id: 'c2b', d, size: 88, color: pal.line, p: seg(t, 5.0, 5.8), fade: f2 });
@@ -285,8 +285,18 @@
     }
   }
 
+  // реальное время -> время сюжета (паузы на чтение)
+  function story(t) {
+    let shift = 0;
+    for (const [h, dur] of T.holds) {
+      const hr = h + shift; // момент паузы в реальном времени
+      if (t >= hr + dur) shift += dur; else if (t > hr) return h;
+    }
+    return t - shift;
+  }
+
   function render(t) {
-    const d = Math.floor(t * T.drawRate + 1e-6), tq = d / T.drawRate; // на двойках
+    const d = Math.floor(t * T.drawRate + 1e-6), tq = story(d / T.drawRate); // на двойках; кипение идёт по реальному времени
     ig.setTransform(1, 0, 0, 1, 0, 0); ig.globalCompositeOperation = 'source-over'; ig.globalAlpha = 1; ig.clearRect(0, 0, W, H);
     drawLand(ig, tq, d); drawBranch(ig, tq, d); drawBud(ig, tq, d); drawHeap(ig, tq, d); drawGlyphs(ig, tq, d); drawPoster(ig, tq, d); drawCaptions(ig, tq, d);
     ig.globalCompositeOperation = 'destination-out'; ig.globalAlpha = 0.5; ig.drawImage(tooth, 0, 0);

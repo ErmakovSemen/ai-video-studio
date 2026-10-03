@@ -21,8 +21,12 @@ T = {
     "finalChord": 16.1,
 }
 T["budLand"] = [round(T["rainStart"] + i * T["budStep"], 4) for i in range(N_BUDS)]
+# паузы на чтение: [момент сюжета, длительность]. Сюжет замирает, линии продолжают кипеть.
+T["holds"] = [[6.0, 1.2], [9.6, 0.8], [12.05, 1.4]]
+T["storyDuration"] = T["duration"]
+T["duration"] = round(T["storyDuration"] + sum(h[1] for h in T["holds"]), 3)
 
 here = pathlib.Path(__file__).parent
 (here / "timing.json").write_text(json.dumps(T, ensure_ascii=False, indent=1))
 (here / "timing.js").write_text("window.T = " + json.dumps(T) + ";\n")
-print("timing ok:", len(T["budLand"]), "buds, last lands", T["budLand"][-1])
+print("timing ok:", T["duration"], "s,", len(T["budLand"]), "buds")
