@@ -295,9 +295,47 @@
 
   // ---------- ПАЛИТРЫ: бумага + роли цветов ----------
   const PALETTES = {
-    kraft: { name: 'kraft', paper: '#c4a27a', paperDark: '#7d5f3e', paperLight: '#e6cfab', line: '#2f2118', soft: '#5a432f', guide: '#7b6047', light: '#f7f0e3', cold: '#3b5878', warm: '#e2a21c', seal: '#ad2f26', wash: '#f2b544', grain: 20 },
-    ink:   { name: 'ink',   paper: '#efe8d9', paperDark: '#a89c84', paperLight: '#fbf8f0', line: '#1b1917', soft: '#4c4741', guide: '#a39a8a', light: '#93a8b4', cold: '#557488', warm: '#c88a12', seal: '#b2241c', wash: '#f4c86a', grain: 14 },
+    kraft: { name: 'kraft', paper: '#c4a27a', paperDark: '#7d5f3e', paperLight: '#e6cfab', line: '#2f2118', soft: '#5a432f', guide: '#7b6047', light: '#f7f0e3', cold: '#3b5878', warm: '#e2a21c', seal: '#ad2f26', wash: '#f2b544', grain: 20,
+      sky: '#8fa9bd', leaf: '#5f7340', clay: '#8a4a2c', ochre: '#b98436', stone: '#8d8577' },
+    ink:   { name: 'ink',   paper: '#efe8d9', paperDark: '#a89c84', paperLight: '#fbf8f0', line: '#1b1917', soft: '#4c4741', guide: '#a39a8a', light: '#93a8b4', cold: '#557488', warm: '#c88a12', seal: '#b2241c', wash: '#f4c86a', grain: 14,
+      sky: '#9fb6c4', leaf: '#6b7f4b', clay: '#8c4f33', ochre: '#bf8d43', stone: '#9a948a' },
   };
+
+  // АКВАРЕЛЬ: слоистая полупрозрачная заливка с «растёкшимися» краями (деформация средних точек).
+  // Под карандашным контуром. Краска не кипит: форма зависит только от id. p — сколько слоёв уже легло.
+  const washCache = new Map();
+  function deform(pts, R, depth, spread) {
+    let cur = pts, v = spread;
+    for (let k = 0; k < depth; k++) {
+      const out = [];
+      for (let i = 0; i < cur.length; i++) {
+        const a = cur[i], b = cur[(i + 1) % cur.length], L = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
+        const g = (R() + R() + R() - 1.5) * v * Math.min(1, L / 40);
+        out.push(a, [(a[0] + b[0]) / 2 - (b[1] - a[1]) / L * g, (a[1] + b[1]) / 2 + (b[0] - a[0]) / L * g]);
+      }
+      cur = out; v *= 0.6;
+    }
+    return cur;
+  }
+  function wash(g, polyW, o) {
+    const p = o.p === undefined ? 1 : o.p, fade = o.fade === undefined ? 1 : o.fade;
+    if (p <= 0 || fade <= 0.01) return;
+    const L = o.layers || 10, key = o.id + '|' + L + '|' + (o.spread || 14);
+    let layers = washCache.get(key);
+    if (!layers) {
+      const R = rng(o.id, 'wash'), sp = o.spread || 14;
+      const src = resample(polyW.concat([polyW[0]]), 18), base = deform(src, R, 2, sp);
+      layers = []; for (let i = 0; i < L; i++) layers.push(deform(base, R, 3, sp * 0.7));
+      washCache.set(key, layers);
+    }
+    const n = Math.max(1, Math.ceil(L * p));
+    g.save(); g.fillStyle = o.color; g.globalAlpha = (o.alpha || 0.07) * 0.45 * fade; // пигмент лёгкий: слои складываются
+    for (let i = 0; i < n; i++) {
+      const q = o.screen ? layers[i] : layers[i].map(CAM.map);
+      g.beginPath(); q.forEach((pt, j) => (j ? g.lineTo(pt[0], pt[1]) : g.moveTo(pt[0], pt[1]))); g.closePath(); g.fill();
+    }
+    g.restore();
+  }
 
   // стереть область под фигурой (в координатах камеры): передний план непрозрачен
   function erasePolyLocal(g, polyW) {
@@ -306,5 +344,5 @@
     q.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); g.closePath(); g.fill(); g.restore();
   }
 
-  window.PENCIL = { W, H, rng, hash, clamp, seg, lerp, ease, easeIO, easeOut, life, resample, smooth, ellipse, pod, along, CAM, pencil, hatch, hand, glyph, makePaper, makeTooth, hexA, PALETTES, erasePolyLocal };
+  window.PENCIL = { W, H, rng, hash, clamp, seg, lerp, ease, easeIO, easeOut, life, resample, smooth, ellipse, pod, along, CAM, pencil, hatch, hand, glyph, makePaper, makeTooth, hexA, PALETTES, erasePolyLocal, wash };
 })();
