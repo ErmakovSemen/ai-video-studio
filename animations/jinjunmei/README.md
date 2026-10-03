@@ -10,4 +10,6 @@
 - `GRABLI.md` — список граблей
 - `out/` — готовые MP4 и листы кадров
 
+Загрузка на YouTube: `python3 -m animations.jinjunmei.upload_youtube --theme ink` (нужны YT_* в env).
+
 Сборка: `./render.sh all high`; с озвучкой: `VOICE=aleksandr-hq RATE=120 ./render.sh all high` (голоса офлайн: `apt install rhvoice rhvoice-russian`).
