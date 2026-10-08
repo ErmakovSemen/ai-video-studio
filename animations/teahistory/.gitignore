@@ -1,0 +1,4 @@
+out/audio*.wav
+out/*_silent.mp4
+out/draft*.mp4
+_*.html
