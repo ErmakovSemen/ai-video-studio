@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="ru" data-resolution="portrait">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=1920" />
+<script src="gsap.min.js"></script>
+<style>
+  @font-face { font-family: R_Oswald; src: url(fonts/Oswaldwght.ttf); font-weight: 100 900; }
+  @font-face { font-family: R_Playfair; src: url(fonts/PlayfairDisplaywght.ttf); font-weight: 100 900; }
+  @font-face { font-family: R_RubikMono; src: url(fonts/RubikMonoOne-Regular.ttf); font-weight: 100 900; }
+  @font-face { font-family: R_Russo; src: url(fonts/RussoOne-Regular.ttf); font-weight: 100 900; }
+  @font-face { font-family: R_Yeseva; src: url(fonts/YesevaOne-Regular.ttf); font-weight: 100 900; }
+  @font-face { font-family: R_Ruslan; src: url(fonts/RuslanDisplay-Regular.ttf); font-weight: 100 900; }
+  @font-face { font-family: R_Lobster; src: url(fonts/Lobster-Regular.ttf); font-weight: 100 900; }
+  @font-face { font-family: R_Unbounded; src: url(fonts/Unboundedwght.ttf); font-weight: 100 900; }
+  @font-face { font-family: R_Kelly; src: url(fonts/KellySlab-Regular.ttf); font-weight: 100 900; }
+  @font-face { font-family: R_Plex; src: url(fonts/IBMPlexMono-Bold.ttf); font-weight: 100 900; }
+  @font-face { font-family: R_Alice; src: url(fonts/Alice-Regular.ttf); font-weight: 100 900; }
+  @font-face { font-family: R_Prata; src: url(fonts/Prata-Regular.ttf); font-weight: 100 900; }
+  @font-face { font-family: R_Cormorant; src: url(fonts/CormorantGaramondwght.ttf); font-weight: 100 900; }
+  @font-face { font-family: R_Mono; src: url(fonts/PTM55FT.ttf); font-weight: 100 900; }
+  @font-face { font-family: Hand; src: url(fonts/Caveat-sub.ttf); font-weight: 100 900; }
+  @font-face { font-family: Glyph; src: url(fonts/Glyph.ttf); font-weight: 100 900; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: #d3d0c8; }
+  #cv { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+  #fontwarm { position: absolute; left: -9999px; top: 0; font-size: 30px; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="65" data-width="1080" data-height="1920">
+  <canvas id="cv" class="clip" width="1080" height="1920" data-start="0" data-duration="65" data-track-index="0"></canvas>
+</div>
+<div id="fontwarm"><span style="font-family:R_Oswald">Чай茶经神农唐宋明</span> <span style="font-family:R_Playfair">Чай茶经神农唐宋明</span> <span style="font-family:R_RubikMono">Чай茶经神农唐宋明</span> <span style="font-family:R_Russo">Чай茶经神农唐宋明</span> <span style="font-family:R_Yeseva">Чай茶经神农唐宋明</span> <span style="font-family:R_Ruslan">Чай茶经神农唐宋明</span> <span style="font-family:R_Lobster">Чай茶经神农唐宋明</span> <span style="font-family:R_Unbounded">Чай茶经神农唐宋明</span> <span style="font-family:R_Kelly">Чай茶经神农唐宋明</span> <span style="font-family:R_Plex">Чай茶经神农唐宋明</span> <span style="font-family:R_Alice">Чай茶经神农唐宋明</span> <span style="font-family:R_Prata">Чай茶经神农唐宋明</span> <span style="font-family:R_Cormorant">Чай茶经神农唐宋明</span> <span style="font-family:R_Mono">Чай茶经神农唐宋明</span> <span style="font-family:Hand">Чай茶经神农唐宋明</span> <span style="font-family:Glyph">Чай茶经神农唐宋明</span></div>
+<script src="timing.js"></script>
+<script src="engine.js"></script>
+<script src="engrave.js"></script>
+<script src="collage.js"></script>
+<script src="scenes.js"></script>
+<script>
+  const st = { t: 0 };
+  SCENES.init('kraft', document.getElementById('cv'));
+  const tl = gsap.timeline({ paused: true });
+  tl.to(st, { t: T.duration, duration: T.duration, ease: 'none', onUpdate: () => SCENES.render(st.t) }, 0);
+  window.__timelines = window.__timelines || {};
+  window.__timelines['main'] = tl;
+  tl.seek(0);
+  SCENES.render(0);
+  Promise.all([document.fonts.load('40px R_Oswald'), document.fonts.load('40px R_Playfair'), document.fonts.load('40px R_RubikMono'), document.fonts.load('40px R_Russo'), document.fonts.load('40px R_Yeseva'), document.fonts.load('40px R_Ruslan'), document.fonts.load('40px R_Lobster'), document.fonts.load('40px R_Unbounded'), document.fonts.load('40px R_Kelly'), document.fonts.load('40px R_Plex'), document.fonts.load('40px R_Alice'), document.fonts.load('40px R_Prata'), document.fonts.load('40px R_Cormorant'), document.fonts.load('40px R_Mono'), document.fonts.load('40px Hand'), document.fonts.load('40px Glyph')]).then(() => { COLLAGE.reset(); SCENES.render(st.t); });
+</script>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ru" data-resolution="portrait">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=1920" />
+<script src="gsap.min.js"></script>
+<style>
+  @font-face { font-family: Hand; src: url(fonts/Caveat-sub.ttf); font-weight: 400 700; }
+  @font-face { font-family: Glyph; src: url(fonts/MaShanZheng-sub.ttf); }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1080px; height: 1920px; overflow: hidden; background: #c4a27a; }
+  #cv { position: absolute; left: 0; top: 0; width: 1080px; height: 1920px; }
+  #fontwarm { position: absolute; left: -9999px; top: 0; font: 600 40px Hand; }
+  #fontwarm span { font-family: Glyph; }
+</style>
+</head>
+<body>
+<div id="root" data-composition-id="main" data-start="0" data-duration="31.5" data-width="1080" data-height="1920">
+  <canvas id="cv" class="clip" width="1080" height="1920" data-start="0" data-duration="31.5" data-track-index="0"></canvas>
+</div>
+<div id="fontwarm">Цзинь <span>大红袍状元茶</span></div>
+<!-- палитра: одна строка перекрашивает весь ролик (kraft | ink) -->
+<script>window.THEME = 'kraft';</script>
+<script src="timing.js"></script>
+<script src="engine.js"></script>
+<script src="scenes.js"></script>
+<script>
+  const st = { t: 0 };
+  SCENES.init(window.THEME, document.getElementById('cv'));
+  const tl = gsap.timeline({ paused: true });
+  tl.to(st, { t: T.duration, duration: T.duration, ease: 'none', onUpdate: () => SCENES.render(st.t) }, 0);
+  window.__timelines = window.__timelines || {};
+  window.__timelines['main'] = tl;
+  tl.seek(0);
+  SCENES.render(0);
+  Promise.all([document.fonts.load('600 96px Hand'), document.fonts.load('100px Glyph')]).then(() => SCENES.render(st.t));
+</script>
+</body>
+</html>

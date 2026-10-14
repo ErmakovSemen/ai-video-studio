@@ -1,0 +1,3 @@
+out/audio*.wav
+out/*_silent.mp4
+_*.html
