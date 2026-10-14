@@ -4,7 +4,7 @@
   'use strict';
   const P = window.PENCIL, E = window.ENGRAVE, C = window.COLLAGE, T = window.T;
   const { W, H, rng, seg, lerp, ease, easeIO, easeOut, smooth, ellipse, pencil, hand } = P;
-  let og, sheets = [], bufs = [], ENG = {}, tooth;
+  let og, sheets = [], bufs = [], ENG = {}, tooth, coverSheet, coverBuf;
 
   function init(theme, canvas) {
     og = canvas.getContext('2d');
@@ -24,6 +24,11 @@
     ];
     sheets.forEach((sh, i) => { const g = sh.getContext('2d'); CL[i][0].forEach(([x, y, w, h, r], k) => C.newsprint(g, x, y, w, h, r, 'np' + i + k)); CL[i][1].forEach(([x, y, r], k) => C.stain(g, x, y, r, 'st' + i + k)); });
     T.scenes.forEach(s => { ENG[s.obj] = E.render(s.obj, s.obj === 'compass' ? 420 : 760); });
+    coverSheet = P.makePaper(Object.assign({}, pal, { name: 'sheetCover', paper: '#d2cec5', paperLight: '#e8e5de', paperDark: '#9d978b', grain: 16 }));
+    const cg = coverSheet.getContext('2d');
+    [[1010, 300, 300, 300, 0.12], [80, 1540, 380, 320, -0.08], [1000, 1700, 320, 260, 0.1]].forEach(([x, y, w, h, r], k) => C.newsprint(cg, x, y, w, h, r, 'npc' + k));
+    C.stain(cg, 960, 1260, 90, 'stc');
+    coverBuf = C.mk(W, H);
   }
 
   // ---------- содержимое вклеек ----------
@@ -131,6 +136,25 @@
     },
   ];
 
+  // ---------- обложка «История чая за 1 минуту»: стоит целиком с первого кадра (постер для ленты) ----------
+  function renderCover(d) {
+    const g = coverBuf.getContext('2d'), lt = 99;
+    g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
+    g.drawImage(coverSheet, 0, 0);
+    P.CAM.reset();
+    C.label(g, '7 ГЛАВ · 4700 ЛЕТ', 60, 110, lt, { t: 0 });
+    C.ransom(g, 'ИСТОРИЯ', lt, { id: 'cv1', x: 540, y: 340, size: 160, maxW: 1060, t: 0 });
+    C.ransom(g, 'ЧАЯ', lt, { id: 'cv2d', x: 380, y: 590, size: 220, maxW: 900, t: 0 });
+    C.ticket(g, { x: 860, y: 640, w: 400, h: 150, rot: -0.1, t: 0, lines: ['ЗА 1 МИНУТУ'], size: 62, bg: '#b8322a', fg: '#f6f2e8' }, lt);
+    C.cutout(g, ENG.samovar, 'samovar', 560, 1120, lt, d, { t: 0, rot: 0.03, scale: 0.95 });
+    C.ticket(g, { x: 215, y: 875, w: 330, h: 140, rot: -0.12, t: 0, lines: ['2737 до н. э.', '→ сегодня'], size: 44, size2: 30 }, lt);
+    C.postage(g, { x: 910, y: 900, w: 180, h: 215, rot: 0.12, t: 0, color: '#7a2a20', draw: (b) => { b.fillStyle = '#f6f2e8'; b.textAlign = 'center'; b.textBaseline = 'middle'; b.font = '52px R_Oswald'; b.fillText('760', 0, -16); b.font = '24px R_Mono'; b.fillText('КИТАЙ', 0, 40); } }, lt, d);
+    C.cutout(g, ENG.teapot, 'teapot', 265, 1370, lt, d, { t: 0, rot: -0.06, scale: 0.6 });
+    C.cutout(g, ENG.cup, 'cup', 830, 1400, lt, d, { t: 0, rot: 0.04, scale: 0.6 });
+    C.seal(g, { x: 175, y: 1065, size: 56, rot: -0.08, t: 0, chars: '茶' }, lt);
+    return coverBuf;
+  }
+
   function renderScene(i, lt, d) {
     const b = bufs[i], g = b.getContext('2d');
     g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
@@ -163,10 +187,12 @@
   function render(t) {
     const d = Math.floor(t * T.drawRate + 1e-6), tq = d / T.drawRate;
     og.setTransform(1, 0, 0, 1, 0, 0); og.globalAlpha = 1; og.globalCompositeOperation = 'source-over';
-    const S = T.scenes; let cur = S.length - 1; while (cur > 0 && tq < S[cur].start) cur--;
+    const S = T.scenes;
+    if (tq < S[0].start) { drawCam(renderCover(d), seg(tq, 0, S[0].start)); return; } // обложка
+    let cur = S.length - 1; while (cur > 0 && tq < S[cur].start) cur--;
     const lt = i => tq - S[i].local0, camU = i => seg(tq, S[i].start, S[i].start + S[i].dur);
-    const u = cur > 0 ? seg(tq, S[cur].start, S[cur].start + T.trans) : 1;
-    if (u < 1) { drawCam(renderScene(cur - 1, lt(cur - 1), d), camU(cur - 1)); sheetIn(renderScene(cur, lt(cur), d), u, cur, camU(cur)); }
+    const u = seg(tq, S[cur].start, S[cur].start + T.trans);
+    if (u < 1) { drawCam(cur > 0 ? renderScene(cur - 1, lt(cur - 1), d) : renderCover(d), cur > 0 ? camU(cur - 1) : 1); sheetIn(renderScene(cur, lt(cur), d), u, cur, camU(cur)); }
     else drawCam(renderScene(cur, lt(cur), d), camU(cur));
   }
   window.SCENES = { init, render };

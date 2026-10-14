@@ -19,10 +19,11 @@ SCENES = [
          note=["Второй напиток в мире", "после воды"], seal="茶"),
 ]
 TRANS, CPS = 0.6, 24          # смена листа (с); скорость машинки (знаков/с)
+COVER = 1.6                   # обложка «История чая за 1 минуту» стоит с первого кадра
 L = dict(label=0.0, head=0.25, letter=0.06, obj=1.1, ins1=1.9, ins2=2.4, note=2.9)
-t = 0.0; T = {"fps": 24, "drawRate": 12, "trans": TRANS, "cps": CPS, "L": L, "scenes": [], "events": []}
+t = COVER; T = {"fps": 24, "drawRate": 12, "trans": TRANS, "cps": CPS, "L": L, "cover": COVER, "scenes": [], "events": []}
 for i, s in enumerate(SCENES):
-    s = dict(s); s["start"] = round(t, 3); s["local0"] = round(t + (-0.8 if i == 0 else 0.45), 3)  # глава 1: заголовок уже на первом кадре  # время элементов отсчитывается отсюда
+    s = dict(s); s["start"] = round(t, 3); s["local0"] = round(t + 0.45, 3)  # время элементов отсчитывается отсюда
     nchar = sum(len(x) for x in s["note"])
     s["noteEnd"] = round(L["note"] + nchar / CPS + 0.1 * len(s["note"]), 3)
     s["sealAt"] = round(s["noteEnd"] + (1.1 if s["id"] == "today" else 0.3), 3)
@@ -42,10 +43,10 @@ for i, s in enumerate(SCENES):
         ev.append({"t": round(tt, 3), "kind": "return"}); tt += 0.1
     if s["seal"] or i == 4: ev.append({"t": round(b + s["sealAt"], 3), "kind": "stamp"})
     if s["id"] == "today": ev += [{"t": round(b + s["chipAt"] + k * 0.15, 3), "kind": "slap"} for k in range(5)]
-    if i > 0: ev.append({"t": s["start"], "kind": "sheet"})
+    ev.append({"t": s["start"], "kind": "sheet"})
     t += s["dur"]
 T["duration"] = round(t, 3)
-T["B"] = [s["start"] for s in T["scenes"][1:]]
+T["B"] = [s["start"] for s in T["scenes"]]
 T["events"] = sorted((e for e in T["events"] if e["t"] >= 0), key=lambda e: e["t"])
 here = pathlib.Path(__file__).parent
 (here / "timing.json").write_text(json.dumps(T, ensure_ascii=False, indent=1))
