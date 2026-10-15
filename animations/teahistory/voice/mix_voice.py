@@ -43,7 +43,7 @@ for k, (f, start, tempo, _, _) in enumerate(plan, 1):
     fc.append(f"[{k}:a]aresample=48000,aformat=channel_layouts=stereo,loudnorm=I=-16:TP=-2:LRA=7,aresample=48000,"
               f"atempo={tempo},adelay={ms}|{ms}[v{k}]")
 vs = "".join(f"[v{k}]" for k in range(1, len(plan) + 1))
-fc.append(f"{vs}amix=inputs={len(plan)}:normalize=0:duration=longest,asplit[vo][sc]")
+fc.append(f"{vs}amix=inputs={len(plan)}:normalize=0:duration=longest,apad=whole_dur={T['duration']},asplit[vo][sc]")  # голос на всю длину, иначе компрессор обрежет фон
 fc.append("[bed][sc]sidechaincompress=threshold=0.02:ratio=6:attack=15:release=350[duck]")
 fc.append("[duck][vo]amix=inputs=2:normalize=0:duration=first[mix]")
 
@@ -55,7 +55,8 @@ with tempfile.TemporaryDirectory() as tmp:
     j = json.loads(m[m.rindex("{"):m.rindex("}") + 1])
     subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", raw, "-af",
                     f"loudnorm={LN}:measured_I={j['input_i']}:measured_TP={j['input_tp']}:measured_LRA={j['input_lra']}:"
-                    f"measured_thresh={j['input_thresh']}:offset={j['target_offset']}", "-ar", "48000", norm], check=True)
+                    f"measured_thresh={j['input_thresh']}:offset={j['target_offset']},alimiter=limit=0.79:level=false",  # запас под AAC
+                    "-ar", "48000", norm], check=True)
     cut = ["-t", str(a.until)] if a.until else []
     subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", a.video, "-i", norm, *cut, "-map", "0:v", "-map", "1:a",
                     "-c:v", "copy", "-c:a", "aac", "-b:a", "192k", "-shortest", "-movflags", "+faststart", a.out], check=True)
