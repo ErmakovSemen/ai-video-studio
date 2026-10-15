@@ -55,7 +55,7 @@ with tempfile.TemporaryDirectory() as tmp:
     j = json.loads(m[m.rindex("{"):m.rindex("}") + 1])
     subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", raw, "-af",
                     f"loudnorm={LN}:measured_I={j['input_i']}:measured_TP={j['input_tp']}:measured_LRA={j['input_lra']}:"
-                    f"measured_thresh={j['input_thresh']}:offset={j['target_offset']},alimiter=limit=0.79:level=false",  # запас под AAC
+                    f"measured_thresh={j['input_thresh']}:offset={j['target_offset']},alimiter=limit=0.71:level=false",  # запас под AAC
                     "-ar", "48000", norm], check=True)
     cut = ["-t", str(a.until)] if a.until else []
     subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", a.video, "-i", norm, *cut, "-map", "0:v", "-map", "1:a",
