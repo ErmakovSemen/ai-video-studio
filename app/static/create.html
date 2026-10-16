@@ -198,16 +198,27 @@ $('#goBtn').onclick=async()=>{
   }catch(e){working(false);$('#askBox').classList.remove('hide');$('#goBtn').disabled=false;showErr($('#askErr'),e.message)}
 };
 
+// Джобы живут в памяти процесса: рестарт контейнера (деплой, OOM на 1ГБ) их теряет,
+// и опрос начинает получать 404. Раньше это молча крутило спиннер вечно — надо
+// признавать поражение и возвращать человека к кнопке.
+let scFails=0;
+function scriptDead(msg){
+  working(false);$('#askBox').classList.remove('hide');$('#goBtn').disabled=false;
+  showErr($('#askErr'),msg);
+}
 async function pollScript(){
   try{
-    const j=await(await fetch('/api/script/'+SID)).json();
-    if(j.status==='error'){
-      working(false);$('#askBox').classList.remove('hide');$('#goBtn').disabled=false;
-      showErr($('#askErr'),j.error||'Не получилось придумать сценарий.');return;
-    }
+    const r=await fetch('/api/script/'+SID);
+    if(r.status===404)return scriptDead('Задача потерялась — сервер перезапустился. Нажмите «Придумать сценарий» ещё раз.');
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const j=await r.json();
+    if(j.status==='error')return scriptDead(j.error||'Не получилось придумать сценарий.');
     if(j.status==='done'){renderScript(j);return}
-    setTimeout(pollScript,1500);
-  }catch(_){setTimeout(pollScript,2000)}
+    scFails=0;setTimeout(pollScript,1500);
+  }catch(_){
+    if(++scFails>15)return scriptDead('Сервер не отвечает. Проверьте связь и попробуйте снова.');
+    setTimeout(pollScript,2000);
+  }
 }
 
 function renderScript(j){
@@ -255,12 +266,17 @@ $('#shootBtn').onclick=async()=>{
   }catch(e){working(false);$('#script').classList.add('on');showErr($('#scErr'),e.message)}
 };
 
+let rnFails=0;
+function renderDead(msg){
+  working(false);$('#script').classList.add('on');showErr($('#scErr'),msg);
+}
 async function pollRender(){
   try{
-    const j=await(await fetch('/api/jobs/'+JID)).json();
-    if(j.status==='error'){
-      working(false);$('#script').classList.add('on');showErr($('#scErr'),j.error||'Сбой при съёмке.');return;
-    }
+    const r=await fetch('/api/jobs/'+JID);
+    if(r.status===404)return renderDead('Съёмка потерялась — сервер перезапустился. Запустите её заново.');
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const j=await r.json();
+    if(j.status==='error')return renderDead(j.error||'Сбой при съёмке.');
     if(j.status==='done'){
       $('#rvid').src=j.video+'?t='+Date.now();$('#dlBtn').href=j.video;
       $('#rtitle').textContent=j.title||$('#scTitle').value;
@@ -269,8 +285,11 @@ async function pollRender(){
       $('#result').scrollIntoView({behavior:'smooth',block:'nearest'});return;
     }
     setBar(j.stage||'снимаю',j.progress||40,'около двух минут');
-    setTimeout(pollRender,1800);
-  }catch(_){setTimeout(pollRender,2200)}
+    rnFails=0;setTimeout(pollRender,1800);
+  }catch(_){
+    if(++rnFails>15)return renderDead('Сервер не отвечает. Ролик мог сняться — загляните в «Мои видео».');
+    setTimeout(pollRender,2200);
+  }
 }
 
 // ── публикация / ещё ──

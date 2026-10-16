@@ -3,6 +3,8 @@ import json, os, time
 from studio.factory import common as C
 
 MIN_GAP_HOURS = float(os.getenv("FACTORY_MIN_GAP_HOURS", "4"))
+MAX_RETRIES = int(os.getenv("FACTORY_MAX_RETRIES", "3"))
+BACKOFF_MIN = int(os.getenv("FACTORY_BACKOFF_MIN", "30"))   # 30м -> 1ч -> 2ч
 
 
 def _last_publish_ts(board: dict) -> float:
@@ -11,7 +13,10 @@ def _last_publish_ts(board: dict) -> float:
 
 
 def maybe_publish(project: dict, board: dict) -> bool:
-    queue = C.col(board, "await_post")["cards"]
+    # берём только живые карточки: сбойная не должна долбиться каждые 15 минут.
+    # Именно так протухший YouTube-токен дал 1336 холостых коммитов за две недели.
+    queue = [c for c in C.col(board, "await_post")["cards"]
+             if not c.get("needs_human") and time.time() >= c.get("retry_after", 0)]
     if not queue:
         return False
 
@@ -43,12 +48,22 @@ def maybe_publish(project: dict, board: dict) -> bool:
             title=title, description=desc, tags=tags, category_id="27",
             privacy="public", made_for_kids=False))
     except Exception as e:
-        C.log("director", f"{cid}: ОШИБКА публикации: {e}")
-        card["needs_human"] = True
+        n = card["retries"] = card.get("retries", 0) + 1
         card["publish_error"] = str(e)[:300]
-        C.save_board(project, board, message=f"factory: {cid} publish failed")
+        if n >= MAX_RETRIES:
+            card.pop("retry_after", None)
+            card["needs_human"] = True
+            C.log("director", f"{cid}: ОШИБКА публикации ({n}/{MAX_RETRIES}) -> нужна помощь: {e}")
+            C.notify(f"🔴 Прометей: не смог опубликовать «{card.get('title', cid)}» {n} раз подряд.\n"
+                     f"Причина: {str(e)[:400]}\nКарточка ждёт человека, конвейер идёт дальше.")
+        else:
+            wait_min = BACKOFF_MIN * (2 ** (n - 1))
+            card["retry_after"] = time.time() + wait_min * 60
+            C.log("director", f"{cid}: ОШИБКА публикации ({n}/{MAX_RETRIES}), повтор через {wait_min}м: {e}")
+        C.save_board(project, board, message=f"factory: {cid} publish failed ({n}/{MAX_RETRIES})")
         return True
 
+    card.pop("retries", None); card.pop("retry_after", None); card.pop("publish_error", None)
     card["video"] = res["url"]
     card["published_at"] = time.time()
     C.move_card(board, card, "await_post", "posted")
