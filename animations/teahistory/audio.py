@@ -72,16 +72,20 @@ for b in T["B"]:
 def band(a, b, fade=0.6): return np.clip((t - a) / fade, 0, 1) * np.clip((b - t) / fade, 0, 1)
 # легенда: огонь (треск) и бульканье котла
 crackle = np.zeros(N)
-for tc in rng.uniform(0.4, ST[1], 70): i = int(tc * SR); m = ns(0.02); crackle[i:i + m] += bp(1500, 6000, noise(m)) * env(m, 0.0005, 0.004)[: len(crackle[i:i + m])] * rng.uniform(0.3, 1)
+for tc in rng.uniform(ST[0] + 0.4, ST[1], 70): i = int(tc * SR); m = ns(0.02); crackle[i:i + m] += bp(1500, 6000, noise(m)) * env(m, 0.0005, 0.004)[: len(crackle[i:i + m])] * rng.uniform(0.3, 1)
 fire = bp(150, 900, noise(N)) * 0.4 + crackle
-L += fire * band(0.3, ST[1] + 0.3) * 0.06; R += fire * band(0.3, ST[1] + 0.3) * 0.05
-for tb in np.sort(rng.uniform(1.4, ST[1], 26)): add(np.sin(2 * np.pi * np.linspace(300, 700, ns(0.05)).cumsum() / SR) * env(ns(0.05), 0.003, 0.015), tb, 0.05, pan=rng.uniform(-0.3, 0.3))
+L += fire * band(ST[0] + 0.3, ST[1] + 0.3) * 0.06; R += fire * band(ST[0] + 0.3, ST[1] + 0.3) * 0.05
+for tb in np.sort(rng.uniform(ST[0] + 1.4, ST[1], 26)): add(np.sin(2 * np.pi * np.linspace(300, 700, ns(0.05)).cumsum() / SR) * env(ns(0.05), 0.003, 0.015), tb, 0.05, pan=rng.uniform(-0.3, 0.3))
 # самовар: тихое кипение
 boil = bp(400, 2500, noise(N)) * (0.6 + 0.4 * np.sin(2 * np.pi * 0.7 * t))
 L += boil * band(ST[5] + 1.2, ST[6] + 0.3) * 0.035; R += boil * band(ST[5] + 1.2, ST[6] + 0.3) * 0.035
 # сегодня: налив чая в чашку
 pn = ns(1.6); pour = bp(500, 3000, noise(pn)) * (0.6 + 0.4 * np.sin(np.linspace(0, 90, pn)) ** 2) * np.sin(np.linspace(0, np.pi, pn)) ** 0.5
 add(pour, T["scenes"][6]["local0"] + T["L"]["obj"] + 0.15, 0.18)
+
+# обложка: мягкий удар и колокольчики на первом кадре
+add(thud(70, 0.1, 0.5), 0.02, 0.35)
+for j, nt in enumerate(["A4", "E5", "A5"]): add(bell(hz(nt), 2.4), 0.04 + 0.09 * j, 0.09, pan=-0.2 + 0.2 * j)
 
 # ---------- музыка ----------
 # главы 1–4: китайская пентатоника (ля), щипок «гуциня» + колокольчик в начале главы
