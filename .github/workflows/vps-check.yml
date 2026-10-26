@@ -1,0 +1,29 @@
+name: VPS resource check (read-only)
+
+# Временная проверка: хватит ли ресурсов VPS под Postiz рядом с основным сервисом.
+# Только чтение: память, диск, CPU, потребление контейнеров. Ничего не меняет.
+on:
+  push:
+    branches: [claude/sleepy-cerf-bcyx2s]
+    paths: [".github/workflows/vps-check.yml"]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Read server resources over SSH
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          ssh -i ~/.ssh/deploy_key "root@${VPS_HOST}" '
+            echo "== cpu: $(nproc)"
+            free -m | sed -n "1,3p"
+            df -h / | tail -1
+            echo "== containers (mem):"
+            docker stats --no-stream --format "{{.Name}} {{.MemUsage}}" 2>/dev/null
+            echo "== caddy: $(command -v caddy >/dev/null && echo host || (docker ps --format "{{.Image}}" | grep -c caddy))"
+          '
