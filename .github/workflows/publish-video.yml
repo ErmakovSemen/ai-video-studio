@@ -1,0 +1,45 @@
+name: Publish video
+
+# Публикация готового ролика из репозитория в соцсети. Запускается вручную
+# (кнопка Run workflow или агент через GitHub API). Ключи — в секретах репозитория.
+on:
+  workflow_dispatch:
+    inputs:
+      project:
+        description: "Папка ролика (с out/*.mp4 и youtube.json)"
+        required: true
+        default: "animations/teahistory"
+      platforms:
+        description: "Куда: youtube,telegram,tiktok,instagram"
+        required: true
+        default: "youtube"
+      privacy:
+        description: "YouTube: public | unlisted | private"
+        required: false
+        default: "unlisted"
+      tg_channel:
+        description: "Telegram-канал (@name или id)"
+        required: false
+        default: ""
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Publish
+        env:
+          YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
+          YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
+          YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+          AGT_TG_BOT_TOKEN: ${{ secrets.AGT_TG_BOT_TOKEN }}
+          TG_CHANNEL: ${{ github.event.inputs.tg_channel || secrets.TG_CHANNEL }}
+        run: |
+          python -m scripts.publish_video --project "${{ github.event.inputs.project }}" \
+            --platforms "${{ github.event.inputs.platforms }}" --privacy "${{ github.event.inputs.privacy }}"
