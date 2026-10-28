@@ -72,6 +72,73 @@
           "created": 1785940141,
           "retries": 2,
           "rendering_failed": true
+        },
+        {
+          "id": "idea_tea_for_two_worlds_1793167010",
+          "title": "Чай для двух миров: прошлое и будущее в одной чашке ⏳✨",
+          "desc": "Что, если каждая чашка чая соединяет нас с теми, кто был до и будет после нас?",
+          "scenario": {
+            "title": "Чай для двух миров: прошлое и будущее в одной чашке ⏳✨",
+            "hook": "Что, если каждая чашка чая соединяет нас с теми, кто был до и будет после нас?",
+            "voice": "ru-RU-SvetlanaNeural",
+            "hero": "panda",
+            "brand_image": "assets/chayniy/panda_standing.png",
+            "characters": {
+              "panda": "assets/chayniy/panda_ink.png",
+              "panda_standing": "assets/chayniy/panda_standing.png",
+              "panda_face": "assets/chayniy/panda_face.png",
+              "teacup": "assets/chayniy/teacup_steam.png",
+              "tealeaf": "assets/chayniy/tealeaf.png",
+              "branch": "assets/chayniy/branch_teabush.png"
+            },
+            "style": "Japanese ink brush illustration, fine pen and ink linework with variable line weight (thicker where pressed, thinner where lifted), no color fills — black ink only on white background, occasional diluted ink wash for depth (monochrome only), large empty white space 65-75% of frame, single focal object or character, wabi-sabi aesthetic, ukiyo-e inspired, hand-drawn spontaneous feel, no text no watermark no gradients, vertical 9:16",
+            "scenes": [
+              {
+                "image": "Ancient hands carefully selecting tea leaves in a misty, timeless landscape, with subtle, almost invisible digital lines hinting at data streams in the background.",
+                "shot": "fpv_dive",
+                "vo": "В каждой чашке чая растворяются не только листья, но и само время.",
+                "caption": "Чай: мост сквозь время"
+              },
+              {
+                "image": "A single, delicate tea leaf suspended in a drop of water, reflecting an ancient Chinese landscape on one side and a futuristic cityscape on the other.",
+                "shot": "push_in",
+                "vo": "Древние мастера, что передавали знания из поколения в поколение...",
+                "caption": "Эхо древних традиций"
+              },
+              {
+                "image": "A graceful hand pouring hot water into a small, elegant tea bowl, steam rising and swirling to form faint, ethereal images of historical figures and futuristic silhouettes.",
+                "shot": "orbit",
+                "vo": "И те, кто только предстоит вкусить этот напиток в далёком будущем.",
+                "caption": "Шёпот грядущих времён"
+              },
+              {
+                "image": "A close-up of a tea ceremony setup, where the tea tools have an antique aesthetic but also glow with a subtle, futuristic light.",
+                "shot": "handheld",
+                "vo": "Чай — это нить, что связывает прошлое с настоящим и будущее с вечностью.",
+                "caption": "Вечная нить бытия"
+              },
+              {
+                "image": "A serene, contemplative face of a person, eyes closed, holding a warm teacup, with a gentle glow emanating from the cup, suggesting deep connection.",
+                "shot": "static_hold",
+                "vo": "Каждый глоток — это диалог сквозь века, встреча двух миров в одной чашке.",
+                "caption": "Диалог сквозь века"
+              }
+            ]
+          },
+          "yt_desc": "В каждой капле чая таится эхо прошлого и шёпот будущего. Это не просто напиток, а мост сквозь время. Присоединяйтесь к нам в этом медитативном путешествии, чтобы почувствовать связь поколений. Поделитесь, с кем бы вы разделили чашку такого чая?",
+          "yt_tags": [
+            "чай",
+            "время",
+            "мудрость",
+            "наследие",
+            "связь"
+          ],
+          "tags": [
+            "auto",
+            "creator"
+          ],
+          "created": 1793167010,
+          "retries": 0
         }
       ]
     },
