@@ -1,0 +1,51 @@
+name: Factory control
+
+# Старая фабрика сайта (studio/factory) живёт в контейнере на VPS и сама публикует на YouTube.
+# status — показать её состояние; stop — выключить автопилот (autonomous.json → off)
+# и отключить таймеры/cron на хосте, которые её дёргают.
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "status | stop"
+        required: true
+        default: status
+
+jobs:
+  ctl:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Factory over SSH
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          ACTION: ${{ inputs.action }}
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "$VPS_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          ssh -i ~/.ssh/deploy_key "root@${VPS_HOST}" ACTION="$ACTION" 'bash -s' <<'SH'
+          ST=/opt/prometey/data/outputs/factory_state
+          echo "== autonomous: $(cat $ST/autonomous.json 2>/dev/null || echo 'нет файла')"
+          echo "== таймеры/cron, где упоминается фабрика"
+          systemctl list-timers --all --no-pager 2>/dev/null | grep -iE 'factory|prometey' || echo "(таймеров нет)"
+          grep -rlsE 'factory' /etc/systemd/system 2>/dev/null || true
+          (crontab -l 2>/dev/null; cat /etc/cron.d/* 2>/dev/null) | grep -iE 'factory' || echo "(cron нет)"
+          echo "== последние шаги фабрики"
+          tail -n 15 $ST/activity.log 2>/dev/null || ls -la $ST
+          echo "== процессы"
+          ps aux | grep -E 'studio.factory|hyperframes|ffmpeg' | grep -v grep || echo "(не идут)"
+          if [ "$ACTION" = "stop" ]; then
+            echo "== STOP"
+            echo '{"on": false, "changed": '"$(date +%s)"'}' > $ST/autonomous.json
+            for u in $(systemctl list-unit-files --no-legend 2>/dev/null | awk '{print $1}' | grep -iE 'factory'); do
+              systemctl disable --now "$u" && echo "disabled $u"
+            done
+            if crontab -l 2>/dev/null | grep -qi factory; then
+              crontab -l | grep -vi factory | crontab - && echo "cron: строки фабрики удалены"
+            fi
+            pkill -f 'studio.factory.run' && echo "killed running step" || true
+            echo "== autonomous now: $(cat $ST/autonomous.json)"
+          fi
+          SH
