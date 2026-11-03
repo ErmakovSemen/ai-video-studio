@@ -2,7 +2,7 @@ name: Factory control
 
 # Старая фабрика сайта (studio/factory) живёт в контейнере на VPS и сама публикует на YouTube.
 # status — показать её состояние; stop — выключить автопилот (autonomous.json → off)
-# и отключить таймеры/cron на хосте, которые её дёргают.
+# и отключить её таймер prometey-factory на хосте (только его: grep по «factory» цеплял системные factory-reset юниты).
 
 on:
   workflow_dispatch:
@@ -29,8 +29,8 @@ jobs:
           ST=/opt/prometey/data/outputs/factory_state
           echo "== autonomous: $(cat $ST/autonomous.json 2>/dev/null || echo 'нет файла')"
           echo "== таймеры/cron, где упоминается фабрика"
-          systemctl list-timers --all --no-pager 2>/dev/null | grep -iE 'factory|prometey' || echo "(таймеров нет)"
-          grep -rlsE 'factory' /etc/systemd/system 2>/dev/null || true
+          systemctl list-timers --all --no-pager 2>/dev/null | grep -iE 'prometey' || echo "(таймеров нет)"
+          echo "prometey-factory.timer: $(systemctl is-enabled prometey-factory.timer 2>&1) / $(systemctl is-active prometey-factory.timer 2>&1)"
           (crontab -l 2>/dev/null; cat /etc/cron.d/* 2>/dev/null) | grep -iE 'factory' || echo "(cron нет)"
           echo "== последние шаги фабрики"
           tail -n 15 $ST/activity.log 2>/dev/null || ls -la $ST
@@ -39,9 +39,8 @@ jobs:
           if [ "$ACTION" = "stop" ]; then
             echo "== STOP"
             echo '{"on": false, "changed": '"$(date +%s)"'}' > $ST/autonomous.json
-            for u in $(systemctl list-unit-files --no-legend 2>/dev/null | awk '{print $1}' | grep -iE 'factory'); do
-              systemctl disable --now "$u" && echo "disabled $u"
-            done
+            systemctl disable --now prometey-factory.timer && echo "disabled prometey-factory.timer"
+            systemctl stop prometey-factory.service || true
             if crontab -l 2>/dev/null | grep -qi factory; then
               crontab -l | grep -vi factory | crontab - && echo "cron: строки фабрики удалены"
             fi
