@@ -39,12 +39,25 @@ def _load_scenario(card: dict) -> dict | None:
     return None
 
 
+MAX_RETRIES = int(os.getenv("FACTORY_MAX_RETRIES", "3"))
+BACKOFF_MIN = int(os.getenv("FACTORY_BACKOFF_MIN", "30"))   # 30м -> 1ч -> 2ч
+
+
+def ready(card: dict) -> bool:
+    """Карточку можно брать в работу: человек не нужен и пауза после сбоя вышла.
+    Раньше здесь стоял флаг `rendering_failed`, который никто никогда не снимал, —
+    две сбойные карточки заклинивали конвейер навсегда."""
+    if card.get("needs_human"):
+        return False
+    return time.time() >= card.get("retry_after", 0)
+
+
 def maybe_produce(project: dict, board: dict) -> bool:
     ideas = C.col(board, "ideas")["cards"]
     card = None
     scenario = None
     for c in ideas:
-        if c.get("rendering_failed"):
+        if not ready(c):
             continue
         scenario = _load_scenario(c)
         if scenario:
@@ -76,12 +89,24 @@ def maybe_produce(project: dict, board: dict) -> bool:
         if os.path.exists(raw):
             os.remove(raw)
     except Exception as e:
-        C.log("producer", f"ОШИБКА рендера {cid}: {e}")
-        card["rendering_failed"] = True
-        card["retries"] = card.get("retries", 0) + 1
-        C.save_board(project, board, message=f"factory: render failed {cid}")
+        n = card["retries"] = card.get("retries", 0) + 1
+        card["last_error"] = str(e)[:300]
+        card.pop("rendering_failed", None)          # legacy-флаг больше не используем
+        if n >= MAX_RETRIES:
+            card.pop("retry_after", None)
+            card["needs_human"] = True
+            C.log("producer", f"ОШИБКА рендера {cid} ({n}/{MAX_RETRIES}) -> нужна помощь: {e}")
+            C.notify(f"🔴 Прометей: карточка «{card.get('title', cid)}» не снялась {n} раз подряд "
+                     f"и снята с конвейера.\nПричина: {str(e)[:400]}")
+        else:
+            wait_min = BACKOFF_MIN * (2 ** (n - 1))
+            card["retry_after"] = time.time() + wait_min * 60
+            C.log("producer", f"ОШИБКА рендера {cid} ({n}/{MAX_RETRIES}), повтор через {wait_min}м: {e}")
+        C.save_board(project, board, message=f"factory: render failed {cid} ({n}/{MAX_RETRIES})")
         return True
 
+    for k in ("retries", "retry_after", "last_error", "rendering_failed"):
+        card.pop(k, None)                # успех стирает историю сбоев
     card["scenario"] = scenario          # нормализуем: дальше по конвейеру всегда inline-словарь
     card["video_path"] = f"outputs/{cid}.mp4"
     C.move_card(board, card, "ideas", "review")
