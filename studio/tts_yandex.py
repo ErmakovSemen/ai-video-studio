@@ -12,7 +12,7 @@ API_KEY = os.getenv("YANDEX_API_KEY", "")
 URL = "https://tts.api.cloud.yandex.net/speech/v1/tts:synthesize"
 
 
-def synth(text: str, out_path: str, voice: str = "alena", emotion: str = "neutral",
+def synth(text: str, out_path: str, voice: str = "filipp", emotion: str = "neutral",
           speed: float = 1.05, api_key: str | None = None) -> str:
     """Synthesize `text` to `out_path` (wav or mp3, by extension). Returns out_path."""
     key = api_key or API_KEY

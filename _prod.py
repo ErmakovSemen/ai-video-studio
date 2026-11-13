@@ -122,7 +122,7 @@ sc = story.load(os.path.join(ROOT, f"scenarios/chayniy/{KEY}.json"))
 wd = os.path.join(ROOT, "work", f"{KEY}_{int(time.time())}")
 raw = os.path.join(ROOT, "outputs", f"{KEY}_raw.mp4"); out = os.path.join(ROOT, "outputs", f"{KEY}.mp4")
 music = os.path.join(ROOT, "assets/music/inspired.mp3")
-voice = os.getenv("YANDEX_VOICE","alena") if os.getenv("TTS_BACKEND")=="yandex" else "edge"
+voice = os.getenv("YANDEX_VOICE","filipp") if os.getenv("TTS_BACKEND")=="yandex" else "edge"
 print(f"rendering ({voice}):", sc["title"], flush=True)
 story.build(sc, raw, wd, base_dir=ROOT, draft=True, gen_stills=True, polish=True, music=music, captions=True)
 two_pass_loudnorm(raw, out); os.remove(raw)
