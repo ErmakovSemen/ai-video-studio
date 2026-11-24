@@ -1,0 +1,57 @@
+{
+  "title": "Из-за чая началась революция",
+  "hook": "Чай начал революцию",
+  "world": "история / Бостонское чаепитие",
+  "voice": "ru-RU-SvetlanaNeural",
+  "hero": "panda",
+  "brand_image": "assets/chayniy/panda_standing.png",
+  "characters": {
+    "panda": "assets/chayniy/panda_ink.png",
+    "panda_face": "assets/chayniy/panda_face.png",
+    "teacup": "assets/chayniy/teacup_steam.png",
+    "tealeaf": "assets/chayniy/tealeaf.png"
+  },
+  "style": "Japanese sumi-e ink brush illustration, fine pen and ink linework with bold confident strokes and variable line weight, black ink only on white background, occasional diluted ink wash for depth (monochrome only, NO color), large empty white space, single clear focal subject, wabi-sabi, ukiyo-e inspired, hand-drawn spontaneous feel, vertical 9:16",
+  "scenes": [
+    {
+      "image": "a red panda on the deck of an old wooden sailing ship at night heaves a plain unmarked wooden chest over the railing, loose tea leaves scattering into dark water below, dramatic, bold sumi-e ink, white space",
+      "refs": ["panda", "panda_face", "tealeaf"],
+      "motion": "slow zoom in as the chest tips over the railing",
+      "vo": "Однажды чай высыпали в море — и это стало одной из искр революции.",
+      "caption": "Чай и революция"
+    },
+    {
+      "image": "an old harbor with three tall wooden sailing ships moored at a pier, stacks of plain unmarked wooden crates on the dock, calm water, bold sumi-e ink, white space",
+      "refs": [],
+      "motion": "slow pan along the moored ships",
+      "vo": "Бостон, 1773 год. Британия везёт колониям чай с налогом, а права голоса в парламенте не даёт.",
+      "caption": "Бостон, 1773"
+    },
+    {
+      "image": "night harbor, several figures with lanterns on a ship deck tipping plain wooden chests into the water, big ink splashes, tea leaves floating on the waves, bold sumi-e ink, white space",
+      "refs": ["tealeaf"],
+      "motion": "chests splash down one after another",
+      "vo": "Ночью колонисты поднялись на корабли и сбросили в гавань триста сорок два ящика чая.",
+      "caption": "342 ящика за борт"
+    },
+    {
+      "image": "tall warships with full sails on a stormy sea, heavy dark storm clouds and cannon smoke drifting over the waves, bold sumi-e ink, white space",
+      "refs": [],
+      "motion": "storm clouds roll in slowly",
+      "vo": "Британия ответила жёсткими законами — а через год с небольшим началась война.",
+      "caption": "Ответ — война"
+    },
+    {
+      "image": "a red panda sits calmly by a window overlooking a quiet harbor at sunrise, holding a cup of tea with both paws, steam rising gently, serene, bold sumi-e ink, lots of white space",
+      "refs": ["panda", "panda_face", "teacup"],
+      "motion": "slow gentle zoom out, calm",
+      "vo": "Так что не недооценивай чашку чая. Иногда она меняет историю.",
+      "caption": "Чашка меняет историю"
+    }
+  ],
+  "endcard": {
+    "title": "ЧАЙНЫЙ",
+    "sub": "Истории о чае и замедлении.",
+    "vo": "Завари чашку — и почувствуй разницу."
+  }
+}
