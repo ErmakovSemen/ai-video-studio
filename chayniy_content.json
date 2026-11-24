@@ -327,6 +327,19 @@
       "name": "✅ Опубликовано",
       "cards": [
         {
+          "id": "cli_boston_tea",
+          "title": "Из-за чая началась революция",
+          "desc": "https://youtu.be/ncj7GZ2NAao\nголос: alena · субтитры: да",
+          "video": "https://youtu.be/ncj7GZ2NAao",
+          "scenario": "scenarios/chayniy/boston_tea.json",
+          "tags": [
+            "published",
+            "cli",
+            "youtube",
+            "yandex-voice"
+          ]
+        },
+        {
           "id": "cli_go_strategy",
           "title": "В этой игре ходов больше, чем атомов во Вселенной",
           "desc": "https://youtu.be/ERl7hQ-CIPw\nголос: alena · субтитры: да",
